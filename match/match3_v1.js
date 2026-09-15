@@ -641,68 +641,62 @@
      Clear / Apply
   =============================== */
   async function expandByTriggeredSpecials(toClear) {
-    const expanded = new Set([...toClear]);
-    let changed = true;
-    let safety = 0;
+    const seeds = Array.from(toClear, key => ({
+      r: Math.floor(key / SIZE),
+      c: key % SIZE
+    }));
 
-    while (changed && safety < 12) {
-      changed = false;
-      safety += 1;
+    const result = SlowlyGridChainExpand.expand(grid, seeds, {
+      maxWaves: 12,
 
-      for (const key of Array.from(expanded)) {
-        const r = Math.floor(key / SIZE);
-        const c = key % SIZE;
-        const cell = grid[r][c];
-        if (!cell || !cell.sp) continue;
+      expandAt({ r, c, cell }) {
+        if (!cell || !cell.sp) return [];
 
         if (cell.sp === "b") {
+          const positions = [];
+
           for (let rr = 0; rr < SIZE; rr += 1) {
             for (let cc = 0; cc < SIZE; cc += 1) {
-              const nextKey = k(rr, cc);
-              if (!expanded.has(nextKey)) {
-                expanded.add(nextKey);
-                changed = true;
-              }
+              positions.push({ r: rr, c: cc });
             }
           }
-          continue;
+
+          return positions;
         }
 
         if (cell.sp === "sh") {
-          for (let cc = 0; cc < SIZE; cc += 1) {
-            const nextKey = k(r, cc);
-            if (!expanded.has(nextKey)) {
-              expanded.add(nextKey);
-              changed = true;
-            }
-          }
-        } else if (cell.sp === "sv") {
-          for (let rr = 0; rr < SIZE; rr += 1) {
-            const nextKey = k(rr, c);
-            if (!expanded.has(nextKey)) {
-              expanded.add(nextKey);
-              changed = true;
-            }
-          }
-        } else if (cell.sp === "w") {
+          return Array.from(
+            { length: SIZE },
+            (_, cc) => ({ r, c: cc })
+          );
+        }
+
+        if (cell.sp === "sv") {
+          return Array.from(
+            { length: SIZE },
+            (_, rr) => ({ r: rr, c })
+          );
+        }
+
+        if (cell.sp === "w") {
+          const positions = [];
+
           for (let dr = -1; dr <= 1; dr += 1) {
             for (let dc = -1; dc <= 1; dc += 1) {
-              const rr = r + dr;
-              const cc = c + dc;
-              if (!inBounds(rr, cc)) continue;
-
-              const nextKey = k(rr, cc);
-              if (!expanded.has(nextKey)) {
-                expanded.add(nextKey);
-                changed = true;
-              }
+              positions.push({ r: r + dr, c: c + dc });
             }
           }
-        }
-      }
-    }
 
-    return expanded;
+          return positions;
+        }
+
+        return [];
+      }
+    });
+
+    return new Set(
+      result.positions.map(pos => k(pos.r, pos.c))
+    );
   }
 
   function applyClear(toClearSet, preserveSet) {
