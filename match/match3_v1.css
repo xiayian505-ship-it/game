@@ -1,0 +1,1053 @@
+/* capsule_v3_0.css */
+
+/* =========================================================
+
+   🎨 Theme Tokens（全站色票）
+
+========================================================= */
+
+:root{
+
+  --accent:#7FA8A3;
+
+  --white:#F7FAF9;
+
+  --ink:#3F5553;
+
+  --muted:#9DB2AF;
+
+  --line:rgba(120,150,150,.18);
+
+  --shadow:0 20px 50px rgba(70,110,110,.18);
+
+  --radius:22px;
+
+}
+
+
+
+/* =========================================================
+
+   🌌 App Background
+
+========================================================= */
+
+body{
+
+  margin:0;
+
+  font-family:system-ui,-apple-system,"Noto Sans TC",sans-serif;
+
+  background:
+
+    radial-gradient(1000px 500px at 15% 10%, rgba(127,168,163,.18), transparent 65%),
+
+    radial-gradient(900px 500px at 85% 5%, rgba(210,230,228,.6), transparent 60%),
+
+    linear-gradient(180deg,#F4F9F8,#EAF3F2);
+
+}
+
+
+
+/* ========================================================= */
+
+.wrap{max-width:920px;margin:auto;padding:28px 16px 64px;}
+
+.header{text-align:center;margin-bottom:18px;color:var(--ink);}
+
+
+
+/* ========================================================= */
+
+.card{
+
+  background:var(--white);
+
+  border-radius:var(--radius);
+
+  box-shadow:var(--shadow);
+
+  overflow:hidden;
+
+
+
+}
+
+
+
+
+
+
+
+/* ========================================================= */
+
+.tabs{display:flex;border-bottom:1px solid var(--line);}
+
+.tab{color:var(--ink);flex:1;padding:14px;text-align:center;font-size:13px;cursor:pointer;}
+
+.tab.active{
+
+  color:var(--accent);
+
+  font-weight:600;
+
+  border-bottom:3px solid var(--accent);
+
+}
+
+
+
+/* ========================================================= */
+
+.page{
+
+  display:none;
+
+  border-radius:var(--radius);  /* ⭐ 關鍵 */
+
+  overflow:hidden;              /* ⭐ 關鍵 */
+
+}
+
+.page.active{
+
+  display:block;
+
+}
+
+
+
+/* ========================================================= */
+
+.calendar{
+
+  padding:22px;
+
+  border-bottom:1px solid var(--line);
+
+  position:relative;
+
+}
+
+.calendar::after{
+
+  content:"";
+
+  position:absolute;
+
+  inset:0;
+
+  background:radial-gradient(400px 200px at 70% 30%,rgba(240,139,84,.08),transparent 70%);
+
+  pointer-events:none;
+
+}
+
+
+
+/* ========================================================= */
+
+.calHead{display:flex;justify-content:space-between;align-items:flex-end;}
+
+.calTitle{line-height:1.1;}
+
+.month{font-size:12px;letter-spacing:.18em;color:var(--muted);}
+
+.year{font-size:32px;font-weight:700;color:var(--ink);opacity:.85;}
+
+.bigDate{font-size:64px;font-weight:800;color:var(--accent);line-height:1;opacity:.85;text-shadow:0 6px 18px rgba(127,168,163,.18);}
+
+
+
+/* =========================================================
+
+   ✉️ 信紙（互動紙張結構）
+
+========================================================= */
+
+.diary{
+
+  padding:28px 24px 24px;
+
+  position:relative;
+
+  background:rgba(255,255,255,.55);
+
+  border-radius:14px;
+
+  box-shadow:0 1px 0 rgba(255,255,255,.6) inset,0 8px 18px rgba(127,168,163,.08);
+
+}
+
+
+
+/* 左側線 */
+
+.withLeftLine::before{
+
+  content:"";
+
+  position:absolute;
+
+  left:28px;top:0;bottom:0;width:2px;
+
+  background:linear-gradient(180deg,transparent,rgba(127,168,163,.5),transparent);
+
+  opacity:.25;
+
+}
+
+
+
+.diaryTitle{padding-left:40px;font-size:18px;font-weight:600;margin-bottom:12px;color:var(--ink);}
+
+.diaryContent{
+
+  padding-left:40px;
+
+  font-size:14px;
+
+  line-height:1.8;
+
+  color:var(--ink);
+
+
+
+  white-space: pre-wrap;      /* 保留換行符號，同時允許自動換行 */
+
+  word-break: break-word;     /* 長字串強制斷行 */
+
+  overflow-wrap: break-word;  /* 現代標準寫法 */
+
+}
+
+
+
+/* 封存時間層 */
+
+.diary.time-sealed{
+
+  filter:sepia(.25) brightness(.98) saturate(.9);
+
+  transition:filter .8s ease;
+
+}
+
+
+
+/* ========================================================= */
+
+.btn{
+
+  color:var(--ink);
+
+  padding:12px 16px;
+
+  border-radius:14px;
+
+  border:1px solid var(--line);
+
+  background:rgba(127,168,163,.08);
+
+  font-size:13px;
+
+}
+
+.btn.primary{background:rgba(127,168,163,.18);}
+
+.btn.danger{
+
+  color:#7A5C5C;  /* 偏灰紅文字 */
+
+
+
+  background:
+
+    linear-gradient(
+
+      180deg,
+
+      rgba(200,120,120,.16),
+
+      rgba(170,90,90,.12)
+
+    );
+
+
+
+  border:1px solid rgba(170,90,90,.22);
+
+
+
+  box-shadow:
+
+    0 6px 14px rgba(150,80,80,.08),
+
+    0 1px 0 rgba(255,255,255,.5) inset;
+
+
+
+  backdrop-filter: blur(3px);
+
+}
+
+
+
+/* ========================================================= */
+
+.monthList{padding:12px 24px 22px;}
+
+
+
+/* ========================================================= */
+
+.deliveryCard{
+
+  margin:18px 24px 0;
+
+  padding:18px;
+
+  border-radius:18px;
+
+  background:rgba(127,168,163,.07);
+
+  border:1px solid var(--line);
+
+}
+
+.deliveryTitle{font-size:13px;letter-spacing:.12em;color:var(--muted);margin-bottom:14px;}
+
+.modeItem{font-size:13px;color:var(--ink);display:flex;align-items:center;gap:6px;}
+
+.modeBlock{margin-bottom:12px;}
+
+.deliveryDateInput,
+
+.festivalSelect,
+
+.meaningfulSelect{
+
+  width:100%;
+
+  padding:10px 12px;
+
+  border-radius:12px;
+
+  border:1px solid var(--line);
+
+  background:var(--white);
+
+  color:var(--ink);
+
+  font-size:13px;
+
+}
+
+.modeHint{font-size:12px;color:var(--muted);margin-top:6px;}
+
+
+
+/* ========================================================= */
+
+.monthItem .title{color:var(--accent);font-size:15px;letter-spacing:.05em;}
+
+.monthItem{opacity:.85;}
+
+.monthItem .date{color:var(--accent);font-size:15px;letter-spacing:.08em;}
+
+
+
+.mailGrid{
+
+  display:grid;
+
+  grid-template-columns:1fr 1fr;
+
+  gap:18px;
+
+  padding:18px;
+
+}
+
+
+
+
+
+.mailCol{
+
+  background:rgba(127,168,163,.06);
+
+  border:1px solid rgba(127,168,163,.14);
+
+  border-radius:18px;
+
+  padding:14px;
+
+  box-shadow:0 6px 18px rgba(70,110,110,.06);
+
+}
+
+
+
+.mailTitle{font-size:13px;letter-spacing:.15em;color:var(--muted);margin-bottom:12px;}
+
+
+
+.diaryActions,.openedActions{display:flex;gap:12px;padding:18px 24px 26px;}
+
+.diaryActions .btn,.openedActions .btn{flex:1;text-align:center;}
+
+.openedActions{display:none;}
+
+
+
+/* =========================================================
+
+   🕰️ PNG 匯出卡片（保留完整紙張結構）
+
+========================================================= */
+
+.capsuleCard{position:fixed;left:-9999px;top:0;width:720px;background:var(--white);font-family:"Noto Sans TC",system-ui,sans-serif;}
+
+.capsuleInner{padding:60px 70px 70px;border:1px solid rgba(127,168,163,.28);box-shadow:0 0 0 6px rgba(127,168,163,.05) inset;position:relative;}
+
+.capsuleInner::before{content:"";position:absolute;inset:18px;border:1px solid rgba(127,168,163,.18);}
+
+
+
+.capsuleMeta{
+
+  margin-bottom:8px;
+
+}
+
+
+
+/* TO：左上 */
+
+.toText{
+
+  position:absolute;
+
+  left:0;
+
+  top:0;
+
+  font-size:13px;
+
+  color:var(--muted);
+
+}
+
+
+
+/* FROM：整張卡片右下角 */
+
+.fromText{
+
+  align-self:flex-end;
+
+  margin-top:40px;          /* 拉開與正文距離，像落款 */
+
+  font-size:12px;           /* 比正文小 */
+
+  color:rgba(120,140,140,.55);
+
+  letter-spacing:.08em;
+
+  position:relative;
+
+}
+
+
+
+/* 微時間暈染感 */
+
+.fromText::before{
+
+  content:"";
+
+  position:absolute;
+
+  right:-12px;
+
+  top:50%;
+
+  width:80px;
+
+  height:18px;
+
+  background:radial-gradient(ellipse at right,
+
+    rgba(127,168,163,.15),
+
+    transparent 70%);
+
+  transform:translateY(-50%);
+
+  pointer-events:none;
+
+  opacity:.5;
+
+}
+
+
+
+.capsuleContent{
+
+  padding:10px 30px 0;
+
+  position:relative;
+
+  display:flex;
+
+  flex-direction:column;
+
+}
+
+
+
+.capsuleContent::before{content:"";position:absolute;left:0;right:0;top:-10px;bottom:-20px;border:1px solid rgba(127,168,163,.08);}
+
+.exportTitle{font-size:22px;font-weight:600;color:var(--ink);margin-bottom:18px;}
+
+.exportBody{font-size:15px;line-height:2;color:var(--ink);white-space:pre-wrap;}
+
+
+
+/* =========================================================
+
+   🕰 寫信頁進入「時間層空間」
+
+   封存後整頁變成匯出信紙的世界
+
+========================================================= */
+
+#diary.time-layer{
+
+  position:relative;
+
+  padding:36px 28px 42px;
+
+  overflow:hidden;
+
+
+
+  /* 時間霧信紙空間 */
+
+  background:
+
+    radial-gradient(700px 400px at 80% 10%, rgba(127,168,163,.05), transparent 70%),
+
+    radial-gradient(600px 400px at 10% 90%, rgba(127,168,163,.06), transparent 70%),
+
+    rgba(255,255,255,.35);
+
+
+
+  backdrop-filter: blur(4px);
+
+}
+
+
+
+/* 外層時間框（來自匯出卡語言） */
+
+#diary.time-layer::before{
+
+  content:"";
+
+  position:absolute;
+
+  inset:12px;
+
+  border:2px solid rgba(127,168,163,.18);
+
+  border-radius:20px;
+
+  pointer-events:none;
+
+}
+
+
+
+/* 內層細框 */
+
+#diary.time-layer::after{
+
+  content:"";
+
+  position:absolute;
+
+  inset:28px;
+
+  border:1px solid rgba(127,168,163,.10);
+
+  border-radius:16px;
+
+  pointer-events:none;
+
+}
+
+
+
+/* 中央那張信嵌入時間空間 */
+
+#diary.time-layer .diary{
+
+  background:rgba(255,255,255,.55);
+
+  box-shadow:
+
+    0 0 0 1px rgba(127,168,163,.12),
+
+    0 18px 40px rgba(127,168,163,.15);
+
+}
+
+
+
+/* =========================================================
+
+   ✅ 時間層：隱藏「現實層 UI」
+
+   - 封存後不再顯示日曆與投遞設定卡
+
+========================================================= */
+
+#diary.time-layer .calendar{
+
+  display:none;
+
+}
+
+
+
+#diary.time-layer .deliveryCard{
+
+  display:none;
+
+}
+
+
+
+/* 防止 JS 初始化前畫面閃爍 */
+
+#diary.preload {
+
+  visibility: hidden;
+
+}
+
+
+
+/* 🌫️ App 世界甦醒動畫（掩蓋首次渲染運算） */
+
+body {
+
+  animation: fadeInApp .6s ease both;
+
+}
+
+
+
+@keyframes fadeInApp {
+
+  from { opacity:0; transform:scale(.995); }
+
+  to { opacity:1; transform:scale(1); }
+
+}
+
+
+
+/* ===== 時間層場景（植栽頁） ===== */
+
+
+
+.mm_time_layer_scene{
+
+  position:relative;
+
+  width:100%;
+
+  min-height:calc(100dvh - 140px); /* ⭐ 改這行 */
+
+  overflow:hidden;
+
+}
+
+
+
+/* 紙張 */
+
+.mm_time_paper{
+
+  position:absolute;
+
+  width:220px;
+
+  height:300px;
+
+  border-radius:10px;
+
+  cursor:pointer;
+
+  background:linear-gradient(180deg, rgba(255,255,255,.92), rgba(245,250,249,.85));
+
+  border:1px solid var(--line);
+
+  box-shadow:0 12px 28px rgba(70,110,110,.22);
+
+  overflow:hidden;
+
+}
+
+
+
+/* 紙線 */
+
+.mm_time_paper::after{
+
+  content:"";
+
+  position:absolute;
+
+  left:18px; right:18px; top:52px; bottom:22px;
+
+  background-image: repeating-linear-gradient(
+
+    to bottom,
+
+    rgba(127,168,163,.18) 0px,
+
+    rgba(127,168,163,.18) 1px,
+
+    transparent 1px,
+
+    transparent 22px
+
+  );
+
+  opacity:.5;
+
+}
+
+
+
+/* 顯影文字 */
+
+.mm_time_text{
+
+  position:absolute;
+
+  left:26px;
+
+  right:26px;
+
+  top:64px;
+
+  font-size:14px;
+
+  line-height:1.9;
+
+  color:var(--ink);
+
+  white-space:pre-line;
+
+  pointer-events:none;
+
+  opacity:0;
+
+  transition:opacity 2.8s ease;
+
+}
+
+
+
+.mm_time_text.mm_time_revealed{
+
+  opacity:1;
+
+}
+
+
+
+/* ==============================
+
+   📬 信箱預覽區（v2 新增）
+
+============================== */
+
+
+
+.mailPreviewWrap{
+
+  margin:0 24px 28px;
+
+  padding:22px;
+
+  border-radius:20px;
+
+
+
+  /* 🔥 關鍵：改成跟信箱同語言的霧色 */
+
+  background:rgba(127,168,163,.06);
+
+  border:1px solid rgba(127,168,163,.14);
+
+
+
+  /* 柔霧層 */
+
+  backdrop-filter:blur(4px);
+
+
+
+  /* 降低卡片感 */
+
+  box-shadow:0 12px 28px rgba(70,110,110,.06);
+
+}
+
+
+
+.mailPreviewPaper{
+
+  padding:24px 20px;
+
+  background:rgba(255,255,255,.42);   /* 比 .diary 淡 */
+
+  border-radius:14px;
+
+
+
+  box-shadow:
+
+    0 1px 0 rgba(255,255,255,.65) inset,
+
+    0 8px 18px rgba(127,168,163,.08);
+
+
+
+  filter:sepia(.08) saturate(.95);   /* 微舊感 */
+
+  margin-bottom:16px;
+
+}
+
+
+
+.mailPreviewTitle{
+
+  padding-left:36px;
+
+  font-size:17px;
+
+  font-weight:600;
+
+  color:var(--ink);
+
+  margin-bottom:10px;
+
+}
+
+
+
+.mailPreviewContent{
+
+  padding-left:36px;
+
+  font-size:14px;
+
+  line-height:1.9;
+
+  color:var(--ink);
+
+  white-space:pre-wrap;
+
+  word-break:break-word;
+
+}
+
+
+
+.mailPreviewActions{
+
+  display:none; /* 只有選到信才顯示 */
+
+  gap:12px;
+
+}
+
+
+
+.mailPreviewActions .btn{
+
+  flex:1;
+
+  text-align:center;
+
+}
+
+
+
+.capsuleLawHint{
+
+  text-align:center;
+
+  font-size:12px;
+
+color:rgba(90,120,120,.42);
+
+  letter-spacing:.06em;
+
+  margin:4px 0 22px;
+
+  user-select:none;
+
+  opacity:.75;
+
+  backdrop-filter:blur(1px);
+
+  filter:blur(.2px);
+
+}
+
+
+
+.appSubtitle{
+
+  font-size:12px;
+
+  letter-spacing:.25em;
+
+  color:rgba(63,85,83,.45);
+
+  margin-top:6px;
+
+}
+
+
+
+/* ===== 明信片預覽浮層 ===== */
+
+.exportPreviewModal{
+
+  position:fixed;
+
+  inset:0;
+
+  background:rgba(0,0,0,.35);
+
+  backdrop-filter:blur(6px);
+
+  display:none;
+
+  align-items:center;
+
+  justify-content:center;
+
+  z-index:9999;
+
+}
+
+
+
+.exportPreviewBox{
+
+  background:var(--white);
+
+  border-radius:20px;
+
+  padding:26px;
+
+  box-shadow:0 30px 80px rgba(0,0,0,.25);
+
+  max-width:92vw;
+
+}
+
+
+
+#exportPreviewMount{
+
+  transform:scale(.75);
+
+  transform-origin:top center;
+
+}
+
+
+
+.exportPreviewActions{
+
+  display:flex;
+
+  gap:12px;
+
+  margin-top:18px;
+
+}
+
+/* =========================================================
+   慢慢的倉庫｜Custom UI host theme
+========================================================= */
+.deliveryCard .slowly-date{
+  --sd-bg:var(--white);
+  --sd-text:var(--ink);
+  --sd-border:var(--line);
+  --sd-hover:rgba(127,168,163,.08);
+  --sd-selected-bg:rgba(127,168,163,.18);
+  --sd-selected-text:var(--ink);
+  --sd-focus:var(--accent);
+}
+.deliveryCard .slowly-select{
+  --ss-bg:var(--white);
+  --ss-text:var(--ink);
+  --ss-border:var(--line);
+  --ss-hover:rgba(127,168,163,.08);
+  --ss-selected-bg:rgba(127,168,163,.18);
+  --ss-selected-text:var(--ink);
+  --ss-focus:var(--accent);
+}
+.deliveryCard .slowly-date-trigger,
+.deliveryCard .slowly-select-trigger{
+  min-height:39px;
+  padding:10px 12px;
+  border-radius:12px;
+  font-size:13px;
+}
+.deliveryCard .slowly-date-panel,
+.deliveryCard .slowly-select-menu{
+  border-radius:12px;
+  overflow:hidden;
+  box-shadow:0 12px 28px rgba(70,110,110,.12);
+}
+.birthdayInput{
+  width:100%;
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:var(--white);
+  color:var(--ink);
+  font-size:13px;
+}
+.capsuleToast{
+  position:fixed;
+  left:50%;
+  bottom:24px;
+  z-index:3000;
+  max-width:min(420px,calc(100vw - 32px));
+  padding:10px 14px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:rgba(247,250,249,.96);
+  color:var(--ink);
+  box-shadow:0 12px 28px rgba(70,110,110,.16);
+  transform:translateX(-50%);
+  font-size:13px;
+  text-align:center;
+}
