@@ -21,6 +21,7 @@
      - FictionShuffle
      - Preference
      - SlowlyAudioTone
+     - SlowlyGridLineMatch
   ========================================================= */
 
   const SIZE = 8;
@@ -555,69 +556,15 @@
      Match finding
   =============================== */
   function findAllMatches() {
-    const groups = [];
-
-    for (let r = 0; r < SIZE; r += 1) {
-      let c = 0;
-
-      while (c < SIZE) {
-        const cell = grid[r][c];
-        const color = cell.sp === "b" ? null : cell.c;
-
-        if (color === null) {
-          c += 1;
-          continue;
-        }
-
-        let j = c + 1;
-        while (j < SIZE) {
-          const current = grid[r][j];
-          if (current.sp === "b" || current.c !== color) break;
-          j += 1;
-        }
-
-        const len = j - c;
-        if (len >= 3) {
-          const cells = [];
-          for (let x = c; x < j; x += 1) cells.push({ r, c: x });
-          groups.push({ type: "h", len, cells });
-        }
-
-        c = j;
+    return SlowlyGridLineMatch.find(grid, {
+      minLength: 3,
+      getValue(cell) {
+        return cell.c;
+      },
+      isBlocked(cell) {
+        return !cell || cell.sp === "b" || cell.c === null;
       }
-    }
-
-    for (let c = 0; c < SIZE; c += 1) {
-      let r = 0;
-
-      while (r < SIZE) {
-        const cell = grid[r][c];
-        const color = cell.sp === "b" ? null : cell.c;
-
-        if (color === null) {
-          r += 1;
-          continue;
-        }
-
-        let j = r + 1;
-        while (j < SIZE) {
-          const current = grid[j][c];
-          if (current.sp === "b" || current.c !== color) break;
-          j += 1;
-        }
-
-        const len = j - r;
-        if (len >= 3) {
-          const cells = [];
-          for (let x = r; x < j; x += 1) cells.push({ r: x, c });
-          groups.push({ type: "v", len, cells });
-        }
-
-        r = j;
-      }
-    }
-
-    return { groups };
+    });
   }
 
   function computeSpecialCreations(matches) {
