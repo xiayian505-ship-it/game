@@ -16,8 +16,10 @@
      慢慢的倉庫接管：
      - Timer / Ticker
      - FictionStorage
+     - FictionSort / FictionPaginate
      - SlowlyRandom
      - FictionShuffle
+     - Preference
      - SlowlyAudioTone
   ========================================================= */
 
@@ -46,6 +48,22 @@
 
   const bombOverlayEl = document.getElementById("bombOverlay");
   const comboFloatEl = document.getElementById("comboFloat");
+
+  const comboToast = SlowlyToast.create(comboFloatEl, {
+    duration: 450,
+    activeClass: "comboShow"
+  });
+
+  /* ===============================
+     倉庫｜Preference
+     音效開關只由宿主 checkbox 顯示；偏好保存交給軍火庫。
+  =============================== */
+  const soundPreference = Preference.create({
+    key: "SBS_match3_v1:sound",
+    defaultValue: true
+  });
+
+  soundOnEl.checked = soundPreference.get();
 
   /* ===============================
      Model / State
@@ -135,7 +153,7 @@
     gain = 0.12,
     slide = 0
   } = {}) {
-    if (!soundOnEl.checked) return;
+    if (!soundPreference.get()) return;
 
     SlowlyAudioTone.play({
       frequency: freq,
@@ -219,9 +237,10 @@
   }
 
   /* ===============================
-     倉庫｜FictionStorage
+     倉庫｜FictionStorage / FictionSort / FictionPaginate
      排名規則仍是 Match3 專屬：
      分數高 → 時間短 → 步數少。
+     排序執行與 TOP 3 切片交給軍火庫。
   =============================== */
   const scoreStore = FictionStorage.create({
     namespace: "SBS_match3_v1"
@@ -241,6 +260,20 @@
     return Number(a.steps) - Number(b.steps);
   }
 
+  function sortRankings(items) {
+    return FictionSort.sort(items, {
+      direction: "asc",
+      compare: rankingComparator
+    });
+  }
+
+  function takeTop3(items) {
+    return FictionPaginate.paginate(items, {
+      page: 1,
+      pageSize: 3
+    }).data;
+  }
+
   async function migrateLegacyTop3() {
     const current = await rankings.all();
     if (current.length > 0) return;
@@ -255,7 +288,9 @@
       return;
     }
 
-    for (const item of legacy.slice().sort(rankingComparator).slice(0, 3)) {
+    const topLegacy = takeTop3(sortRankings(legacy));
+
+    for (const item of topLegacy) {
       await rankings.add({
         score: Number(item.score) || 0,
         timeMs: Math.max(0, Number(item.timeMs) || 0),
@@ -267,7 +302,7 @@
 
   async function getTop3() {
     const rows = await rankings.all();
-    return rows.slice().sort(rankingComparator).slice(0, 3);
+    return takeTop3(sortRankings(rows));
   }
 
   async function renderTop3() {
@@ -309,15 +344,10 @@
       at: now()
     });
 
-    const rows = (await rankings.all()).slice().sort(rankingComparator);
-    const extras = rows.slice(3);
+    const rows = await rankings.all();
+    const top3 = takeTop3(sortRankings(rows));
 
-    for (const item of extras) {
-      if (item?.id !== undefined && item?.id !== null) {
-        await rankings.remove(item.id);
-      }
-    }
-
+    await rankings.replace(top3);
     await renderTop3();
   }
 
@@ -500,11 +530,12 @@
   function showComboFloat() {
     if (combo <= 1) return;
 
-    comboFloatEl.textContent = `COMBO ×${combo}`;
     comboFloatEl.style.fontSize = `${Math.min(64, 22 + combo * 6)}px`;
-    comboFloatEl.classList.remove("comboShow");
+
+    // 先清掉上一輪顯示狀態並強制 reflow，確保連續 Combo 也會重新播放動畫。
+    comboToast.hide();
     void comboFloatEl.offsetWidth;
-    comboFloatEl.classList.add("comboShow");
+    comboToast.show(`COMBO ×${combo}`);
   }
 
   /* ===============================
@@ -1207,7 +1238,9 @@
   btnRefresh.addEventListener("click", refreshBoardOnce);
 
   soundOnEl.addEventListener("change", () => {
-    if (soundOnEl.checked) {
+    soundPreference.set(soundOnEl.checked);
+
+    if (soundPreference.get()) {
       playTone({ freq: 660, dur: 0.08, type: "triangle", gain: 0.06, slide: 1.2 });
     }
   });
