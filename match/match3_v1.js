@@ -921,34 +921,15 @@
      Moves / Hint / Shuffle
   =============================== */
   function findAnyMove() {
-    for (let r = 0; r < SIZE; r += 1) {
-      for (let c = 0; c < SIZE; c += 1) {
-        const dirs = [[0, 1], [1, 0]];
+    return SlowlyGridSwapSearch.findFirst(grid, {
+      isImmediate({ aCell, bCell }) {
+        return aCell.sp === "b" || bCell.sp === "b";
+      },
 
-        for (const [dr, dc] of dirs) {
-          const rr = r + dr;
-          const cc = c + dc;
-          if (!inBounds(rr, cc)) continue;
-
-          const a = grid[r][c];
-          const b = grid[rr][cc];
-
-          if (a.sp === "b" || b.sp === "b") {
-            return [{ r, c }, { r: rr, c: cc }];
-          }
-
-          swapCells({ r, c }, { r: rr, c: cc });
-          const matches = findAllMatches();
-          swapCells({ r, c }, { r: rr, c: cc });
-
-          if (matches.groups.length > 0) {
-            return [{ r, c }, { r: rr, c: cc }];
-          }
-        }
+      testAfterSwap() {
+        return findAllMatches().groups.length > 0;
       }
-    }
-
-    return null;
+    });
   }
 
   function clearHints() {
