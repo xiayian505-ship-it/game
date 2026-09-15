@@ -71,7 +71,11 @@ h1{ margin:0; font-size: 20px; letter-spacing: .2px; }
   cursor:pointer;
   user-select:none;
 }
-.btn:active{ transform: translateY(1px); }
+/* 按壓行為交給 Slowly Basic Press；宿主只保留原本的 1px 下沉語意。 */
+.btn.slowly-press{
+  --slowly-press-scale: 1;
+  --slowly-press-y: 1px;
+}
 .btn[disabled]{ opacity:.45; cursor:not-allowed; }
 
 .toggle{
@@ -290,6 +294,9 @@ h1{ margin:0; font-size: 20px; letter-spacing: .2px; }
   color:#fff;
   z-index:9999;
   padding:24px;
+}
+.overlay.show{
+  display:flex;
 }
 .comboFloat{
   position:fixed;

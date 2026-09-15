@@ -25,7 +25,6 @@
 
   const SIZE = 8;
   const COLORS = 6;
-  const LEGACY_TOP3_KEY = "match33_match3_top3_v1";
 
   /* ===============================
      DOM
@@ -52,6 +51,11 @@
   const comboToast = SlowlyToast.create(comboFloatEl, {
     duration: 450,
     activeClass: "comboShow"
+  });
+
+  const bombToast = SlowlyToast.create(bombOverlayEl, {
+    duration: 3000,
+    activeClass: "show"
   });
 
   /* ===============================
@@ -274,32 +278,6 @@
     }).data;
   }
 
-  async function migrateLegacyTop3() {
-    const current = await rankings.all();
-    if (current.length > 0) return;
-
-    let legacy = [];
-
-    try {
-      const parsed = JSON.parse(localStorage.getItem(LEGACY_TOP3_KEY) || "[]");
-      legacy = Array.isArray(parsed) ? parsed : [];
-    } catch (error) {
-      console.warn("[Match3] 舊排行榜讀取失敗：", error);
-      return;
-    }
-
-    const topLegacy = takeTop3(sortRankings(legacy));
-
-    for (const item of topLegacy) {
-      await rankings.add({
-        score: Number(item.score) || 0,
-        timeMs: Math.max(0, Number(item.timeMs) || 0),
-        steps: Math.max(0, Number(item.steps) || 0),
-        at: Number(item.at) || now()
-      });
-    }
-  }
-
   async function getTop3() {
     const rows = await rankings.all();
     return takeTop3(sortRankings(rows));
@@ -518,11 +496,10 @@
     }
 
     bomShowing = true;
-    bombOverlayEl.style.display = "flex";
     sfxBomb();
+    bombToast.show("BOM！恭喜破萬");
 
     window.setTimeout(() => {
-      bombOverlayEl.style.display = "none";
       bomShowing = false;
     }, 3000);
   }
@@ -1166,7 +1143,7 @@
     nextBom = 10000;
     bomShowing = false;
     refreshUsed = false;
-    bombOverlayEl.style.display = "none";
+    bombToast.hide();
     resetTimer();
   }
 
@@ -1252,7 +1229,6 @@
     createDom();
 
     try {
-      await migrateLegacyTop3();
       await renderTop3();
     } catch (error) {
       console.error("[Match3] 排行榜初始化失敗：", error);

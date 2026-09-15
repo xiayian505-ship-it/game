@@ -8,13 +8,16 @@
   <!-- 慢慢的倉庫｜Responsive Base -->
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/ui/responsive.css" />
 
+  <!-- 慢慢的倉庫｜Effects / Press -->
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/feedback/press.css" />
+
   <!-- Match3 host style：遊戲外觀仍由宿主自己負責 -->
   <link rel="stylesheet" href="./match3_v1.css" />
 </head>
 
 <body>
-  <div id="bombOverlay" class="overlay">BOM！恭喜破萬</div>
-  <div id="comboFloat" class="comboFloat"></div>
+  <div id="bombOverlay" class="overlay" role="status" aria-live="polite">BOM！恭喜破萬</div>
+  <div id="comboFloat" class="comboFloat" role="status" aria-live="polite"></div>
 
   <div class="wrap">
     <header>
@@ -26,13 +29,13 @@
       </div>
 
       <div class="panel">
-        <button class="btn" id="btnStart">開始</button>
-        <button class="btn" id="btnPause" disabled>暫停</button>
-        <button class="btn" id="btnEnd" disabled>結束</button>
+        <button class="btn slowly-press" id="btnStart">開始</button>
+        <button class="btn slowly-press" id="btnPause" disabled>暫停</button>
+        <button class="btn slowly-press" id="btnEnd" disabled>結束</button>
 
-        <button class="btn" id="btnHint" disabled>提示</button>
-        <button class="btn" id="btnShuffle" disabled>洗牌</button>
-        <button class="btn" id="btnRefresh" disabled title="每局一次，保留分數/時間/步數">重整</button>
+        <button class="btn slowly-press" id="btnHint" disabled>提示</button>
+        <button class="btn slowly-press" id="btnShuffle" disabled>洗牌</button>
+        <button class="btn slowly-press" id="btnRefresh" disabled title="每局一次，保留分數/時間/步數">重整</button>
 
         <label class="toggle" title="第一次互動後才會啟動音訊（iOS 限制）">
           <input type="checkbox" id="soundOn" checked>
