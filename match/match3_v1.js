@@ -22,6 +22,7 @@
      - Preference
      - SlowlyAudioTone
      - SlowlyGridLineMatch
+     - SlowlyGridGravity
   ========================================================= */
 
   const SIZE = 8;
@@ -727,20 +728,15 @@
   }
 
   function dropDownAndFill() {
-    for (let c = 0; c < SIZE; c += 1) {
-      const stack = [];
+    SlowlyGridGravity.down(grid, {
+      isEmpty(cell) {
+        return !cell || (cell.c === null && cell.sp !== "b");
+      },
 
-      for (let r = SIZE - 1; r >= 0; r -= 1) {
-        const cell = grid[r][c];
-        if (cell.c !== null || cell.sp === "b") stack.push(cell);
+      createCell() {
+        return { c: randColor(), sp: null };
       }
-
-      for (let r = SIZE - 1; r >= 0; r -= 1) {
-        grid[r][c] = stack.length
-          ? stack.shift()
-          : { c: randColor(), sp: null };
-      }
-    }
+    });
   }
 
   function swapCells(a, b) {
