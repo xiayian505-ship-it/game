@@ -956,17 +956,6 @@
     playTone({ freq: 620, dur: 0.08, type: "triangle", gain: 0.06, slide: 1.12 });
   }
 
-  function applyBagToGrid(bag) {
-    let index = 0;
-
-    for (let r = 0; r < SIZE; r += 1) {
-      for (let c = 0; c < SIZE; c += 1) {
-        grid[r][c] = bag[index];
-        index += 1;
-      }
-    }
-  }
-
   function doShuffle(fromAuto = false) {
     if (gameState !== STATE.RUNNING || busy) return;
 
@@ -974,22 +963,17 @@
     clearHints();
     selected = null;
 
-    let bag = [];
-    for (let r = 0; r < SIZE; r += 1) {
-      for (let c = 0; c < SIZE; c += 1) {
-        bag.push(grid[r][c]);
+    SlowlyGridShuffleUntil.run(grid, {
+      maxAttempts: 5,
+
+      shuffle(values) {
+        return FictionShuffle.shuffle(values);
+      },
+
+      accept() {
+        return findAllMatches().groups.length === 0;
       }
-    }
-
-    bag = FictionShuffle.shuffle(bag);
-    applyBagToGrid(bag);
-
-    let guard = 0;
-    while (findAllMatches().groups.length > 0 && guard < 4) {
-      guard += 1;
-      bag = FictionShuffle.shuffle(bag);
-      applyBagToGrid(bag);
-    }
+    });
 
     sfxShuffle();
     render();
