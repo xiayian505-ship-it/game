@@ -145,7 +145,7 @@
   }
 
   function renderElapsedTime() {
-    timeEl.textContent = fmtHMS(syncElapsedTime());
+    timeEl.textContent = SlowlyElapsedFormat.formatHMS(syncElapsedTime());
   }
 
   /* ===============================
@@ -225,19 +225,6 @@
   const randColor = () => SlowlyRandom.int(0, COLORS - 1);
   const now = () => Date.now();
 
-  function pad2(n) {
-    return String(n).padStart(2, "0");
-  }
-
-  function fmtHMS(ms) {
-    const safeMs = Math.max(0, Number(ms) || 0);
-    const s = Math.floor(safeMs / 1000);
-    const hh = Math.floor(s / 3600);
-    const mm = Math.floor((s % 3600) / 60);
-    const ss = s % 60;
-    return `${pad2(hh)}:${pad2(mm)}:${pad2(ss)}`;
-  }
-
   function sleep(ms) {
     return new Promise(resolve => window.setTimeout(resolve, ms));
   }
@@ -308,7 +295,7 @@
       line.append(
         rank,
         document.createTextNode(
-          ` ｜ 分數：${item.score} ｜ 時間：${fmtHMS(item.timeMs)} ｜ 步數：${item.steps}`
+          ` ｜ 分數：${item.score} ｜ 時間：${SlowlyElapsedFormat.formatHMS(item.timeMs)} ｜ 步數：${item.steps}`
         )
       );
 
