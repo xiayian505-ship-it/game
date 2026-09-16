@@ -111,10 +111,10 @@
             <div class="setting-control">
               <select class="setting-select" id="gameMode" data-slowly-select aria-label="遊戲模式">
                 <option value="infinite">無限</option>
-                <option value="timed">倒數・3 分鐘</option>
-                <option value="moves">計步・30 步</option>
+                <option value="timed">計時・3 分鐘</option>
+                <option value="moves">步數・30 步</option>
               </select>
-              <div class="setting-note">無限模式道具不限次數；倒數與計步模式的六種道具每場各可使用一次。</div>
+              <div class="setting-note">無限模式道具不限次數；計時與步數模式的六種道具每場各可使用一次。</div>
             </div>
           </div>
         </div>
@@ -125,7 +125,36 @@
         <div class="how">
           <p>交換相鄰糖果連成 <b>3+</b> 即可消除。</p>
           <p><b>4 連</b>產生條紋糖；<b>5 連</b>產生彩球；<b>T / L</b> 產生包裝糖。</p>
-          <p>條紋糖會清除整列或整行；包裝糖清除 3×3；彩球清除指定顏色。</p>
+
+          <div class="special-guide" aria-label="特殊糖圖示說明">
+            <div class="special-guide-item special-guide-item--striped">
+              <div class="special-guide-icon-pair" aria-hidden="true">
+                <canvas class="special-guide-icon" id="guideSpecialStripedHIcon" width="44" height="44"></canvas>
+                <canvas class="special-guide-icon" id="guideSpecialStripedVIcon" width="44" height="44"></canvas>
+              </div>
+              <div class="special-guide-copy">
+                <b>條紋糖</b>
+                <span>依條紋方向清除整行或整列。</span>
+              </div>
+            </div>
+
+            <div class="special-guide-item">
+              <canvas class="special-guide-icon" id="guideSpecialWrappedIcon" width="44" height="44" aria-hidden="true"></canvas>
+              <div class="special-guide-copy">
+                <b>包裝糖</b>
+                <span>清除周圍 3×3 的糖果。</span>
+              </div>
+            </div>
+
+            <div class="special-guide-item">
+              <canvas class="special-guide-icon" id="guideSpecialColorIcon" width="44" height="44" aria-hidden="true"></canvas>
+              <div class="special-guide-copy">
+                <b>彩球</b>
+                <span>清除指定顏色的糖果。</span>
+              </div>
+            </div>
+          </div>
+
           <p>盤面無可走步時會自動洗牌。</p>
 
           <div class="tool-guide" aria-label="道具圖示說明">
@@ -178,8 +207,8 @@
             </div>
           </div>
           <p><b>無限</b>：不限時間、步數與道具次數。</p>
-          <p><b>倒數</b>：每場從 03:00 開始倒數至 00:00；六種道具每場各可使用一次。</p>
-          <p><b>計步</b>：每場 30 次有效交換；交換失敗與使用道具不扣步，六種道具每場各可使用一次。</p>
+          <p><b>計時</b>：每場從 03:00 開始倒數至 00:00；六種道具每場各可使用一次。</p>
+          <p><b>步數</b>：每場 30 次有效交換；交換失敗與使用道具不扣步，六種道具每場各可使用一次。</p>
           <p>三種模式各自保存本機 TOP 3；手動結束、時間到或步數用完都會結算。</p>
         </div>
       </section>
@@ -239,8 +268,8 @@
         <h2 class="section-title" id="rankTitle">排行榜</h2>
         <div class="rank-mode-tabs" role="tablist" aria-label="排行榜模式">
           <button class="rank-mode-tab" type="button" role="tab" aria-selected="true" data-rank-mode="infinite">無限</button>
-          <button class="rank-mode-tab" type="button" role="tab" aria-selected="false" data-rank-mode="timed">倒數</button>
-          <button class="rank-mode-tab" type="button" role="tab" aria-selected="false" data-rank-mode="moves">計步</button>
+          <button class="rank-mode-tab" type="button" role="tab" aria-selected="false" data-rank-mode="timed">計時</button>
+          <button class="rank-mode-tab" type="button" role="tab" aria-selected="false" data-rank-mode="moves">步數</button>
         </div>
         <div class="rankList" id="rankList"></div>
       </section>

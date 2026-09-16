@@ -11,7 +11,7 @@
      - 特殊糖觸發
      - 提示 / 無步判定
      - BOM / Combo / 計分
-     - 無限 / 3 分鐘倒數 / 30 步計步
+     - 無限 / 3 分鐘計時 / 30 步步數
      - 模式別道具次數與排行榜
 
      慢慢的倉庫接管：
@@ -35,8 +35,8 @@
 
   const GAME_MODE = Object.freeze({
     infinite: Object.freeze({ label: "無限", durationMs: null, moveLimit: null, limitedTools: false }),
-    timed: Object.freeze({ label: "倒數", durationMs: 3 * 60 * 1000, moveLimit: null, limitedTools: true }),
-    moves: Object.freeze({ label: "計步", durationMs: null, moveLimit: 30, limitedTools: true })
+    timed: Object.freeze({ label: "計時", durationMs: 3 * 60 * 1000, moveLimit: null, limitedTools: true }),
+    moves: Object.freeze({ label: "步數", durationMs: null, moveLimit: 30, limitedTools: true })
   });
 
   function normalizedGameMode(value) {
@@ -85,6 +85,11 @@
   const guideToolSwapIconCanvas = document.getElementById("guideToolSwapIcon");
   const guideToolRefreshIconCanvas = document.getElementById("guideToolRefreshIcon");
   const guideToolColorIconCanvas = document.getElementById("guideToolColorIcon");
+
+  const guideSpecialStripedHIconCanvas = document.getElementById("guideSpecialStripedHIcon");
+  const guideSpecialStripedVIconCanvas = document.getElementById("guideSpecialStripedVIcon");
+  const guideSpecialWrappedIconCanvas = document.getElementById("guideSpecialWrappedIcon");
+  const guideSpecialColorIconCanvas = document.getElementById("guideSpecialColorIcon");
 
   const soundOnEl = document.getElementById("soundOn");
   const volumeLevelEl = document.getElementById("volumeLevel");
@@ -154,13 +159,11 @@
     ctx.stroke();
   }
 
-  function drawDoubleArrowIcon(canvas, orientation = "horizontal", color = "#3f5553") {
-    const size = getToolIconSize(canvas?.parentElement);
-    const ctx = prepareToolIconCanvas(canvas, size);
+  function drawDoubleArrowSymbol(ctx, size, orientation = "horizontal", color = "#3f5553") {
     if (!ctx) return;
 
     const mid = size / 2;
-    const pad = 4.5;
+    const pad = size * 0.15;
     const arrowLen = size * 0.23;
     const stroke = Math.max(2.4, size * 0.11);
     ctx.strokeStyle = color;
@@ -182,6 +185,13 @@
     ctx.stroke();
     drawArrowHead(ctx, mid, pad, -Math.PI / 2, arrowLen);
     drawArrowHead(ctx, mid, size - pad, Math.PI / 2, arrowLen);
+  }
+
+  function drawDoubleArrowIcon(canvas, orientation = "horizontal", color = "#3f5553") {
+    const size = getToolIconSize(canvas?.parentElement);
+    const ctx = prepareToolIconCanvas(canvas, size);
+    if (!ctx) return;
+    drawDoubleArrowSymbol(ctx, size, orientation, color);
   }
 
   function drawRightLeftStackIcon(canvas, color = "#111111") {
@@ -268,12 +278,139 @@
     ctx.fill();
   }
 
-  function drawColorPaletteIcon(canvas) {
-    const size = getToolIconSize(canvas?.parentElement);
-    const ctx = prepareToolIconCanvas(canvas, size);
+  const SPECIAL_GUIDE_PALETTES = Object.freeze([
+    ["#c57b86", "#ad606d"],
+    ["#cd9765", "#b97840"],
+    ["#7fa8b8", "#628899"],
+    ["#91ab90", "#718e70"],
+    ["#a092b4", "#806f98"],
+    ["#d1c19d", "#b9a681"]
+  ]);
+
+
+  function prepareSpecialCanvas(canvas, logicalSize = 64, fixedCssSize = null) {
+    if (!canvas) return null;
+    const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+    canvas.width = Math.round(logicalSize * dpr);
+    canvas.height = Math.round(logicalSize * dpr);
+    canvas.style.width = fixedCssSize ? `${fixedCssSize}px` : "100%";
+    canvas.style.height = fixedCssSize ? `${fixedCssSize}px` : "100%";
+    const ctx = canvas.getContext("2d");
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, logicalSize, logicalSize);
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    return ctx;
+  }
+
+  function drawSpecialMark(ctx, kind, size) {
+    if (!ctx || !kind) return;
+
+    ctx.save();
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.shadowColor = "rgba(255,255,255,.28)";
+    ctx.shadowBlur = size * 0.08;
+
+    if (kind === "sh" || kind === "sv") {
+      // 特殊糖直接沿用下方「橫列 / 直列」道具的雙箭頭語言。
+      ctx.shadowColor = "rgba(255,255,255,.72)";
+      ctx.shadowBlur = size * 0.10;
+      drawDoubleArrowSymbol(
+        ctx,
+        size,
+        kind === "sh" ? "horizontal" : "vertical",
+        kind === "sh" ? "#6f93a4" : "#7f9a7d"
+      );
+
+      ctx.restore();
+      return;
+    }
+
+    if (kind === "w") {
+      ctx.strokeStyle = "rgba(255,255,255,.92)";
+      ctx.lineWidth = Math.max(3, size * 0.095);
+      ctx.beginPath();
+      ctx.moveTo(size * 0.5, size * 0.17);
+      ctx.lineTo(size * 0.5, size * 0.83);
+      ctx.moveTo(size * 0.17, size * 0.5);
+      ctx.lineTo(size * 0.83, size * 0.5);
+      ctx.stroke();
+
+      ctx.fillStyle = "rgba(255,255,255,.88)";
+      ctx.beginPath();
+      ctx.moveTo(size * 0.5, size * 0.37);
+      ctx.lineTo(size * 0.63, size * 0.5);
+      ctx.lineTo(size * 0.5, size * 0.63);
+      ctx.lineTo(size * 0.37, size * 0.5);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.restore();
+      return;
+    }
+
+    if (kind === "b") {
+      // 彩球直接沿用下方「同色」道具的六色花花符號。
+      ctx.shadowColor = "rgba(255,255,255,.58)";
+      ctx.shadowBlur = size * 0.07;
+      drawColorPaletteSymbol(ctx, size);
+    }
+
+    ctx.restore();
+  }
+
+  function drawSpecialCandyMark(canvas, kind) {
+    const logicalSize = 64;
+    const ctx = prepareSpecialCanvas(canvas, logicalSize);
+    if (!ctx) return;
+    drawSpecialMark(ctx, kind, logicalSize);
+  }
+
+  function drawSpecialGuideCandy(canvas, kind, colorIndex = 2) {
+    const size = 48;
+    const ctx = prepareSpecialCanvas(canvas, size, 44);
     if (!ctx) return;
 
-    // 六色花花糖果：做成彼此微重疊的花圈感，讓「同色全消」一眼看出是多色集合。
+    const [topColor, bottomColor] = SPECIAL_GUIDE_PALETTES[colorIndex % SPECIAL_GUIDE_PALETTES.length];
+    const radius = size * 0.23;
+    const x = size / 2;
+    const y = size / 2;
+    const fill = ctx.createLinearGradient(0, size * 0.12, 0, size * 0.88);
+    fill.addColorStop(0, topColor);
+    fill.addColorStop(1, bottomColor);
+
+    ctx.beginPath();
+    ctx.roundRect(size * 0.08, size * 0.08, size * 0.84, size * 0.84, radius);
+    ctx.fillStyle = fill;
+    ctx.fill();
+    ctx.strokeStyle = "rgba(8,14,20,.16)";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    const shine = ctx.createRadialGradient(size * 0.31, size * 0.27, 1, size * 0.31, size * 0.27, size * 0.3);
+    shine.addColorStop(0, "rgba(255,255,255,.42)");
+    shine.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.beginPath();
+    ctx.arc(size * 0.31, size * 0.27, size * 0.3, 0, Math.PI * 2);
+    ctx.fillStyle = shine;
+    ctx.fill();
+
+    drawSpecialMark(ctx, kind, size);
+  }
+
+  function renderSpecialGuideIcons() {
+    // 說明區與棋盤共用同一套特殊糖圖示；條紋糖同時展示橫列與直列兩種方向。
+    drawSpecialGuideCandy(guideSpecialStripedHIconCanvas, "sh", 2);
+    drawSpecialGuideCandy(guideSpecialStripedVIconCanvas, "sv", 3);
+    drawSpecialGuideCandy(guideSpecialWrappedIconCanvas, "w", 4);
+    drawSpecialGuideCandy(guideSpecialColorIconCanvas, "b", 1);
+  }
+
+  function drawColorPaletteSymbol(ctx, size) {
+    if (!ctx) return;
+
+    // 六色花花糖果：與「同色」道具共用，同時作為彩球的識別符號。
     const r = size * 0.145;
     const positions = [
       [size * 0.5,  size * 0.23, "#c88a92", "#b86b75"], // dusty rose
@@ -284,8 +421,10 @@
       [size * 0.32, size * 0.34, "#e4d6bd", "#cdbb9c"]  // oat
     ];
 
-    // 先畫一層柔霧底，讓重疊處更像一串花花糖果而不是散點。
-    const halo = ctx.createRadialGradient(size * 0.5, size * 0.46, size * 0.08, size * 0.5, size * 0.46, size * 0.34);
+    const halo = ctx.createRadialGradient(
+      size * 0.5, size * 0.46, size * 0.08,
+      size * 0.5, size * 0.46, size * 0.34
+    );
     halo.addColorStop(0, "rgba(255,255,255,.18)");
     halo.addColorStop(1, "rgba(255,255,255,0)");
     ctx.beginPath();
@@ -296,6 +435,13 @@
     for (const [x, y, topColor, bottomColor] of positions) {
       drawCandyCircle(ctx, x, y, r, topColor, bottomColor);
     }
+  }
+
+  function drawColorPaletteIcon(canvas) {
+    const size = getToolIconSize(canvas?.parentElement);
+    const ctx = prepareToolIconCanvas(canvas, size);
+    if (!ctx) return;
+    drawColorPaletteSymbol(ctx, size);
   }
 
   function drawPlaybackIcon(canvas, kind, color) {
@@ -365,6 +511,7 @@
     drawRepeatIcon(guideToolRefreshIconCanvas, "#8e7fa0");
     drawColorPaletteIcon(guideToolColorIconCanvas);
 
+    renderSpecialGuideIcons();
     renderControlIcons();
   }
 
@@ -465,6 +612,7 @@
   let domCells = [];
   let selected = null;
   let busy = false;
+  const pendingSpecialReveal = new Set();
 
   let score = 0;
   let combo = 0;
@@ -1292,30 +1440,26 @@
 
         const candy = document.createElement("div");
         candy.className = "candy";
-
-        if (cell.sp === "b") {
-          candy.classList.add("colorbomb");
-        } else {
-          candy.classList.add(`t${cell.c}`);
-          if (cell.sp === "sh") candy.classList.add("striped-h");
-          if (cell.sp === "sv") candy.classList.add("striped-v");
-          if (cell.sp === "w") candy.classList.add("wrapped");
-        }
+        candy.classList.add(`t${cell.c}`);
 
         if (cell.sp) {
-          const badge = document.createElement("div");
-          badge.className = "badge";
-          badge.textContent =
-            cell.sp === "sh" ? "—" :
-            cell.sp === "sv" ? "|" :
-            cell.sp === "w" ? "✚" :
-            cell.sp === "b" ? "★" : "";
-          candy.appendChild(badge);
+          const markCanvas = document.createElement("canvas");
+          markCanvas.className = "special-mark-canvas";
+          markCanvas.setAttribute("aria-hidden", "true");
+
+          if (pendingSpecialReveal.has(k(r, c))) {
+            markCanvas.classList.add("is-new-special");
+          }
+
+          candy.appendChild(markCanvas);
+          drawSpecialCandyMark(markCanvas, cell.sp);
         }
 
         el.appendChild(candy);
       }
     }
+
+    pendingSpecialReveal.clear();
 
     scoreEl.textContent = score;
     comboEl.textContent = combo;
@@ -1883,6 +2027,7 @@
           c: special.color,
           sp: special.sp
         };
+        pendingSpecialReveal.add(k(special.r, special.c));
       }
 
       score += clearedCount * 10 * combo;
@@ -1909,7 +2054,7 @@
 
   /* ===============================
      Tools
-     無限模式不限次數；倒數 / 計步模式每種道具每場一次。
+     無限模式不限次數；計時 / 步數模式每種道具每場一次。
   =============================== */
   const TARGET_TOOL_BUTTONS = Object.freeze({
     single: toolSingle,
@@ -1925,11 +2070,15 @@
   });
 
   function syncToolButtons() {
+    const hasActiveTool = Boolean(activeTool);
+
     for (const [name, button] of Object.entries(ALL_TOOL_BUTTONS)) {
       const selectable = Object.prototype.hasOwnProperty.call(TARGET_TOOL_BUTTONS, name);
       if (selectable) {
         button.setAttribute("aria-pressed", activeTool === name ? "true" : "false");
       }
+
+      button.classList.toggle("is-muted-by-tool", hasActiveTool && activeTool !== name);
       button.classList.toggle("is-used", modeHasLimitedTools() && toolUsed[name]);
     }
   }
@@ -2373,6 +2522,7 @@
     toolSwapFirst = null;
     toolUsed = createToolUsageState();
     selected = null;
+    pendingSpecialReveal.clear();
     syncToolButtons();
     resetBOMPresentation();
     resetTimer();
