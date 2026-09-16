@@ -8,6 +8,9 @@
   <!-- 慢慢的倉庫｜Responsive Base -->
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/ui/responsive.css" />
 
+  <!-- 慢慢的倉庫｜UI -->
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/ui/custom_select.css" />
+
   <!-- 慢慢的倉庫｜Effects -->
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/feedback/press.css" />
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/line/sweep_line.css" />
@@ -34,6 +37,14 @@
           class="view-tab"
           type="button"
           role="tab"
+          aria-selected="false"
+          aria-controls="settingsView"
+          data-view-target="settings"
+        >設定</button>
+        <button
+          class="view-tab"
+          type="button"
+          role="tab"
           aria-selected="true"
           aria-controls="gameView"
           data-view-target="game"
@@ -49,19 +60,49 @@
       </nav>
     </header>
 
+    <section id="settingsView" class="view-panel" role="tabpanel" data-view-panel="settings" hidden>
+      <section class="settings" aria-labelledby="settingsTitle">
+        <h2 class="section-title" id="settingsTitle">設定</h2>
+
+        <div class="settings-list">
+          <div class="setting-row">
+            <div class="setting-label">音效</div>
+            <label class="setting-check">
+              <input type="checkbox" id="soundOn" checked>
+              <span>啟用音效</span>
+            </label>
+          </div>
+
+          <div class="setting-row">
+            <label class="setting-label" for="volumeLevel">音量</label>
+            <select class="setting-select" id="volumeLevel" data-slowly-select aria-label="音量">
+              <option value="mute">靜音</option>
+              <option value="weak">弱</option>
+              <option value="medium">中</option>
+              <option value="strong">強</option>
+            </select>
+          </div>
+
+          <div class="setting-row">
+            <label class="setting-label" for="gameMode">遊戲模式</label>
+            <div class="setting-control">
+              <select class="setting-select" id="gameMode" data-slowly-select aria-label="遊戲模式">
+                <option value="infinite">無限</option>
+                <option value="timed" disabled>限時</option>
+                <option value="moves" disabled>限步</option>
+              </select>
+              <div class="setting-note">限時、限步模式先保留選項，規則之後再接。</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </section>
+
     <section id="gameView" class="view-panel" role="tabpanel" data-view-panel="game">
       <div class="controls" aria-label="遊戲控制">
         <button class="btn slowly-press" id="btnStart" type="button">開始</button>
         <button class="btn slowly-press" id="btnPause" type="button" disabled>暫停</button>
         <button class="btn slowly-press" id="btnEnd" type="button" disabled>結束</button>
-        <button class="btn slowly-press" id="btnHint" type="button" disabled>提示</button>
-        <button class="btn slowly-press" id="btnShuffle" type="button" disabled>洗牌</button>
-        <button class="btn slowly-press" id="btnRefresh" type="button" disabled title="每局一次，保留分數/時間/步數">重整</button>
-
-        <label class="toggle" title="第一次互動後才會啟動音訊（iOS 限制）">
-          <input type="checkbox" id="soundOn" checked>
-          <span>音效</span>
-        </label>
       </div>
 
       <div class="game-area">
@@ -88,6 +129,15 @@
         <div class="boardWrap">
           <div class="board" id="board" aria-label="match3 board"></div>
         </div>
+
+        <div class="tools" aria-label="遊戲道具">
+          <button class="tool-btn slowly-press" id="toolSingle" type="button" disabled aria-pressed="false" title="敲掉單顆" aria-label="敲掉單顆">單</button>
+          <button class="tool-btn slowly-press" id="toolRow" type="button" disabled aria-pressed="false" title="消除一行" aria-label="消除一行">橫</button>
+          <button class="tool-btn slowly-press" id="toolColumn" type="button" disabled aria-pressed="false" title="消除一列" aria-label="消除一列">列</button>
+          <button class="tool-btn slowly-press" id="toolSwap" type="button" disabled aria-pressed="false" title="交換任意兩顆" aria-label="交換任意兩顆">換</button>
+          <button class="tool-btn slowly-press" id="toolRefresh" type="button" disabled title="重整棋盤" aria-label="重整棋盤">整</button>
+          <button class="tool-btn slowly-press" id="toolColor" type="button" disabled aria-pressed="false" title="消除棋盤同色糖果" aria-label="消除棋盤同色糖果">色</button>
+        </div>
       </div>
     </section>
 
@@ -103,7 +153,8 @@
           <p>交換相鄰糖果連成 <b>3+</b> 即可消除。</p>
           <p><b>4 連</b>產生條紋糖；<b>5 連</b>產生彩球；<b>T / L</b> 產生包裝糖。</p>
           <p>條紋糖會清除整列或整行；包裝糖清除 3×3；彩球清除指定顏色。</p>
-          <p>盤面無可走步時會自動洗牌；重整每局可使用一次，並保留分數、時間與步數。</p>
+          <p>盤面無可走步時會自動洗牌；下方道具列提供單顆、橫列、直列、任意交換、重整與同色消除。</p>
+          <p>「整」每局可使用一次，並保留分數、時間與步數。</p>
           <p>排行榜只會在按下「結束」時寫入本機 TOP 3。</p>
         </div>
       </section>
@@ -124,7 +175,8 @@
   <script src="https://lib.stillnessbyslowly.com/data/random/random.js"></script>
   <script src="https://lib.stillnessbyslowly.com/fiction/Fiction_shuffle.js"></script>
 
-  <!-- 慢慢的倉庫｜Preference -->
+  <!-- 慢慢的倉庫｜UI / Preference -->
+  <script src="https://lib.stillnessbyslowly.com/ui/custom_select.js"></script>
   <script src="https://lib.stillnessbyslowly.com/state/preference/preference.js"></script>
   <script src="https://lib.stillnessbyslowly.com/ui/toast.js"></script>
 

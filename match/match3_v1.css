@@ -94,8 +94,7 @@ h1{
   scrollbar-width:thin;
 }
 
-.btn,
-.toggle{
+.btn{
   flex:0 0 auto;
   min-height:38px;
   border:1px solid var(--line);
@@ -122,18 +121,144 @@ h1{
   cursor:not-allowed;
 }
 
-.toggle{
-  display:flex;
-  align-items:center;
-  gap:7px;
-  padding:7px 10px;
+
+
+/* ===============================
+   道具列：棋盤下方固定六格，先用單字壓寬度
+================================ */
+.tools{
+  display:grid;
+  grid-template-columns:repeat(6,minmax(0,1fr));
+  gap:6px;
+  width:100%;
+  margin-top:12px;
+}
+
+.tool-btn{
+  appearance:none;
+  min-width:0;
+  min-height:38px;
+  padding:8px 4px;
+  border:1px solid var(--line);
+  border-radius:2px;
+  background:var(--card);
+  color:var(--ink);
+  font:inherit;
+  font-weight:700;
+  cursor:pointer;
   user-select:none;
 }
 
-.toggle input{
+.tool-btn.slowly-press{
+  --slowly-press-scale:1;
+  --slowly-press-y:1px;
+}
+
+.tool-btn[aria-pressed="true"]{
+  border-color:var(--ink);
+  background:var(--bg2);
+}
+
+.tool-btn[disabled]{
+  opacity:.42;
+  cursor:not-allowed;
+}
+
+/* ===============================
+   設定：先配合目前版型，之後外觀再一起重做
+================================ */
+#settingsView{
+  border-top:1px solid var(--line);
+  padding-top:20px;
+}
+
+.settings{
+  margin:0;
+  padding:0;
+}
+
+.settings-list{
+  border-top:1px solid var(--line);
+}
+
+.setting-row{
+  display:grid;
+  grid-template-columns:minmax(92px, .38fr) minmax(0, 1fr);
+  gap:18px;
+  align-items:center;
+  min-height:56px;
+  padding:10px 0;
+  border-bottom:1px solid var(--line);
+}
+
+.setting-label{
+  color:var(--ink);
+  font-size:.92rem;
+  font-weight:700;
+}
+
+.setting-check{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  width:max-content;
+  color:var(--muted);
+  font-size:.92rem;
+  user-select:none;
+}
+
+.setting-check input{
   width:16px;
   height:16px;
   margin:0;
+}
+
+.setting-control{
+  min-width:0;
+}
+
+.setting-select{
+  width:min(100%, 260px);
+  min-height:38px;
+  border:1px solid var(--line);
+  border-radius:2px;
+  background:var(--card);
+  color:var(--ink);
+  font:inherit;
+}
+
+/* Custom Select 負責互動；宿主只接目前版面的尺寸與配色。 */
+.setting-row .slowly-select{
+  width:min(100%, 260px);
+  --ss-bg:var(--card);
+  --ss-text:var(--ink);
+  --ss-border:var(--line);
+  --ss-hover:var(--bg1);
+  --ss-selected-bg:var(--bg2);
+  --ss-selected-text:var(--ink);
+  --ss-focus:var(--ink);
+}
+
+.setting-row .slowly-select-trigger{
+  min-height:38px;
+  padding:7px 9px;
+  border-radius:2px;
+}
+
+.setting-row .slowly-select-option{
+  padding:8px 9px;
+}
+
+.setting-select:disabled,
+.setting-select option:disabled{
+  color:var(--muted);
+}
+
+.setting-note{
+  margin-top:6px;
+  color:var(--muted);
+  font-size:.78rem;
+  line-height:1.5;
 }
 
 /* ===============================
@@ -582,6 +707,13 @@ h1{
     width:calc(100% + 20px);
     padding-inline:10px;
   }
+
+  .setting-row{
+    grid-template-columns:82px minmax(0,1fr);
+    gap:12px;
+  }
+
+  .setting-select{ width:100%; }
 
   .game-area{ padding:8px; }
 

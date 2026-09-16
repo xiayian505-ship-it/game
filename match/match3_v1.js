@@ -11,7 +11,7 @@
      - 特殊糖觸發
      - 提示 / 無步判定
      - BOM / Combo / 計分
-     - 每局一次重整
+     - 無限重整
 
      慢慢的倉庫接管：
      - Timer / Ticker
@@ -45,10 +45,15 @@
   const btnStart = document.getElementById("btnStart");
   const btnPause = document.getElementById("btnPause");
   const btnEnd = document.getElementById("btnEnd");
-  const btnHint = document.getElementById("btnHint");
-  const btnShuffle = document.getElementById("btnShuffle");
-  const btnRefresh = document.getElementById("btnRefresh");
+
+  const toolSingle = document.getElementById("toolSingle");
+  const toolRow = document.getElementById("toolRow");
+  const toolColumn = document.getElementById("toolColumn");
+  const toolSwap = document.getElementById("toolSwap");
+  const toolRefresh = document.getElementById("toolRefresh");
+  const toolColor = document.getElementById("toolColor");
   const soundOnEl = document.getElementById("soundOn");
+  const volumeLevelEl = document.getElementById("volumeLevel");
 
   const bombOverlayEl = document.getElementById("bombOverlay");
   const bombTextEl = document.getElementById("bombText");
@@ -78,14 +83,41 @@
 
   /* ===============================
      倉庫｜Preference
-     音效開關只由宿主 checkbox 顯示；偏好保存交給軍火庫。
+     設定頁只決定 Match3 自己的偏好語意；保存交給軍火庫。
   =============================== */
   const soundPreference = Preference.create({
     key: "SBS_match3_v1:sound",
     defaultValue: true
   });
 
-  soundOnEl.checked = soundPreference.get();
+  const volumePreference = Preference.create({
+    key: "SBS_match3_v1:volume",
+    defaultValue: "strong"
+  });
+
+
+  const VOLUME_MULTIPLIER = Object.freeze({
+    mute: 0,
+    weak: 0.4,
+    medium: 0.7,
+    strong: 1
+  });
+
+  function normalizedVolumeLevel(value) {
+    return Object.prototype.hasOwnProperty.call(VOLUME_MULTIPLIER, value)
+      ? value
+      : "strong";
+  }
+
+  function currentVolumeMultiplier() {
+    return VOLUME_MULTIPLIER[normalizedVolumeLevel(volumePreference.get())];
+  }
+
+  soundOnEl.checked = Boolean(soundPreference.get());
+  volumeLevelEl.value = normalizedVolumeLevel(volumePreference.get());
+
+  // 軍火庫 Custom Select：原生 select 保留作資料欄位，畫面交給 SlowlySelect。
+  SlowlySelect.createAll("select[data-slowly-select]");
 
   /* ===============================
      Model / State
@@ -111,7 +143,8 @@
   let gameState = STATE.IDLE;
   let nextBom = 10000;
   let bomShowing = false;
-  let refreshUsed = false;
+  let activeTool = null;
+  let toolSwapFirst = null;
 
   /* ===============================
      倉庫｜Timer / Ticker
@@ -175,11 +208,14 @@
   } = {}) {
     if (!soundPreference.get()) return;
 
+    const volumeMultiplier = currentVolumeMultiplier();
+    if (volumeMultiplier <= 0) return;
+
     SlowlyAudioTone.play({
       frequency: freq,
       duration: dur,
       type,
-      gain,
+      gain: gain * volumeMultiplier,
       slide
     }).catch(error => {
       console.warn("[Match3] 音效播放失敗：", error);
@@ -622,9 +658,12 @@
     btnPause.disabled = busy || !(running || paused);
     btnEnd.disabled = busy || !(running || paused);
 
-    btnHint.disabled = !interactive;
-    btnShuffle.disabled = !interactive;
-    btnRefresh.disabled = !interactive || refreshUsed;
+    toolSingle.disabled = !interactive;
+    toolRow.disabled = !interactive;
+    toolColumn.disabled = !interactive;
+    toolSwap.disabled = !interactive;
+    toolRefresh.disabled = !interactive;
+    toolColor.disabled = !interactive;
 
     btnPause.textContent = paused ? "繼續" : "暫停";
 
@@ -868,6 +907,11 @@
     const c = Number(el.dataset.c);
 
     if (grid[r][c].c === null && grid[r][c].sp !== "b") return;
+
+    if (activeTool) {
+      void useToolAt({ r, c });
+      return;
+    }
 
     if (!selected) {
       selected = { r, c };
@@ -1257,6 +1301,183 @@
   }
 
   /* ===============================
+     Tools
+     先只做操作本體，不加數量 / 金幣 / 冷卻。
+     「整」與其他道具一樣，在無限模式可重複使用。
+  =============================== */
+  const TOOL_BUTTONS = Object.freeze({
+    single: toolSingle,
+    row: toolRow,
+    column: toolColumn,
+    swap: toolSwap,
+    color: toolColor
+  });
+
+  function syncToolButtons() {
+    for (const [name, button] of Object.entries(TOOL_BUTTONS)) {
+      button.setAttribute("aria-pressed", activeTool === name ? "true" : "false");
+    }
+  }
+
+  function cancelTool() {
+    activeTool = null;
+    toolSwapFirst = null;
+    selected = null;
+    syncToolButtons();
+    render();
+  }
+
+  function toggleTool(name) {
+    if (gameState !== STATE.RUNNING || busy) return;
+
+    if (activeTool === name) {
+      cancelTool();
+      return;
+    }
+
+    activeTool = name;
+    toolSwapFirst = null;
+    selected = null;
+    clearHints();
+    syncToolButtons();
+    render();
+  }
+
+  async function settleToolClear(toClear) {
+    if (!toClear || toClear.size === 0) return false;
+
+    setBusy(true);
+    combo = 0;
+    clearHints();
+    selected = null;
+
+    let shouldEnsurePlayable = false;
+
+    try {
+      const clearPresentation = await playClearPresentation({
+        expandedSet: toClear
+      });
+      const cleared = applyClear(toClear, new Set());
+
+      if (cleared <= 0) {
+        clearPresentation();
+        return false;
+      }
+
+      sfxSpecial();
+      render();
+      clearPresentation();
+      await sleep(90);
+
+      dropDownAndFill();
+      render();
+      await sleep(120);
+
+      await resolveCascades();
+      shouldEnsurePlayable = true;
+      return true;
+    } finally {
+      setBusy(false);
+
+      if (shouldEnsurePlayable && gameState === STATE.RUNNING) {
+        ensurePlayableOrShuffle();
+      }
+    }
+  }
+
+  async function useFreeSwap(first, second) {
+    setBusy(true);
+    combo = 0;
+    clearHints();
+    selected = null;
+
+    let shouldEnsurePlayable = false;
+
+    try {
+      swapCells(first, second);
+      sfxSwap();
+      render();
+      await sleep(100);
+
+      const matches = findAllMatches();
+      if (matches.groups.length > 0) {
+        await resolveCascades(matches);
+      }
+
+      shouldEnsurePlayable = true;
+    } finally {
+      setBusy(false);
+
+      if (shouldEnsurePlayable && gameState === STATE.RUNNING) {
+        ensurePlayableOrShuffle();
+      }
+    }
+  }
+
+  async function useToolAt(pos) {
+    if (gameState !== STATE.RUNNING || busy || !activeTool) return;
+
+    const cell = grid[pos.r][pos.c];
+
+    if (activeTool === "swap") {
+      if (!toolSwapFirst) {
+        toolSwapFirst = { ...pos };
+        selected = { ...pos };
+        render();
+        return;
+      }
+
+      if (toolSwapFirst.r === pos.r && toolSwapFirst.c === pos.c) {
+        toolSwapFirst = null;
+        selected = null;
+        render();
+        return;
+      }
+
+      const first = toolSwapFirst;
+      activeTool = null;
+      toolSwapFirst = null;
+      selected = null;
+      syncToolButtons();
+      await useFreeSwap(first, pos);
+      return;
+    }
+
+    const toClear = new Set();
+
+    if (activeTool === "single") {
+      toClear.add(k(pos.r, pos.c));
+    } else if (activeTool === "row") {
+      for (let c = 0; c < SIZE; c += 1) {
+        toClear.add(k(pos.r, c));
+      }
+    } else if (activeTool === "column") {
+      for (let r = 0; r < SIZE; r += 1) {
+        toClear.add(k(r, pos.c));
+      }
+    } else if (activeTool === "color") {
+      if (cell.c === null) {
+        sfxBad();
+        return;
+      }
+
+      for (let r = 0; r < SIZE; r += 1) {
+        for (let c = 0; c < SIZE; c += 1) {
+          if (grid[r][c].c === cell.c) {
+            toClear.add(k(r, c));
+          }
+        }
+      }
+    }
+
+    activeTool = null;
+    toolSwapFirst = null;
+    selected = null;
+    syncToolButtons();
+    await settleToolClear(toClear);
+  }
+
+  /* ===============================
      Moves / Hint / Shuffle
   =============================== */
   function findAnyMove() {
@@ -1474,7 +1695,10 @@
     steps = 0;
     nextBom = 10000;
     bomShowing = false;
-    refreshUsed = false;
+    activeTool = null;
+    toolSwapFirst = null;
+    selected = null;
+    syncToolButtons();
     resetBOMPresentation();
     resetTimer();
   }
@@ -1503,6 +1727,7 @@
     if (busy) return;
 
     if (gameState === STATE.RUNNING) {
+      cancelTool();
       setState(STATE.PAUSED);
       pauseTimer();
     } else if (gameState === STATE.PAUSED) {
@@ -1516,6 +1741,9 @@
     if (gameState !== STATE.RUNNING && gameState !== STATE.PAUSED) return;
 
     stopTimer();
+    activeTool = null;
+    toolSwapFirst = null;
+    syncToolButtons();
     setState(STATE.ENDED);
     clearHints();
     selected = null;
@@ -1529,13 +1757,12 @@
     }
   }
 
-  function refreshBoardOnce() {
-    if (gameState !== STATE.RUNNING || busy || refreshUsed) return;
+  function refreshBoard() {
+    if (gameState !== STATE.RUNNING || busy) return;
 
     const shuffled = doShuffle(false);
     if (!shuffled) return;
 
-    refreshUsed = true;
     syncInteractionState();
   }
 
@@ -1554,9 +1781,12 @@
     void endGame();
   });
 
-  btnHint.addEventListener("click", showHint);
-  btnShuffle.addEventListener("click", () => doShuffle(false));
-  btnRefresh.addEventListener("click", refreshBoardOnce);
+  toolSingle.addEventListener("click", () => toggleTool("single"));
+  toolRow.addEventListener("click", () => toggleTool("row"));
+  toolColumn.addEventListener("click", () => toggleTool("column"));
+  toolSwap.addEventListener("click", () => toggleTool("swap"));
+  toolColor.addEventListener("click", () => toggleTool("color"));
+  toolRefresh.addEventListener("click", refreshBoard);
 
   soundOnEl.addEventListener("change", () => {
     soundPreference.set(soundOnEl.checked);
@@ -1565,6 +1795,17 @@
       playTone({ freq: 660, dur: 0.08, type: "triangle", gain: 0.06, slide: 1.2 });
     }
   });
+
+  volumeLevelEl.addEventListener("change", () => {
+    const level = normalizedVolumeLevel(volumeLevelEl.value);
+    volumePreference.set(level);
+    volumeLevelEl.value = level;
+
+    if (level !== "mute") {
+      playTone({ freq: 600, dur: 0.08, type: "triangle", gain: 0.06, slide: 1.08 });
+    }
+  });
+
 
   /* ===============================
      Init
