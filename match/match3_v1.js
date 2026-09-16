@@ -23,6 +23,10 @@
      - SlowlyAudioTone
      - SlowlyGridLineMatch
      - SlowlyGridGravity
+     - SlowlyGridSwapSearch / SlowlyGridShuffleUntil / SlowlyGridChainExpand
+     - SlowlySweepLine
+     - SlowlyAreaBurst
+     - Basic Tracking / Shine Text（CSS Effects）
   ========================================================= */
 
   const SIZE = 8;
@@ -36,7 +40,6 @@
   const comboEl = document.getElementById("combo");
   const timeEl = document.getElementById("time");
   const stepsEl = document.getElementById("steps");
-  const stateTextEl = document.getElementById("stateText");
   const rankListEl = document.getElementById("rankList");
 
   const btnStart = document.getElementById("btnStart");
@@ -48,16 +51,29 @@
   const soundOnEl = document.getElementById("soundOn");
 
   const bombOverlayEl = document.getElementById("bombOverlay");
+  const bombTextEl = document.getElementById("bombText");
   const comboFloatEl = document.getElementById("comboFloat");
+
+  // 同一支 HTML 內切換「遊戲 / 排行榜」；只切畫面，不改遊戲狀態。
+  const viewTabs = document.querySelectorAll("[data-view-target]");
+  const viewPanels = document.querySelectorAll("[data-view-panel]");
+
+  function showView(viewName) {
+    viewTabs.forEach(tab => {
+      tab.setAttribute(
+        "aria-selected",
+        tab.dataset.viewTarget === viewName ? "true" : "false"
+      );
+    });
+
+    viewPanels.forEach(panel => {
+      panel.hidden = panel.dataset.viewPanel !== viewName;
+    });
+  }
 
   const comboToast = SlowlyToast.create(comboFloatEl, {
     duration: 450,
     activeClass: "comboShow"
-  });
-
-  const bombToast = SlowlyToast.create(bombOverlayEl, {
-    duration: 3000,
-    activeClass: "show"
   });
 
   /* ===============================
@@ -82,8 +98,8 @@
 
   let score = 0;
   let combo = 0;
+  let maxCombo = 0;
   let steps = 0;
-  let elapsedMs = 0;
 
   const STATE = {
     IDLE: "IDLE",
@@ -109,7 +125,6 @@
   });
 
   function resetTimer() {
-    elapsedMs = 0;
     gameTimer.reset();
     gameTicker.reset();
     renderElapsedTime();
@@ -140,8 +155,7 @@
   }
 
   function syncElapsedTime() {
-    elapsedMs = Math.max(0, Number(gameTimer.elapsed()) || 0);
-    return elapsedMs;
+    return Math.max(0, Number(gameTimer.elapsed()) || 0);
   }
 
   function renderElapsedTime() {
@@ -230,6 +244,263 @@
   }
 
   /* ===============================
+     Clear presentation
+     宿主只決定演出順序與 Match3 語意：
+     Sweep Line → 短停 → Area Burst → 再清除棋盤。
+  =============================== */
+  const CLEAR_BEAM_MS = 300;
+  const CLEAR_HOLD_MS = 120;
+  const CLEAR_BLOCK_MS = 220;
+  const SPECIAL_BLOCK_MS = 340;
+
+  const clearSweep = SlowlySweepLine.create(boardEl, {
+    duration: CLEAR_BEAM_MS,
+    size: 8,
+    length: "22%",
+    zIndex: 6
+  });
+
+  const clearBurst = SlowlyAreaBurst.create(boardEl, {
+    duration: CLEAR_BLOCK_MS,
+    zIndex: 6,
+    type: "block"
+  });
+
+  const NORMAL_SWEEP_STYLE = Object.freeze({
+    color: "rgba(255,244,218,.76)",
+    glow1: "rgba(255,248,232,.72)",
+    glow2: "rgba(255,226,184,.58)",
+    glow3: "rgba(198,146,88,.42)"
+  });
+
+  const SPECIAL_SWEEP_STYLE = Object.freeze({
+    size: 11,
+    color: "rgba(255,232,192,.82)",
+    glow1: "rgba(255,244,224,.78)",
+    glow2: "rgba(242,202,148,.66)",
+    glow3: "rgba(180,124,68,.48)"
+  });
+
+  const NORMAL_BURST_STYLE = Object.freeze({
+    fill: "rgba(255,255,255,.78)",
+    border: "rgba(255,255,255,.76)",
+    glow: "rgba(255,255,255,.95)",
+    innerGlow: "rgba(255,255,255,.8)",
+    blendMode: "screen"
+  });
+
+  const SPECIAL_BLOCK_STYLE = Object.freeze({
+    duration: SPECIAL_BLOCK_MS,
+    fill: "rgba(255,236,202,.88)",
+    glow: "rgba(255,255,255,1)",
+    innerGlow: "rgba(255,255,255,.95)"
+  });
+
+  function clearPresentationEffects() {
+    clearSweep.clear();
+    clearBurst.clear();
+    domCells.forEach(el => el.classList.remove("effect-target"));
+  }
+
+  function targetElements(positions) {
+    return positions
+      .filter(pos => inBounds(pos.r, pos.c))
+      .map(pos => domCells[k(pos.r, pos.c)])
+      .filter(Boolean);
+  }
+
+  function rowPositions(r) {
+    return Array.from({ length: SIZE }, (_, c) => ({ r, c }));
+  }
+
+  function columnPositions(c) {
+    return Array.from({ length: SIZE }, (_, r) => ({ r, c }));
+  }
+
+  function areaPositions(centerR, centerC, radius = 1) {
+    const positions = [];
+
+    for (let dr = -radius; dr <= radius; dr += 1) {
+      for (let dc = -radius; dc <= radius; dc += 1) {
+        const r = centerR + dr;
+        const c = centerC + dc;
+        if (inBounds(r, c)) positions.push({ r, c });
+      }
+    }
+
+    return positions;
+  }
+
+  function specialCellsIn(expandedSet) {
+    const specials = [];
+
+    for (const key of expandedSet) {
+      const r = Math.floor(key / SIZE);
+      const c = key % SIZE;
+      const cell = grid[r]?.[c];
+      if (cell?.sp) specials.push({ r, c, sp: cell.sp });
+    }
+
+    return specials;
+  }
+
+  function markTargetColor(targetColor, expandedSet) {
+    if (targetColor === null || targetColor === undefined) return;
+
+    for (const key of expandedSet) {
+      const r = Math.floor(key / SIZE);
+      const c = key % SIZE;
+      const cell = grid[r]?.[c];
+
+      if (cell && cell.sp !== "b" && cell.c === targetColor) {
+        domCells[k(r, c)]?.classList.add("effect-target");
+      }
+    }
+  }
+
+  function matchSweepEffects(matches) {
+    if (!matches?.groups) return [];
+
+    return matches.groups.map(group => ({
+      targets: targetElements(group.cells),
+      direction: group.type === "h" ? "horizontal" : "vertical"
+    }));
+  }
+
+  function specialSweepEffects(specials, forceBoardBlast) {
+    const effects = [];
+
+    for (const special of specials) {
+      if (special.sp === "sh") {
+        effects.push({
+          targets: targetElements(rowPositions(special.r)),
+          direction: "horizontal",
+          ...SPECIAL_SWEEP_STYLE
+        });
+      } else if (special.sp === "sv") {
+        effects.push({
+          targets: targetElements(columnPositions(special.c)),
+          direction: "vertical",
+          ...SPECIAL_SWEEP_STYLE
+        });
+      } else if (special.sp === "w") {
+        effects.push({
+          targets: targetElements(areaPositions(special.r, special.c, 1)),
+          directions: ["horizontal", "vertical"],
+          ...SPECIAL_SWEEP_STYLE
+        });
+      }
+    }
+
+    if (forceBoardBlast) {
+      effects.push({
+        targets: boardEl,
+        directions: ["horizontal", "vertical"],
+        ...SPECIAL_SWEEP_STYLE
+      });
+    }
+
+    return effects;
+  }
+
+  function matchBurstEffects(matches) {
+    if (!matches?.groups) return [];
+
+    return matches.groups.map(group => ({
+      targets: targetElements(group.cells),
+      type: "block",
+      duration: CLEAR_BLOCK_MS
+    }));
+  }
+
+  function specialBurstEffects(specials, forceBoardBlast) {
+    const effects = [];
+
+    for (const special of specials) {
+      if (special.sp === "sh") {
+        effects.push({
+          targets: targetElements(rowPositions(special.r)),
+          type: "block",
+          className: "match3-special-burst",
+          ...SPECIAL_BLOCK_STYLE
+        });
+      } else if (special.sp === "sv") {
+        effects.push({
+          targets: targetElements(columnPositions(special.c)),
+          type: "block",
+          className: "match3-special-burst",
+          ...SPECIAL_BLOCK_STYLE
+        });
+      } else if (special.sp === "w") {
+        effects.push({
+          targets: targetElements(areaPositions(special.r, special.c, 1)),
+          type: "radial",
+          duration: SPECIAL_BLOCK_MS
+        });
+      }
+    }
+
+    if (forceBoardBlast) {
+      effects.push({
+        targets: boardEl,
+        type: "radial",
+        duration: SPECIAL_BLOCK_MS,
+        radialCore: "rgba(255,255,255,1)",
+        radialMid: "rgba(255,229,180,.84)",
+        radialSoft: "rgba(255,255,255,.54)",
+        glow: "rgba(255,255,255,.98)"
+      });
+    }
+
+    return effects;
+  }
+
+  async function playClearPresentation({
+    matches = null,
+    expandedSet,
+    targetColor = null,
+    forceBoardBlast = false
+  }) {
+    clearPresentationEffects();
+
+    const specials = specialCellsIn(expandedSet);
+    if (specials.some(special => special.sp === "b")) {
+      forceBoardBlast = true;
+    }
+
+    // 第一拍：Sweep Line 只負責方向掃線；Match3 決定哪些範圍要掃。
+    const sweepEffects = [
+      ...matchSweepEffects(matches),
+      ...specialSweepEffects(specials, forceBoardBlast)
+    ];
+
+    // 彩球先讓目標色醒來；這仍是 Match3 自己的語意。
+    markTargetColor(targetColor, expandedSet);
+
+    await clearSweep.play(sweepEffects, {
+      duration: CLEAR_BEAM_MS,
+      ...NORMAL_SWEEP_STYLE
+    });
+
+    // 兩顆零件彼此不知道對方；中間節奏由宿主自己決定。
+    await sleep(CLEAR_HOLD_MS);
+
+    // 第二拍：Area Burst 只負責實際消除範圍爆亮。
+    const burstEffects = [
+      ...matchBurstEffects(matches),
+      ...specialBurstEffects(specials, forceBoardBlast)
+    ];
+
+    await clearBurst.play(burstEffects, {
+      duration: CLEAR_BLOCK_MS,
+      type: "block",
+      ...NORMAL_BURST_STYLE
+    });
+
+    return () => clearPresentationEffects();
+  }
+
+  /* ===============================
      倉庫｜FictionStorage / FictionSort / FictionPaginate
      排名規則仍是 Match3 專屬：
      分數高 → 時間短 → 步數少。
@@ -292,13 +563,33 @@
       const rank = document.createElement("b");
       rank.textContent = `TOP ${index + 1}`;
 
-      line.append(
-        rank,
-        document.createTextNode(
-          ` ｜ 分數：${item.score} ｜ 時間：${SlowlyElapsedFormat.formatHMS(item.timeMs)} ｜ 步數：${item.steps}`
-        )
-      );
+      const stats = document.createElement("div");
+      stats.className = "rankStats";
 
+      const statEntries = [
+        ["分數", item.score ?? "—"],
+        ["步數", item.steps ?? "—"],
+        ["連鎖", item.maxCombo ?? "—"],
+        ["時間", SlowlyElapsedFormat.formatHMS(item.timeMs)]
+      ];
+
+      for (const [label, value] of statEntries) {
+        const stat = document.createElement("span");
+        stat.className = "rankStat";
+
+        const labelEl = document.createElement("span");
+        labelEl.className = "rankStatLabel";
+        labelEl.textContent = label;
+
+        const valueEl = document.createElement("strong");
+        valueEl.className = "rankStatValue";
+        valueEl.textContent = value;
+
+        stat.append(labelEl, valueEl);
+        stats.appendChild(stat);
+      }
+
+      line.append(rank, stats);
       rankListEl.appendChild(line);
     });
   }
@@ -306,8 +597,9 @@
   async function saveCurrentToTop3() {
     await rankings.add({
       score,
-      timeMs: syncElapsedTime(),
       steps,
+      maxCombo,
+      timeMs: syncElapsedTime(),
       at: now()
     });
 
@@ -321,30 +613,34 @@
   /* ===============================
      State UI
   =============================== */
-  function setState(next) {
-    gameState = next;
-
+  function syncInteractionState() {
     const running = gameState === STATE.RUNNING;
     const paused = gameState === STATE.PAUSED;
+    const interactive = running && !busy;
 
-    btnStart.disabled = !(gameState === STATE.IDLE || gameState === STATE.ENDED);
-    btnPause.disabled = !(running || paused);
-    btnEnd.disabled = !(running || paused);
+    btnStart.disabled = busy || !(gameState === STATE.IDLE || gameState === STATE.ENDED);
+    btnPause.disabled = busy || !(running || paused);
+    btnEnd.disabled = busy || !(running || paused);
 
-    btnHint.disabled = !running;
-    btnShuffle.disabled = !running;
-    btnRefresh.disabled = !running || refreshUsed;
+    btnHint.disabled = !interactive;
+    btnShuffle.disabled = !interactive;
+    btnRefresh.disabled = !interactive || refreshUsed;
 
     btnPause.textContent = paused ? "繼續" : "暫停";
-    stateTextEl.textContent =
-      gameState === STATE.IDLE ? "待開始" :
-      gameState === STATE.RUNNING ? "進行中" :
-      gameState === STATE.PAUSED ? "暫停中" :
-      "已結束";
 
     for (const el of domCells) {
-      el.classList.toggle("locked", !running);
+      el.classList.toggle("locked", !interactive);
     }
+  }
+
+  function setBusy(next) {
+    busy = Boolean(next);
+    syncInteractionState();
+  }
+
+  function setState(next) {
+    gameState = next;
+    syncInteractionState();
   }
 
   /* ===============================
@@ -477,20 +773,77 @@
   /* ===============================
      BOM / Combo
   =============================== */
-  function checkBOM() {
-    if (bomShowing || score < nextBom) return;
+  const BOM_SPREAD_MS = 620;
+  const BOM_SHINE_MS = 620;
+  const BOM_SHINE_GAP_MS = 140;
+  const BOM_HOLD_MS = 160;
+  const BOM_FADE_MS = 420;
+
+  function resetBOMPresentation() {
+    bombOverlayEl.classList.remove("is-active", "is-leaving");
+    bombTextEl.classList.remove("is-active", "slowly-shine-text");
+    bombOverlayEl.setAttribute("aria-hidden", "true");
+  }
+
+  async function playBOMPresentation() {
+    const timerWasRunning = gameState === STATE.RUNNING;
+    const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+
+    bomShowing = true;
+    sfxBomb();
+
+    if (timerWasRunning) pauseTimer();
+
+    try {
+      resetBOMPresentation();
+      bombTextEl.textContent = "BOM！";
+      bombOverlayEl.setAttribute("aria-hidden", "false");
+
+      // 第一拍：BOM 出現，Tracking 把字距往外撐開。
+      bombOverlayEl.classList.add("is-active");
+      void bombOverlayEl.offsetWidth;
+      bombTextEl.classList.add("is-active");
+      await sleep(reducedMotion ? 30 : BOM_SPREAD_MS);
+
+      // 第二拍：Shine Text 每次只播一輪，重啟三次，中間留一點空拍。
+      if (!reducedMotion) {
+        for (let pass = 0; pass < 3; pass += 1) {
+          bombTextEl.classList.remove("slowly-shine-text");
+          void bombTextEl.offsetWidth;
+          bombTextEl.classList.add("slowly-shine-text");
+          await sleep(BOM_SHINE_MS);
+          bombTextEl.classList.remove("slowly-shine-text");
+
+          if (pass < 2) {
+            await sleep(BOM_SHINE_GAP_MS);
+          }
+        }
+      }
+
+      await sleep(reducedMotion ? 30 : BOM_HOLD_MS);
+
+      // 最後整個 BOM 舞台淡掉，露回原本棋盤。
+      bombOverlayEl.classList.add("is-leaving");
+      await sleep(reducedMotion ? 30 : BOM_FADE_MS);
+    } finally {
+      resetBOMPresentation();
+      bomShowing = false;
+
+      if (timerWasRunning && gameState === STATE.RUNNING) {
+        resumeTimer();
+      }
+    }
+  }
+
+  async function checkBOM() {
+    if (bomShowing || score < nextBom) return false;
 
     while (score >= nextBom) {
       nextBom += 10000;
     }
 
-    bomShowing = true;
-    sfxBomb();
-    bombToast.show("BOM！恭喜破萬");
-
-    window.setTimeout(() => {
-      bomShowing = false;
-    }, 3000);
+    await playBOMPresentation();
+    return true;
   }
 
   function showComboFloat() {
@@ -696,10 +1049,6 @@
       const c = key % SIZE;
 
       if (grid[r][c].c !== null || grid[r][c].sp === "b") {
-        const el = domCells[k(r, c)];
-        const candy = el.querySelector(".candy");
-        if (candy) candy.classList.add("pop");
-
         grid[r][c] = { c: null, sp: null };
         count += 1;
       }
@@ -743,18 +1092,24 @@
     toClear.add(k(bombPos.r, bombPos.c));
 
     const expanded = await expandByTriggeredSpecials(toClear);
+    const clearPresentation = await playClearPresentation({
+      expandedSet: expanded,
+      targetColor,
+      forceBoardBlast: true
+    });
     const cleared = applyClear(expanded, new Set());
     score += cleared * 14 * Math.max(1, combo);
 
     sfxBomb();
     render();
-    await sleep(160);
+    clearPresentation();
+    await sleep(100);
 
     dropDownAndFill();
     render();
     await sleep(120);
 
-    checkBOM();
+    await checkBOM();
   }
 
   async function triggerClearAll() {
@@ -767,56 +1122,50 @@
     }
 
     const expanded = await expandByTriggeredSpecials(toClear);
+    const clearPresentation = await playClearPresentation({
+      expandedSet: expanded,
+      forceBoardBlast: true
+    });
     const cleared = applyClear(expanded, new Set());
     score += cleared * 16 * Math.max(1, combo);
 
     sfxBomb();
     render();
-    await sleep(180);
+    clearPresentation();
+    await sleep(110);
 
     dropDownAndFill();
     render();
     await sleep(140);
 
-    checkBOM();
+    await checkBOM();
   }
 
-  async function triggerSpecialAt(pos) {
-    const originalCell = { ...grid[pos.r][pos.c] };
-    if (!originalCell.sp) return;
+  async function triggerSpecialPair(a, b) {
+    const first = { ...grid[a.r][a.c] };
+    const second = { ...grid[b.r][b.c] };
 
-    if (originalCell.sp === "b") {
-      await triggerClearAll();
-      return;
-    }
-
-    const seed = new Set([k(pos.r, pos.c)]);
-    const expanded = await expandByTriggeredSpecials(seed);
-    let count = 0;
-
-    for (const key of expanded) {
-      const r = Math.floor(key / SIZE);
-      const c = key % SIZE;
-
-      if (grid[r][c].c !== null || grid[r][c].sp === "b") {
-        grid[r][c] = { c: null, sp: null };
-        count += 1;
-      }
-    }
+    const seeds = new Set([k(a.r, a.c), k(b.r, b.c)]);
+    const expanded = await expandByTriggeredSpecials(seeds);
+    const clearPresentation = await playClearPresentation({
+      expandedSet: expanded
+    });
+    const count = applyClear(expanded, new Set());
 
     score += count * 12 * Math.max(1, combo);
 
-    if (originalCell.sp === "w") sfxBomb();
+    if (first.sp === "w" || second.sp === "w") sfxBomb();
     else sfxSpecial();
 
     render();
-    await sleep(140);
+    clearPresentation();
+    await sleep(100);
 
     dropDownAndFill();
     render();
     await sleep(120);
 
-    checkBOM();
+    await checkBOM();
   }
 
   async function maybeTriggerSpecialOnSwap(a, b) {
@@ -839,8 +1188,7 @@
     }
 
     if (ca.sp && cb.sp && ca.sp !== "b" && cb.sp !== "b") {
-      await triggerSpecialAt(a);
-      await triggerSpecialAt(b);
+      await triggerSpecialPair(a, b);
       return true;
     }
 
@@ -856,6 +1204,7 @@
 
     while (matches.groups.length > 0) {
       combo += 1;
+      maxCombo = Math.max(maxCombo, combo);
       showComboFloat();
 
       const specialsToCreate = computeSpecialCreations(matches);
@@ -872,6 +1221,10 @@
         specialsToCreate.map(special => k(special.r, special.c))
       );
 
+      const clearPresentation = await playClearPresentation({
+        matches,
+        expandedSet: expanded
+      });
       const clearedCount = applyClear(expanded, preserve);
 
       for (const special of specialsToCreate) {
@@ -887,12 +1240,17 @@
       if (specialsToCreate.length > 0) sfxSpecial();
 
       render();
-      checkBOM();
-      await sleep(120);
+      clearPresentation();
+      await checkBOM();
+      await sleep(90);
 
       dropDownAndFill();
       render();
-      await sleep(120);
+
+      // 連鎖越深，讓新盤面多停一拍再進下一輪消除。
+      // Combo 1 = 120ms、2 = 200ms、3 = 280ms……最高 440ms。
+      const cascadeSettleMs = Math.min(440, 120 + (combo - 1) * 80);
+      await sleep(cascadeSettleMs);
 
       matches = findAllMatches();
     }
@@ -904,7 +1262,11 @@
   function findAnyMove() {
     return SlowlyGridSwapSearch.findFirst(grid, {
       isImmediate({ aCell, bCell }) {
-        return aCell.sp === "b" || bCell.sp === "b";
+        return (
+          aCell.sp === "b" ||
+          bCell.sp === "b" ||
+          Boolean(aCell.sp && bCell.sp)
+        );
       },
 
       testAfterSwap() {
@@ -937,36 +1299,87 @@
     playTone({ freq: 620, dur: 0.08, type: "triangle", gain: 0.06, slide: 1.12 });
   }
 
-  function doShuffle(fromAuto = false) {
-    if (gameState !== STATE.RUNNING || busy) return;
+  function restoreGridLayout(snapshot) {
+    for (let r = 0; r < SIZE; r += 1) {
+      for (let c = 0; c < SIZE; c += 1) {
+        grid[r][c] = snapshot[r][c];
+      }
+    }
+  }
 
-    busy = true;
+  function shuffleGridUntilPlayable(maxAttempts = 200) {
+    const snapshot = grid.map(row => row.slice());
+
+    try {
+      const result = SlowlyGridShuffleUntil.run(grid, {
+        maxAttempts,
+
+        shuffle(values) {
+          return FictionShuffle.shuffle(values);
+        },
+
+        accept() {
+          return (
+            findAllMatches().groups.length === 0 &&
+            Boolean(findAnyMove())
+          );
+        }
+      });
+
+      if (!result.accepted) {
+        restoreGridLayout(snapshot);
+      }
+
+      return result.accepted;
+    } catch (error) {
+      restoreGridLayout(snapshot);
+      throw error;
+    }
+  }
+
+  function doShuffle(fromAuto = false) {
+    if (gameState !== STATE.RUNNING || busy) return false;
+
+    setBusy(true);
     clearHints();
     selected = null;
 
-    SlowlyGridShuffleUntil.run(grid, {
-      maxAttempts: 5,
+    let accepted = false;
 
-      shuffle(values) {
-        return FictionShuffle.shuffle(values);
-      },
+    try {
+      accepted = shuffleGridUntilPlayable();
 
-      accept() {
-        return findAllMatches().groups.length === 0;
+      // 理論上 200 次已非常充裕；自動救盤若仍失敗，改建一盤可玩的新盤面，
+      // 不留下「有現成三連」或「完全無步」的盤。
+      if (!accepted && fromAuto) {
+        accepted = buildRandomPlayableBoard();
       }
-    });
+    } catch (error) {
+      setBusy(false);
+      throw error;
+    }
+
+    if (!accepted) {
+      console.warn("[Match3] 洗牌在上限內找不到合法盤面，已還原原盤。");
+      render();
+      setBusy(false);
+      return false;
+    }
 
     sfxShuffle();
     render();
 
     window.setTimeout(() => {
-      busy = false;
-      ensurePlayableOrShuffle();
+      setBusy(false);
       if (fromAuto) showHint();
     }, 120);
+
+    return true;
   }
 
   function ensurePlayableOrShuffle() {
+    if (gameState !== STATE.RUNNING || busy) return;
+
     if (!findAnyMove()) {
       doShuffle(true);
     }
@@ -978,61 +1391,91 @@
   async function trySwap(a, b) {
     if (gameState !== STATE.RUNNING || busy) return;
 
-    busy = true;
+    setBusy(true);
+    let shouldEnsurePlayable = false;
 
-    swapCells(a, b);
-    render();
-    sfxSwap();
+    try {
+      // Combo 只屬於這一次玩家操作造成的 cascade；新操作先歸零，
+      // 避免上一手殘留倍率污染彩球或特殊糖直觸發計分。
+      combo = 0;
 
-    const specialTriggered = await maybeTriggerSpecialOnSwap(a, b);
-
-    if (specialTriggered) {
-      steps += 1;
-      render();
-      await resolveCascades();
-      busy = false;
-      ensurePlayableOrShuffle();
-      return;
-    }
-
-    const matches = findAllMatches();
-
-    if (matches.groups.length === 0) {
       swapCells(a, b);
       render();
-      sfxBad();
-      busy = false;
-      return;
+      sfxSwap();
+
+      const specialTriggered = await maybeTriggerSpecialOnSwap(a, b);
+
+      if (specialTriggered) {
+        steps += 1;
+        render();
+        await resolveCascades();
+        shouldEnsurePlayable = true;
+        return;
+      }
+
+      const matches = findAllMatches();
+
+      if (matches.groups.length === 0) {
+        swapCells(a, b);
+        render();
+        sfxBad();
+        return;
+      }
+
+      steps += 1;
+      render();
+
+      await resolveCascades(matches);
+      shouldEnsurePlayable = true;
+    } finally {
+      setBusy(false);
+
+      if (shouldEnsurePlayable && gameState === STATE.RUNNING) {
+        ensurePlayableOrShuffle();
+      }
     }
-
-    steps += 1;
-    render();
-
-    await resolveCascades(matches);
-    busy = false;
-    ensurePlayableOrShuffle();
   }
 
   /* ===============================
      Controls
   =============================== */
+  function buildRandomPlayableBoard(maxAttempts = 200) {
+    for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+      makeEmptyGrid();
+      fillRandomNoMatches();
+
+      if (
+        findAllMatches().groups.length === 0 &&
+        findAnyMove()
+      ) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   function newBoard() {
-    makeEmptyGrid();
-    fillRandomNoMatches();
+    const built = buildRandomPlayableBoard();
+
+    if (!built) {
+      console.warn("[Match3] 初始盤面在上限內找不到可走步，保留最後一盤。");
+    }
+
     selected = null;
     busy = false;
     render();
-    ensurePlayableOrShuffle();
   }
 
   function resetGameValues() {
     score = 0;
     combo = 0;
+    maxCombo = 0;
     steps = 0;
     nextBom = 10000;
     bomShowing = false;
     refreshUsed = false;
-    bombToast.hide();
+    resetBOMPresentation();
     resetTimer();
   }
 
@@ -1043,6 +1486,7 @@
   }
 
   function startGame() {
+    if (busy) return;
     if (gameState !== STATE.IDLE && gameState !== STATE.ENDED) return;
 
     if (gameState === STATE.ENDED) {
@@ -1056,6 +1500,8 @@
   }
 
   function togglePause() {
+    if (busy) return;
+
     if (gameState === STATE.RUNNING) {
       setState(STATE.PAUSED);
       pauseTimer();
@@ -1066,6 +1512,7 @@
   }
 
   async function endGame() {
+    if (busy) return;
     if (gameState !== STATE.RUNNING && gameState !== STATE.PAUSED) return;
 
     stopTimer();
@@ -1083,16 +1530,24 @@
   }
 
   function refreshBoardOnce() {
-    if (gameState !== STATE.RUNNING || refreshUsed) return;
+    if (gameState !== STATE.RUNNING || busy || refreshUsed) return;
+
+    const shuffled = doShuffle(false);
+    if (!shuffled) return;
 
     refreshUsed = true;
-    btnRefresh.disabled = true;
-    doShuffle(false);
+    syncInteractionState();
   }
 
   /* ===============================
      Wire
   =============================== */
+  viewTabs.forEach(tab => {
+    tab.addEventListener("click", () => {
+      showView(tab.dataset.viewTarget);
+    });
+  });
+
   btnStart.addEventListener("click", startGame);
   btnPause.addEventListener("click", togglePause);
   btnEnd.addEventListener("click", () => {

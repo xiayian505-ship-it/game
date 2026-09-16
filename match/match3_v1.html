@@ -8,98 +8,107 @@
   <!-- 慢慢的倉庫｜Responsive Base -->
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/ui/responsive.css" />
 
-  <!-- 慢慢的倉庫｜Effects / Press -->
+  <!-- 慢慢的倉庫｜Effects -->
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/feedback/press.css" />
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/line/sweep_line.css" />
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/light/area_burst.css" />
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/typography/tracking.css" />
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/typography/shine_text.css" />
 
   <!-- Match3 host style：遊戲外觀仍由宿主自己負責 -->
   <link rel="stylesheet" href="./match3_v1.css" />
 </head>
 
 <body>
-  <div id="bombOverlay" class="overlay" role="status" aria-live="polite">BOM！恭喜破萬</div>
+  <div id="bombOverlay" class="bomOverlay" role="status" aria-live="polite" aria-hidden="true">
+    <div id="bombText" class="bomText slowly-tracking">BOM！</div>
+  </div>
   <div id="comboFloat" class="comboFloat" role="status" aria-live="polite"></div>
 
-  <div class="wrap">
-    <header>
-      <div class="titlebox">
-        <h1>無限消消樂</h1>
-        <div class="sub">
-          交換相鄰糖果連成 <b>3+</b> 消除。<b>4連</b>→條紋｜<b>5連</b>→彩球｜<b>T/L</b>→包裝
-        </div>
-      </div>
+  <main class="wrap">
+    <header class="page-head">
+      <h1>無限消消樂</h1>
 
-      <div class="panel">
-        <button class="btn slowly-press" id="btnStart">開始</button>
-        <button class="btn slowly-press" id="btnPause" disabled>暫停</button>
-        <button class="btn slowly-press" id="btnEnd" disabled>結束</button>
+      <nav class="view-tabs" role="tablist" aria-label="遊戲頁面">
+        <button
+          class="view-tab"
+          type="button"
+          role="tab"
+          aria-selected="true"
+          aria-controls="gameView"
+          data-view-target="game"
+        >遊戲</button>
+        <button
+          class="view-tab"
+          type="button"
+          role="tab"
+          aria-selected="false"
+          aria-controls="rankingView"
+          data-view-target="ranking"
+        >排行榜</button>
+      </nav>
+    </header>
 
-        <button class="btn slowly-press" id="btnHint" disabled>提示</button>
-        <button class="btn slowly-press" id="btnShuffle" disabled>洗牌</button>
-        <button class="btn slowly-press" id="btnRefresh" disabled title="每局一次，保留分數/時間/步數">重整</button>
+    <section id="gameView" class="view-panel" role="tabpanel" data-view-panel="game">
+      <div class="controls" aria-label="遊戲控制">
+        <button class="btn slowly-press" id="btnStart" type="button">開始</button>
+        <button class="btn slowly-press" id="btnPause" type="button" disabled>暫停</button>
+        <button class="btn slowly-press" id="btnEnd" type="button" disabled>結束</button>
+        <button class="btn slowly-press" id="btnHint" type="button" disabled>提示</button>
+        <button class="btn slowly-press" id="btnShuffle" type="button" disabled>洗牌</button>
+        <button class="btn slowly-press" id="btnRefresh" type="button" disabled title="每局一次，保留分數/時間/步數">重整</button>
 
         <label class="toggle" title="第一次互動後才會啟動音訊（iOS 限制）">
           <input type="checkbox" id="soundOn" checked>
-          音效
+          <span>音效</span>
         </label>
       </div>
-    </header>
 
-    <div class="hud">
-      <div class="card">
-        <div class="metric">
-          <div class="label">分數</div>
-          <div class="value" id="score">0</div>
-        </div>
-        <div class="mini">連鎖越多分越高</div>
-      </div>
-
-      <div class="card">
-        <div class="metric">
-          <div class="label">連鎖</div>
-          <div class="value" id="combo">0</div>
-        </div>
-        <div class="mini">連續消除累加</div>
-      </div>
-
-      <div class="card">
-        <div class="metric">
-          <div class="label">時間 / 步數</div>
-          <div class="value"><span id="time">00:00:00</span> / <span id="steps">0</span></div>
-        </div>
-        <div class="mini" id="stateText">待開始</div>
-      </div>
-    </div>
-
-    <div class="main">
-      <div class="boardWrap">
-        <div class="board" id="board" aria-label="match3 board"></div>
-      </div>
-
-      <div class="side">
-        <div class="card">
-          <div class="how">
-            <b>特殊糖</b><br/>
-            ・條紋：清整列/整行<br/>
-            ・包裝：爆炸清 3×3<br/>
-            ・彩球：清掉指定顏色全部<br/>
-            ・無步時自動洗牌
+      <div class="game-area">
+        <div class="hud" aria-label="遊戲資訊">
+          <div class="stat">
+            <span class="stat-label">分數</span>
+            <strong class="stat-value" id="score">0</strong>
+          </div>
+          <div class="stat">
+            <span class="stat-label">步數</span>
+            <strong class="stat-value" id="steps">0</strong>
+          </div>
+          <div class="stat">
+            <span class="stat-label">連鎖</span>
+            <strong class="stat-value" id="combo">0</strong>
+          </div>
+          <div class="stat">
+            <span class="stat-label">時間</span>
+            <strong class="stat-value" id="time">00:00:00</strong>
           </div>
         </div>
 
-        <div class="card">
-          <div class="how">
-            <b>排行榜（本機）</b><br/>
-            只有按「結束」才會寫入 TOP3
-          </div>
+
+        <div class="boardWrap">
+          <div class="board" id="board" aria-label="match3 board"></div>
         </div>
       </div>
-    </div>
-
-    <section class="rank">
-      <div class="rankTitle">TOP 3（本機）</div>
-      <div class="rankList" id="rankList"></div>
     </section>
-  </div>
+
+    <section id="rankingView" class="view-panel" role="tabpanel" data-view-panel="ranking" hidden>
+      <section class="rank" aria-labelledby="rankTitle">
+        <h2 class="section-title" id="rankTitle">排行榜</h2>
+        <div class="rankList" id="rankList"></div>
+      </section>
+
+      <section class="instructions" aria-labelledby="instructionsTitle">
+        <h2 class="section-title" id="instructionsTitle">遊戲說明</h2>
+        <div class="how">
+          <p>交換相鄰糖果連成 <b>3+</b> 即可消除。</p>
+          <p><b>4 連</b>產生條紋糖；<b>5 連</b>產生彩球；<b>T / L</b> 產生包裝糖。</p>
+          <p>條紋糖會清除整列或整行；包裝糖清除 3×3；彩球清除指定顏色。</p>
+          <p>盤面無可走步時會自動洗牌；重整每局可使用一次，並保留分數、時間與步數。</p>
+          <p>排行榜只會在按下「結束」時寫入本機 TOP 3。</p>
+        </div>
+      </section>
+    </section>
+  </main>
 
   <!-- 慢慢的倉庫｜Time -->
   <script src="https://lib.stillnessbyslowly.com/date/timer/timer.js"></script>
@@ -125,6 +134,10 @@
   <script src="https://lib.stillnessbyslowly.com/audio/gain/gain.js"></script>
   <script src="https://lib.stillnessbyslowly.com/audio/gain/envelope.js"></script>
   <script src="https://lib.stillnessbyslowly.com/audio/tone/tone.js"></script>
+
+  <!-- 慢慢的倉庫｜Effects -->
+  <script src="https://lib.stillnessbyslowly.com/effects/line/sweep_line.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/effects/light/area_burst.js"></script>
 
   <!-- 慢慢的倉庫｜Game / Grid -->
   <script src="https://lib.stillnessbyslowly.com/game/grid/line_match.js"></script>
