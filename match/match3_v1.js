@@ -27,7 +27,7 @@
      - SlowlyGridSwapSearch / SlowlyGridShuffleUntil / SlowlyGridChainExpand
      - SlowlySweepLine
      - SlowlyAreaBurst
-     - Basic Tracking / Shine Text（CSS Effects）
+     - Shine Text（CSS Effects）
   ========================================================= */
 
   const SIZE = 8;
@@ -74,7 +74,10 @@
 
   const bombOverlayEl = document.getElementById("bombOverlay");
   const bombTextEl = document.getElementById("bombText");
+  const bombTitleTextEl = document.getElementById("bombTitleText");
+  const bombMilestoneTextEl = document.getElementById("bombMilestoneText");
   const comboFloatEl = document.getElementById("comboFloat");
+  const comboShineTextEl = document.getElementById("comboShineText");
 
   // 同一支 HTML 內切換「遊戲 / 排行榜」；只切畫面，不改遊戲狀態。
   const viewTabs = document.querySelectorAll("[data-view-target]");
@@ -92,11 +95,6 @@
       panel.hidden = panel.dataset.viewPanel !== viewName;
     });
   }
-
-  const comboToast = SlowlyToast.create(comboFloatEl, {
-    duration: 450,
-    activeClass: "comboShow"
-  });
 
   /* ===============================
      倉庫｜Preference
@@ -268,49 +266,157 @@
     });
   }
 
+  /* ===============================
+     倉庫｜Piano-like SFX
+     沿用 Slowly Piano 的組法：
+     Note Frequency → Oscillator → Gain → Envelope。
+
+     這不是錄音取樣，而是軍火庫的合成鋼琴鍵感；
+     Match3 只決定要彈哪個音、多久放開。
+  =============================== */
+  const PIANO_ATTACK_SECONDS = 0.02;
+  const PIANO_RELEASE_SECONDS = 0.10;
+
+  async function playPianoNotes(noteIds, {
+    gain = 0.12,
+    hold = 0.055,
+    release = PIANO_RELEASE_SECONDS,
+    spacing = 0,
+    type = "sine"
+  } = {}) {
+    if (!soundPreference.get()) return;
+
+    const volumeMultiplier = currentVolumeMultiplier();
+    if (volumeMultiplier <= 0) return;
+
+    const notes = Array.isArray(noteIds) ? noteIds : [noteIds];
+    if (!notes.length) return;
+
+    try {
+      await SlowlyAudioContext.resume();
+      const context = SlowlyAudioContext.get();
+      if (!context || context.state !== "running") return;
+
+      const baseStart = context.currentTime + 0.005;
+
+      notes.forEach((noteId, index) => {
+        const frequency = SlowlyAudioNoteFrequency.toFrequency(noteId);
+        const oscillator = SlowlyAudioOscillator.create(context, {
+          type,
+          frequency
+        });
+
+        const gainNode = SlowlyAudioGain.create(
+          context,
+          SlowlyAudioEnvelope.floor
+        );
+
+        SlowlyAudioOscillator.connect(oscillator, gainNode);
+        SlowlyAudioGain.connect(gainNode, context.destination);
+
+        const startAt = baseStart + Math.max(0, spacing) * index;
+        const releaseAt = startAt + PIANO_ATTACK_SECONDS + Math.max(0, hold);
+        const peak = Math.max(
+          SlowlyAudioEnvelope.floor,
+          gain * volumeMultiplier * (index === 0 ? 1 : 0.88)
+        );
+
+        SlowlyAudioEnvelope.attack(gainNode.gain, {
+          startAt,
+          duration: PIANO_ATTACK_SECONDS,
+          from: SlowlyAudioEnvelope.floor,
+          to: peak,
+          curve: "linear"
+        });
+
+        SlowlyAudioEnvelope.release(gainNode.gain, {
+          startAt: releaseAt,
+          duration: Math.max(0.04, release),
+          from: peak,
+          to: SlowlyAudioEnvelope.floor,
+          curve: "linear"
+        });
+
+        SlowlyAudioOscillator.start(oscillator, startAt);
+        SlowlyAudioOscillator.stop(
+          oscillator,
+          releaseAt + Math.max(0.04, release) + 0.02
+        );
+      });
+    } catch (error) {
+      console.warn("[Match3] 鋼琴音效播放失敗：", error);
+    }
+  }
+
   function sfxSwap() {
     playTone({ freq: 520, dur: 0.06, type: "triangle", gain: 0.10, slide: 0.8 });
   }
 
   function sfxBad() {
-    playTone({ freq: 180, dur: 0.10, type: "sawtooth", gain: 0.06, slide: 0.7 });
+    playTone({ freq: 180, dur: 0.10, type: "sine", gain: 0.05, slide: 0 });
+  }
+
+  // Combo 音階：Do → Re → Mi → Fa → Sol → La → Si → 高音 Do，
+  // 抵達高音 Do 後再沿原路下降；低音 Do 後重新往上。
+  // 改用音名，交給軍火庫 Note Frequency 算 Hz。
+  const COMBO_SCALE = Object.freeze([
+    "C4", // Do
+    "D4", // Re
+    "E4", // Mi
+    "F4", // Fa
+    "G4", // Sol
+    "A4", // La
+    "B4", // Si
+    "C5"  // 高音 Do
+  ]);
+
+  function comboNoteId(level) {
+    const topIndex = COMBO_SCALE.length - 1;
+    const period = topIndex * 2;
+    const step = Math.max(0, Number(level) - 1) % period;
+    const noteIndex = step <= topIndex ? step : period - step;
+    return COMBO_SCALE[noteIndex];
   }
 
   function sfxPop(n = 1) {
-    const base = 520 * (1 + Math.min(12, combo) * 0.035);
-
-    for (let i = 0; i < Math.min(6, n); i += 1) {
-      window.setTimeout(() => {
-        playTone({
-          freq: base * (1 + i * 0.12),
-          dur: 0.06,
-          type: "square",
-          gain: 0.07,
-          slide: 0.95
-        });
-      }, i * 18);
-    }
+    playPianoNotes(comboNoteId(combo), {
+      gain: Math.min(0.15, 0.10 + Math.min(6, n) * 0.006),
+      hold: 0.055,
+      release: 0.12,
+      type: "sine"
+    });
   }
 
   function sfxSpecial() {
-    playTone({ freq: 780, dur: 0.10, type: "triangle", gain: 0.10, slide: 1.6 });
-    window.setTimeout(() => {
-      playTone({ freq: 420, dur: 0.12, type: "sine", gain: 0.08, slide: 0.7 });
-    }, 25);
+    // 亮一點的上行純五度：乾淨、有「特殊球成立」的感覺，沒有滑音。
+    playPianoNotes(["G5", "D6"], {
+      gain: 0.105,
+      hold: 0.045,
+      release: 0.12,
+      spacing: 0.045,
+      type: "sine"
+    });
   }
 
   function sfxBomb() {
-    playTone({ freq: 120, dur: 0.18, type: "sawtooth", gain: 0.07, slide: 0.55 });
-    window.setTimeout(() => {
-      playTone({ freq: 220, dur: 0.10, type: "triangle", gain: 0.05, slide: 0.85 });
-    }, 30);
+    // 低音八度作為爆破提示；不用 sawtooth / slide，避免壞電器感。
+    playPianoNotes(["C3", "C4"], {
+      gain: 0.10,
+      hold: 0.045,
+      release: 0.16,
+      spacing: 0,
+      type: "sine"
+    });
   }
 
   function sfxShuffle() {
-    playTone({ freq: 360, dur: 0.10, type: "triangle", gain: 0.08, slide: 1.35 });
-    window.setTimeout(() => {
-      playTone({ freq: 540, dur: 0.08, type: "triangle", gain: 0.06, slide: 1.1 });
-    }, 60);
+    playPianoNotes(["D4", "A4"], {
+      gain: 0.09,
+      hold: 0.04,
+      release: 0.11,
+      spacing: 0.055,
+      type: "sine"
+    });
   }
 
   /* ===============================
@@ -920,13 +1026,21 @@
   const BOM_HOLD_MS = 160;
   const BOM_FADE_MS = 420;
 
+  let comboFloatAnimation = null;
+
+  function formatBOMMilestone(value) {
+    return `${Math.round(value / 1000)}K`;
+  }
+
   function resetBOMPresentation() {
     bombOverlayEl.classList.remove("is-active", "is-leaving");
-    bombTextEl.classList.remove("is-active", "slowly-shine-text");
+    bombTextEl.classList.remove("is-active");
+    bombTitleTextEl.classList.remove("slowly-shine-text");
+    bombMilestoneTextEl.classList.remove("slowly-shine-text");
     bombOverlayEl.setAttribute("aria-hidden", "true");
   }
 
-  async function playBOMPresentation() {
+  async function playBOMPresentation(milestone) {
     const timerWasRunning = gameState === STATE.RUNNING;
     const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
 
@@ -937,23 +1051,27 @@
 
     try {
       resetBOMPresentation();
-      bombTextEl.textContent = "BOM！";
+      bombTitleTextEl.textContent = "BOM！";
+      bombMilestoneTextEl.textContent = `${formatBOMMilestone(milestone)}！`;
       bombOverlayEl.setAttribute("aria-hidden", "false");
 
-      // 第一拍：BOM 出現，Tracking 把字距往外撐開。
+      // 第一拍：BOM + 里程碑一起出現；不再額外拉開字距。
       bombOverlayEl.classList.add("is-active");
       void bombOverlayEl.offsetWidth;
       bombTextEl.classList.add("is-active");
       await sleep(reducedMotion ? 30 : BOM_SPREAD_MS);
 
-      // 第二拍：Shine Text 每次只播一輪，重啟三次，中間留一點空拍。
+      // 第二拍：直接使用 Shine Text 預設漸層，只由宿主控制播放節奏。
       if (!reducedMotion) {
         for (let pass = 0; pass < 3; pass += 1) {
-          bombTextEl.classList.remove("slowly-shine-text");
-          void bombTextEl.offsetWidth;
-          bombTextEl.classList.add("slowly-shine-text");
+          bombTitleTextEl.classList.remove("slowly-shine-text");
+          bombMilestoneTextEl.classList.remove("slowly-shine-text");
+          void bombTitleTextEl.offsetWidth;
+          bombTitleTextEl.classList.add("slowly-shine-text");
+          bombMilestoneTextEl.classList.add("slowly-shine-text");
           await sleep(BOM_SHINE_MS);
-          bombTextEl.classList.remove("slowly-shine-text");
+          bombTitleTextEl.classList.remove("slowly-shine-text");
+          bombMilestoneTextEl.classList.remove("slowly-shine-text");
 
           if (pass < 2) {
             await sleep(BOM_SHINE_GAP_MS);
@@ -979,23 +1097,59 @@
   async function checkBOM() {
     if (bomShowing || score < nextBom) return false;
 
+    const crossedMilestones = [];
+
     while (score >= nextBom) {
+      crossedMilestones.push(nextBom);
       nextBom += 10000;
     }
 
-    await playBOMPresentation();
-    return true;
+    // 一次大連鎖跨過多個萬分門檻時，里程碑依序補播，不吞掉中間那一萬。
+    for (const milestone of crossedMilestones) {
+      await playBOMPresentation(milestone);
+    }
+
+    return crossedMilestones.length > 0;
   }
 
   function showComboFloat() {
     if (combo <= 1) return;
 
-    comboFloatEl.style.fontSize = `${Math.min(64, 22 + combo * 6)}px`;
+    const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
 
-    // 先清掉上一輪顯示狀態並強制 reflow，確保連續 Combo 也會重新播放動畫。
-    comboToast.hide();
-    void comboFloatEl.offsetWidth;
-    comboToast.show(`COMBO ×${combo}`);
+    comboFloatEl.style.fontSize = `${Math.min(64, 22 + combo * 6)}px`;
+    comboShineTextEl.textContent = `COMBO ×${combo}`;
+
+    // 每次 Combo 都從 Shine Text 預設漸層的第一幀重新開始。
+    comboShineTextEl.classList.remove("slowly-shine-text");
+    void comboShineTextEl.offsetWidth;
+    comboShineTextEl.classList.add("slowly-shine-text");
+
+    comboFloatAnimation?.cancel();
+
+    if (reducedMotion || typeof comboFloatEl.animate !== "function") {
+      comboFloatEl.classList.remove("comboShow");
+      void comboFloatEl.offsetWidth;
+      comboFloatEl.classList.add("comboShow");
+      window.setTimeout(() => comboFloatEl.classList.remove("comboShow"), 720);
+      return;
+    }
+
+    comboFloatAnimation = comboFloatEl.animate(
+      [
+        { opacity: 0, transform: "translate(-50%, -50%) scale(.85)" },
+        { opacity: 1, transform: "translate(-50%, -55%) scale(1.08)", offset: 0.38 },
+        { opacity: 1, transform: "translate(-50%, -58%) scale(1.04)", offset: 0.72 },
+        { opacity: 0, transform: "translate(-50%, -64%) scale(1.02)" }
+      ],
+      { duration: 720, easing: "ease-out" }
+    );
+
+    comboFloatAnimation.finished
+      .catch(() => undefined)
+      .finally(() => {
+        comboFloatAnimation = null;
+      });
   }
 
   /* ===============================

@@ -15,7 +15,6 @@
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/feedback/press.css" />
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/line/sweep_line.css" />
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/light/area_burst.css" />
-  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/typography/tracking.css" />
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/typography/shine_text.css" />
 
   <!-- Match3 host style：遊戲外觀仍由宿主自己負責 -->
@@ -24,9 +23,14 @@
 
 <body>
   <div id="bombOverlay" class="bomOverlay" role="status" aria-live="polite" aria-hidden="true">
-    <div id="bombText" class="bomText slowly-tracking">BOM！</div>
+    <div id="bombText" class="bomText">
+      <span id="bombTitleText" class="bomShineText slowly-shine-text">BOM！</span>
+      <span id="bombMilestoneText" class="bomShineText slowly-shine-text">10K！</span>
+    </div>
   </div>
-  <div id="comboFloat" class="comboFloat" role="status" aria-live="polite"></div>
+  <div id="comboFloat" class="comboFloat" role="status" aria-live="polite">
+    <span id="comboShineText" class="comboShineText"></span>
+  </div>
 
   <main class="wrap">
     <header class="page-head">
@@ -185,10 +189,10 @@
   <!-- 慢慢的倉庫｜UI / Preference -->
   <script src="https://lib.stillnessbyslowly.com/ui/custom_select.js"></script>
   <script src="https://lib.stillnessbyslowly.com/state/preference/preference.js"></script>
-  <script src="https://lib.stillnessbyslowly.com/ui/toast.js"></script>
 
   <!-- 慢慢的倉庫｜Audio -->
   <script src="https://lib.stillnessbyslowly.com/audio/context/audio_context.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/audio/pitch/note_frequency.js"></script>
   <script src="https://lib.stillnessbyslowly.com/audio/source/oscillator.js"></script>
   <script src="https://lib.stillnessbyslowly.com/audio/gain/gain.js"></script>
   <script src="https://lib.stillnessbyslowly.com/audio/gain/envelope.js"></script>
