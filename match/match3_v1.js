@@ -11,7 +11,7 @@
      - 特殊糖觸發
      - 提示 / 無步判定
      - BOM / Combo / 計分
-     - 無限 / 3 分鐘計時 / 30 步計步
+     - 無限 / 3 分鐘倒數 / 30 步計步
      - 模式別道具次數與排行榜
 
      慢慢的倉庫接管：
@@ -35,7 +35,7 @@
 
   const GAME_MODE = Object.freeze({
     infinite: Object.freeze({ label: "無限", durationMs: null, moveLimit: null, limitedTools: false }),
-    timed: Object.freeze({ label: "計時", durationMs: 3 * 60 * 1000, moveLimit: null, limitedTools: true }),
+    timed: Object.freeze({ label: "倒數", durationMs: 3 * 60 * 1000, moveLimit: null, limitedTools: true }),
     moves: Object.freeze({ label: "計步", durationMs: null, moveLimit: 30, limitedTools: true })
   });
 
@@ -48,6 +48,7 @@
   /* ===============================
      DOM
   =============================== */
+  const particleBgCanvas = document.getElementById("match3ParticleBg");
   const boardEl = document.getElementById("board");
   const scoreEl = document.getElementById("score");
   const comboEl = document.getElementById("combo");
@@ -77,6 +78,14 @@
   const toolSwapIconCanvas = document.getElementById("toolSwapIcon");
   const toolRefreshIconCanvas = document.getElementById("toolRefreshIcon");
   const toolColorIconCanvas = document.getElementById("toolColorIcon");
+
+  const guideToolSingleIconCanvas = document.getElementById("guideToolSingleIcon");
+  const guideToolRowIconCanvas = document.getElementById("guideToolRowIcon");
+  const guideToolColumnIconCanvas = document.getElementById("guideToolColumnIcon");
+  const guideToolSwapIconCanvas = document.getElementById("guideToolSwapIcon");
+  const guideToolRefreshIconCanvas = document.getElementById("guideToolRefreshIcon");
+  const guideToolColorIconCanvas = document.getElementById("guideToolColorIcon");
+
   const soundOnEl = document.getElementById("soundOn");
   const volumeLevelEl = document.getElementById("volumeLevel");
   const gameModeEl = document.getElementById("gameMode");
@@ -341,13 +350,21 @@
   }
 
   function renderToolIcons() {
-    // 六個道具中，五個使用各自的莫蘭迪色；同色消除顯示全糖果色。
-    drawRecordDotIcon(toolSingleIconCanvas, "#c4874d");                // sand
-    drawDoubleArrowIcon(toolRowIconCanvas, "horizontal", "#6f93a4"); // dusty blue
-    drawDoubleArrowIcon(toolColumnIconCanvas, "vertical", "#7f9a7d"); // sage
+    // 遊戲列與說明區共用同一套 Canvas 畫法，避免圖示與文字對不上。
+    drawRecordDotIcon(toolSingleIconCanvas, "#c4874d");                 // sand
+    drawDoubleArrowIcon(toolRowIconCanvas, "horizontal", "#6f93a4");   // dusty blue
+    drawDoubleArrowIcon(toolColumnIconCanvas, "vertical", "#7f9a7d");  // sage
     drawRightLeftStackIcon(toolSwapIconCanvas, "#b86b75");             // dusty rose
     drawRepeatIcon(toolRefreshIconCanvas, "#8e7fa0");                  // mauve
     drawColorPaletteIcon(toolColorIconCanvas);
+
+    drawRecordDotIcon(guideToolSingleIconCanvas, "#c4874d");
+    drawDoubleArrowIcon(guideToolRowIconCanvas, "horizontal", "#6f93a4");
+    drawDoubleArrowIcon(guideToolColumnIconCanvas, "vertical", "#7f9a7d");
+    drawRightLeftStackIcon(guideToolSwapIconCanvas, "#b86b75");
+    drawRepeatIcon(guideToolRefreshIconCanvas, "#8e7fa0");
+    drawColorPaletteIcon(guideToolColorIconCanvas);
+
     renderControlIcons();
   }
 
@@ -401,6 +418,44 @@
 
   // 軍火庫 Custom Select：原生 select 保留作資料欄位，畫面交給 SlowlySelect。
   SlowlySelect.createAll("select[data-slowly-select]");
+
+  /* ===============================
+     軍火庫｜Particle Network 背景
+     使用獨立 Canvas，不碰遊戲 / 道具 / 控制鍵的 Canvas。
+  =============================== */
+  let particleBackground = null;
+
+  function initParticleBackground() {
+    if (!particleBgCanvas) return;
+
+    if (!window.SlowlyParticleNetwork?.create) {
+      console.warn("[Match3] Particle Network 未載入，保留靜態星空備援。");
+      return;
+    }
+
+    try {
+      // 只把這一張背景 canvas 交給 Particle Network。
+      // 使用者提供的軍火庫 API 為 options object；宿主只調星空密度與淡度。
+      particleBackground = window.SlowlyParticleNetwork.create({
+        canvas: particleBgCanvas,
+        pointer: false,
+        mobileCount: 30,
+        maxCount: 72,
+        density: 22000,
+        linkDistance: 116,
+        friction: 0.982,
+        lineColor: "188,205,224",
+        lineAlpha: 0.13,
+        lineWidth: 0.5,
+        maxDpr: 2,
+        respectReducedMotion: true
+      });
+      particleBackground?.start?.();
+    } catch (error) {
+      console.warn("[Match3] Particle Network 初始化失敗，改用靜態星空：", error);
+      particleBackground = null;
+    }
+  }
 
   /* ===============================
      Model / State
@@ -490,7 +545,7 @@
   }
 
   function renderElapsedTime() {
-    timeLabelEl.textContent = activeGameMode === "timed" ? "剩餘" : "時間";
+    timeLabelEl.textContent = activeGameMode === "timed" ? "倒數" : "時間";
     timeEl.textContent = SlowlyElapsedFormat.formatHMS(displayTimeMs());
   }
 
@@ -1210,10 +1265,30 @@
           "selected",
           Boolean(selected) && selected.r === r && selected.c === c
         );
-        el.classList.remove("hint");
+        el.classList.remove(
+          "hint",
+          "slowly-glow",
+          "is-active",
+          "glow-t0",
+          "glow-t1",
+          "glow-t2",
+          "glow-t3",
+          "glow-t4",
+          "glow-t5",
+          "glow-bomb"
+        );
         el.innerHTML = "";
 
         if (cell.c === null && cell.sp !== "b") continue;
+
+        // 外部柔光交給軍火庫 Basic Glow；
+        // Glow 放在 cell，避免覆蓋 candy 自己的立體 box-shadow。
+        el.classList.add("slowly-glow", "is-active");
+        if (cell.sp === "b") {
+          el.classList.add("glow-bomb");
+        } else {
+          el.classList.add(`glow-t${cell.c}`);
+        }
 
         const candy = document.createElement("div");
         candy.className = "candy";
@@ -1834,7 +1909,7 @@
 
   /* ===============================
      Tools
-     無限模式不限次數；計時 / 計步模式每種道具每場一次。
+     無限模式不限次數；倒數 / 計步模式每種道具每場一次。
   =============================== */
   const TARGET_TOOL_BUTTONS = Object.freeze({
     single: toolSingle,
@@ -2484,6 +2559,7 @@
      Init
   =============================== */
   async function init() {
+    initParticleBackground();
     renderToolIcons();
     createDom();
     activeGameMode = selectedGameMode();
@@ -2502,7 +2578,9 @@
   void init();
 
   window.addEventListener("resize", renderToolIcons);
+
   window.addEventListener("beforeunload", () => {
+    particleBackground?.destroy?.();
     gameTicker.stop();
     gameTimer.stop();
   });

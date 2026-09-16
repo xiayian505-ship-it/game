@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/feedback/press.css" />
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/line/sweep_line.css" />
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/light/area_burst.css" />
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/light/glow.css" />
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/typography/shine_text.css" />
 
   <!-- Match3 host style：遊戲外觀仍由宿主自己負責 -->
@@ -22,6 +23,7 @@
 </head>
 
 <body>
+  <canvas id="match3ParticleBg" class="match3-particle-bg" aria-hidden="true"></canvas>
   <div id="bombOverlay" class="bomOverlay" role="status" aria-live="polite" aria-hidden="true">
     <div id="bombText" class="bomText">
       <span id="bombTitleText" class="bomShineText slowly-shine-text">BOM！</span>
@@ -101,10 +103,10 @@
             <div class="setting-control">
               <select class="setting-select" id="gameMode" data-slowly-select aria-label="遊戲模式">
                 <option value="infinite">無限</option>
-                <option value="timed">計時・3 分鐘</option>
+                <option value="timed">倒數・3 分鐘</option>
                 <option value="moves">計步・30 步</option>
               </select>
-              <div class="setting-note">無限模式道具不限次數；計時與計步模式的六種道具每場各可使用一次。</div>
+              <div class="setting-note">無限模式道具不限次數；倒數與計步模式的六種道具每場各可使用一次。</div>
             </div>
           </div>
         </div>
@@ -116,9 +118,59 @@
           <p>交換相鄰糖果連成 <b>3+</b> 即可消除。</p>
           <p><b>4 連</b>產生條紋糖；<b>5 連</b>產生彩球；<b>T / L</b> 產生包裝糖。</p>
           <p>條紋糖會清除整列或整行；包裝糖清除 3×3；彩球清除指定顏色。</p>
-          <p>盤面無可走步時會自動洗牌；下方道具列提供單顆、橫列、直列、任意交換、重整與同色消除。</p>
+          <p>盤面無可走步時會自動洗牌。</p>
+
+          <div class="tool-guide" aria-label="道具圖示說明">
+            <div class="tool-guide-item">
+              <canvas class="tool-guide-icon" id="guideToolSingleIcon" width="30" height="30" aria-hidden="true"></canvas>
+              <div class="tool-guide-copy">
+                <b>單顆</b>
+                <span>敲掉指定的一顆糖果。</span>
+              </div>
+            </div>
+
+            <div class="tool-guide-item">
+              <canvas class="tool-guide-icon" id="guideToolRowIcon" width="30" height="30" aria-hidden="true"></canvas>
+              <div class="tool-guide-copy">
+                <b>橫列</b>
+                <span>指定一顆糖果，消除它所在的一整行。</span>
+              </div>
+            </div>
+
+            <div class="tool-guide-item">
+              <canvas class="tool-guide-icon" id="guideToolColumnIcon" width="30" height="30" aria-hidden="true"></canvas>
+              <div class="tool-guide-copy">
+                <b>直列</b>
+                <span>指定一顆糖果，消除它所在的一整列。</span>
+              </div>
+            </div>
+
+            <div class="tool-guide-item">
+              <canvas class="tool-guide-icon" id="guideToolSwapIcon" width="30" height="30" aria-hidden="true"></canvas>
+              <div class="tool-guide-copy">
+                <b>交換</b>
+                <span>依序選兩顆糖果，直接交換位置。</span>
+              </div>
+            </div>
+
+            <div class="tool-guide-item">
+              <canvas class="tool-guide-icon" id="guideToolRefreshIcon" width="30" height="30" aria-hidden="true"></canvas>
+              <div class="tool-guide-copy">
+                <b>重整</b>
+                <span>重新洗牌目前棋盤。</span>
+              </div>
+            </div>
+
+            <div class="tool-guide-item">
+              <canvas class="tool-guide-icon" id="guideToolColorIcon" width="30" height="30" aria-hidden="true"></canvas>
+              <div class="tool-guide-copy">
+                <b>同色</b>
+                <span>點一顆糖果，消除棋盤上所有同色糖果。</span>
+              </div>
+            </div>
+          </div>
           <p><b>無限</b>：不限時間、步數與道具次數。</p>
-          <p><b>計時</b>：每場 3 分鐘；六種道具每場各可使用一次。</p>
+          <p><b>倒數</b>：每場從 03:00 開始倒數至 00:00；六種道具每場各可使用一次。</p>
           <p><b>計步</b>：每場 30 次有效交換；交換失敗與使用道具不扣步，六種道具每場各可使用一次。</p>
           <p>三種模式各自保存本機 TOP 3；手動結束、時間到或步數用完都會結算。</p>
         </div>
@@ -179,7 +231,7 @@
         <h2 class="section-title" id="rankTitle">排行榜</h2>
         <div class="rank-mode-tabs" role="tablist" aria-label="排行榜模式">
           <button class="rank-mode-tab" type="button" role="tab" aria-selected="true" data-rank-mode="infinite">無限</button>
-          <button class="rank-mode-tab" type="button" role="tab" aria-selected="false" data-rank-mode="timed">計時</button>
+          <button class="rank-mode-tab" type="button" role="tab" aria-selected="false" data-rank-mode="timed">倒數</button>
           <button class="rank-mode-tab" type="button" role="tab" aria-selected="false" data-rank-mode="moves">計步</button>
         </div>
         <div class="rankList" id="rankList"></div>
@@ -221,6 +273,7 @@
   <script src="https://lib.stillnessbyslowly.com/audio/tone/tone.js"></script>
 
   <!-- 慢慢的倉庫｜Effects -->
+  <script src="https://lib.stillnessbyslowly.com/effects/particle/particle_network.js"></script>
   <script src="https://lib.stillnessbyslowly.com/effects/line/sweep_line.js"></script>
   <script src="https://lib.stillnessbyslowly.com/effects/light/area_burst.js"></script>
 
