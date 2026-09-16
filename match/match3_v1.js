@@ -61,15 +61,20 @@
   const btnStart = document.getElementById("btnStart");
   const btnPause = document.getElementById("btnPause");
   const btnEnd = document.getElementById("btnEnd");
+  const btnStartIconCanvas = document.getElementById("btnStartIcon");
+  const btnPauseIconCanvas = document.getElementById("btnPauseIcon");
+  const btnEndIconCanvas = document.getElementById("btnEndIcon");
 
   const toolSingle = document.getElementById("toolSingle");
   const toolRow = document.getElementById("toolRow");
+  const toolSingleIconCanvas = document.getElementById("toolSingleIcon");
   const toolColumn = document.getElementById("toolColumn");
   const toolSwap = document.getElementById("toolSwap");
   const toolRefresh = document.getElementById("toolRefresh");
   const toolColor = document.getElementById("toolColor");
   const toolRowIconCanvas = document.getElementById("toolRowIcon");
   const toolColumnIconCanvas = document.getElementById("toolColumnIcon");
+  const toolSwapIconCanvas = document.getElementById("toolSwapIcon");
   const toolRefreshIconCanvas = document.getElementById("toolRefreshIcon");
   const toolColorIconCanvas = document.getElementById("toolColorIcon");
   const soundOnEl = document.getElementById("soundOn");
@@ -117,6 +122,29 @@
     ctx.stroke();
   }
 
+  function drawRecordDotIcon(canvas, color = "#c4874d") {
+    const size = getToolIconSize(canvas?.parentElement);
+    const ctx = prepareToolIconCanvas(canvas, size);
+    if (!ctx) return;
+
+    const r = size * 0.22;
+    const x = size / 2;
+    const y = size / 2;
+    const fill = ctx.createRadialGradient(x - r * 0.35, y - r * 0.35, r * 0.25, x, y, r);
+    fill.addColorStop(0, "rgba(255,255,255,.72)");
+    fill.addColorStop(0.2, color);
+    fill.addColorStop(1, color);
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fillStyle = fill;
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.strokeStyle = "rgba(63,85,83,.18)";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+
   function drawDoubleArrowIcon(canvas, orientation = "horizontal", color = "#3f5553") {
     const size = getToolIconSize(canvas?.parentElement);
     const ctx = prepareToolIconCanvas(canvas, size);
@@ -147,32 +175,69 @@
     drawArrowHead(ctx, mid, size - pad, Math.PI / 2, arrowLen);
   }
 
-  function drawRotateClockwiseIcon(canvas, color = "#111111") {
+  function drawRightLeftStackIcon(canvas, color = "#111111") {
     const size = getToolIconSize(canvas?.parentElement);
     const ctx = prepareToolIconCanvas(canvas, size);
     if (!ctx) return;
 
-    const stroke = Math.max(2.6, size * 0.12);
-    const r = size * 0.28;
-    const cx = size / 2;
-    const cy = size / 2;
-    const topStart = Math.PI * 0.88;
-    const topEnd = Math.PI * 1.92;
-    const bottomStart = Math.PI * 0.08;
-    const bottomEnd = Math.PI * 1.12;
+    const pad = size * 0.2;
+    const arrowLen = size * 0.2;
+    const stroke = Math.max(2.5, size * 0.12);
+    const topY = size * 0.36;
+    const bottomY = size * 0.66;
 
     ctx.strokeStyle = color;
     ctx.lineWidth = stroke;
 
     ctx.beginPath();
-    ctx.arc(cx, cy, r, topStart, topEnd, false);
+    ctx.moveTo(pad, topY);
+    ctx.lineTo(size - pad, topY);
     ctx.stroke();
-    drawArrowHead(ctx, cx + Math.cos(topEnd) * r, cy + Math.sin(topEnd) * r, topEnd + Math.PI / 2, size * 0.16, Math.PI / 4.6);
+    drawArrowHead(ctx, size - pad, topY, 0, arrowLen, Math.PI / 4.8);
 
     ctx.beginPath();
-    ctx.arc(cx, cy, r, bottomStart, bottomEnd, false);
+    ctx.moveTo(size - pad, bottomY);
+    ctx.lineTo(pad, bottomY);
     ctx.stroke();
-    drawArrowHead(ctx, cx + Math.cos(bottomEnd) * r, cy + Math.sin(bottomEnd) * r, bottomEnd + Math.PI / 2, size * 0.16, Math.PI / 4.6);
+    drawArrowHead(ctx, pad, bottomY, Math.PI, arrowLen, Math.PI / 4.8);
+  }
+
+  function drawRepeatIcon(canvas, color = "#111111") {
+    const size = getToolIconSize(canvas?.parentElement);
+    const ctx = prepareToolIconCanvas(canvas, size);
+    if (!ctx) return;
+
+    const pad = size * 0.23;
+    const left = pad;
+    const right = size - pad;
+    const top = size * 0.34;
+    const bottom = size * 0.68;
+    const radius = size * 0.12;
+    const arrowLen = size * 0.18;
+    const stroke = Math.max(2.4, size * 0.105);
+
+    ctx.strokeStyle = color;
+    ctx.lineWidth = stroke;
+
+    ctx.beginPath();
+    ctx.moveTo(left + radius, bottom);
+    ctx.lineTo(right - radius, bottom);
+    ctx.quadraticCurveTo(right, bottom, right, bottom - radius);
+    ctx.lineTo(right, top + radius);
+    ctx.quadraticCurveTo(right, top, right - radius, top);
+    ctx.lineTo(left + arrowLen, top);
+    ctx.stroke();
+    drawArrowHead(ctx, right, top, 0, arrowLen, Math.PI / 4.8);
+
+    ctx.beginPath();
+    ctx.moveTo(right - arrowLen, bottom);
+    ctx.lineTo(left + radius, bottom);
+    ctx.quadraticCurveTo(left, bottom, left, bottom - radius);
+    ctx.lineTo(left, top + radius);
+    ctx.quadraticCurveTo(left, top, left + radius, top);
+    ctx.lineTo(left + arrowLen, top);
+    ctx.stroke();
+    drawArrowHead(ctx, left, bottom, Math.PI, arrowLen, Math.PI / 4.8);
   }
 
   function drawCandyCircle(ctx, x, y, r, topColor, bottomColor) {
@@ -194,23 +259,96 @@
     ctx.fill();
   }
 
-  function drawColorTripletIcon(canvas) {
+  function drawColorPaletteIcon(canvas) {
     const size = getToolIconSize(canvas?.parentElement);
     const ctx = prepareToolIconCanvas(canvas, size);
     if (!ctx) return;
 
-    const r = size * 0.16;
-    drawCandyCircle(ctx, size * 0.34, size * 0.42, r, "#c88a92", "#b86b75");
-    drawCandyCircle(ctx, size * 0.66, size * 0.42, r, "#d9a777", "#c4874d");
-    drawCandyCircle(ctx, size * 0.5, size * 0.68, r, "#e4d6bd", "#cdbb9c");
+    // 六色花花糖果：做成彼此微重疊的花圈感，讓「同色全消」一眼看出是多色集合。
+    const r = size * 0.145;
+    const positions = [
+      [size * 0.5,  size * 0.23, "#c88a92", "#b86b75"], // dusty rose
+      [size * 0.68, size * 0.34, "#d9a777", "#c4874d"], // sand
+      [size * 0.68, size * 0.56, "#86a9b7", "#6f93a4"], // dusty blue
+      [size * 0.5,  size * 0.69, "#9db39b", "#7f9a7d"], // sage
+      [size * 0.32, size * 0.56, "#a89bb5", "#8e7fa0"], // mauve
+      [size * 0.32, size * 0.34, "#e4d6bd", "#cdbb9c"]  // oat
+    ];
+
+    // 先畫一層柔霧底，讓重疊處更像一串花花糖果而不是散點。
+    const halo = ctx.createRadialGradient(size * 0.5, size * 0.46, size * 0.08, size * 0.5, size * 0.46, size * 0.34);
+    halo.addColorStop(0, "rgba(255,255,255,.18)");
+    halo.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.beginPath();
+    ctx.arc(size * 0.5, size * 0.46, size * 0.34, 0, Math.PI * 2);
+    ctx.fillStyle = halo;
+    ctx.fill();
+
+    for (const [x, y, topColor, bottomColor] of positions) {
+      drawCandyCircle(ctx, x, y, r, topColor, bottomColor);
+    }
+  }
+
+  function drawPlaybackIcon(canvas, kind, color) {
+    const size = Math.max(24, Math.min(32, Math.round((canvas?.parentElement?.clientHeight || 40) - 10)));
+    const ctx = prepareToolIconCanvas(canvas, size);
+    if (!ctx) return;
+
+    ctx.fillStyle = color;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = Math.max(2.4, size * 0.11);
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+
+    if (kind === "play") {
+      const left = size * 0.35;
+      const top = size * 0.24;
+      const bottom = size * 0.76;
+      const right = size * 0.75;
+      ctx.beginPath();
+      ctx.moveTo(left, top);
+      ctx.lineTo(right, size / 2);
+      ctx.lineTo(left, bottom);
+      ctx.closePath();
+      ctx.fill();
+      return;
+    }
+
+    if (kind === "pause") {
+      const w = size * 0.16;
+      const h = size * 0.5;
+      const y = (size - h) / 2;
+      ctx.fillRect(size * 0.32, y, w, h);
+      ctx.fillRect(size * 0.52, y, w, h);
+      return;
+    }
+
+    if (kind === "stop") {
+      const side = size * 0.46;
+      const xy = (size - side) / 2;
+      ctx.fillRect(xy, xy, side, side);
+    }
+  }
+
+  function renderControlIcons() {
+    drawPlaybackIcon(btnStartIconCanvas, "play", "#7f9a7d");   // sage
+    drawPlaybackIcon(
+      btnPauseIconCanvas,
+      gameState === STATE.PAUSED ? "play" : "pause",
+      "#6f93a4"
+    );
+    drawPlaybackIcon(btnEndIconCanvas, "stop", "#b86b75");     // dusty rose
   }
 
   function renderToolIcons() {
-    // 直接沿用棋盤六色中的莫蘭迪色；emoji 道具先保持原樣。
+    // 六個道具中，五個使用各自的莫蘭迪色；同色消除顯示全糖果色。
+    drawRecordDotIcon(toolSingleIconCanvas, "#c4874d");                // sand
     drawDoubleArrowIcon(toolRowIconCanvas, "horizontal", "#6f93a4"); // dusty blue
-    drawDoubleArrowIcon(toolColumnIconCanvas, "vertical", "#7f9a7d");   // sage
-    drawRotateClockwiseIcon(toolRefreshIconCanvas, "#8e7fa0");          // mauve
-    drawColorTripletIcon(toolColorIconCanvas);
+    drawDoubleArrowIcon(toolColumnIconCanvas, "vertical", "#7f9a7d"); // sage
+    drawRightLeftStackIcon(toolSwapIconCanvas, "#b86b75");             // dusty rose
+    drawRepeatIcon(toolRefreshIconCanvas, "#8e7fa0");                  // mauve
+    drawColorPaletteIcon(toolColorIconCanvas);
+    renderControlIcons();
   }
 
   function showView(viewName) {
@@ -1003,7 +1141,10 @@
       button.disabled = !interactive || !canUseTool(name);
     }
 
-    btnPause.textContent = paused ? "繼續" : "暫停";
+    const pauseLabel = paused ? "繼續" : "暫停";
+    btnPause.setAttribute("aria-label", pauseLabel);
+    btnPause.title = pauseLabel;
+    renderControlIcons();
 
     for (const el of domCells) {
       el.classList.toggle("locked", !interactive);

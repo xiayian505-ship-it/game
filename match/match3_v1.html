@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>消消樂｜match3_v1</title>
+  <title>SBS | MATCH3_V1</title>
 
   <!-- 慢慢的倉庫｜Responsive Base -->
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/ui/responsive.css" />
@@ -34,34 +34,43 @@
 
   <main class="wrap">
     <header class="page-head">
-      <h1>消消樂</h1>
+      <h1 class="game-title">SBS | MATCH3_V1</h1>
 
-      <nav class="view-tabs" role="tablist" aria-label="遊戲頁面">
-        <button
-          class="view-tab"
-          type="button"
-          role="tab"
-          aria-selected="false"
-          aria-controls="settingsView"
-          data-view-target="settings"
-        >設定</button>
-        <button
-          class="view-tab"
-          type="button"
-          role="tab"
-          aria-selected="true"
-          aria-controls="gameView"
-          data-view-target="game"
-        >遊戲</button>
-        <button
-          class="view-tab"
-          type="button"
-          role="tab"
-          aria-selected="false"
-          aria-controls="rankingView"
-          data-view-target="ranking"
-        >排行榜</button>
-      </nav>
+      <div class="page-nav-row">
+        <nav class="view-tabs" role="tablist" aria-label="遊戲頁面">
+          <button
+            class="view-tab"
+            type="button"
+            role="tab"
+            aria-selected="false"
+            aria-controls="settingsView"
+            data-view-target="settings"
+          >設定</button>
+          <button
+            class="view-tab"
+            type="button"
+            role="tab"
+            aria-selected="true"
+            aria-controls="gameView"
+            data-view-target="game"
+          >遊戲</button>
+          <button
+            class="view-tab"
+            type="button"
+            role="tab"
+            aria-selected="false"
+            aria-controls="rankingView"
+            data-view-target="ranking"
+          >排行</button>
+        </nav>
+
+        <a
+          class="home-link"
+          href="https://game.stillnessbyslowly.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >回家</a>
+      </div>
     </header>
 
     <section id="settingsView" class="view-panel" role="tabpanel" data-view-panel="settings" hidden>
@@ -100,13 +109,33 @@
           </div>
         </div>
       </section>
+
+      <section class="instructions" aria-labelledby="instructionsTitle">
+        <h2 class="section-title" id="instructionsTitle">遊戲說明</h2>
+        <div class="how">
+          <p>交換相鄰糖果連成 <b>3+</b> 即可消除。</p>
+          <p><b>4 連</b>產生條紋糖；<b>5 連</b>產生彩球；<b>T / L</b> 產生包裝糖。</p>
+          <p>條紋糖會清除整列或整行；包裝糖清除 3×3；彩球清除指定顏色。</p>
+          <p>盤面無可走步時會自動洗牌；下方道具列提供單顆、橫列、直列、任意交換、重整與同色消除。</p>
+          <p><b>無限</b>：不限時間、步數與道具次數。</p>
+          <p><b>計時</b>：每場 3 分鐘；六種道具每場各可使用一次。</p>
+          <p><b>計步</b>：每場 30 次有效交換；交換失敗與使用道具不扣步，六種道具每場各可使用一次。</p>
+          <p>三種模式各自保存本機 TOP 3；手動結束、時間到或步數用完都會結算。</p>
+        </div>
+      </section>
     </section>
 
     <section id="gameView" class="view-panel" role="tabpanel" data-view-panel="game">
       <div class="controls" aria-label="遊戲控制">
-        <button class="btn slowly-press" id="btnStart" type="button">開始</button>
-        <button class="btn slowly-press" id="btnPause" type="button" disabled>暫停</button>
-        <button class="btn slowly-press" id="btnEnd" type="button" disabled>結束</button>
+        <button class="btn control-icon-btn slowly-press" id="btnStart" type="button" title="開始" aria-label="開始">
+          <canvas class="control-icon-canvas" id="btnStartIcon" width="30" height="30" aria-hidden="true"></canvas>
+        </button>
+        <button class="btn control-icon-btn slowly-press" id="btnPause" type="button" disabled title="暫停" aria-label="暫停">
+          <canvas class="control-icon-canvas" id="btnPauseIcon" width="30" height="30" aria-hidden="true"></canvas>
+        </button>
+        <button class="btn control-icon-btn slowly-press" id="btnEnd" type="button" disabled title="結束" aria-label="結束">
+          <canvas class="control-icon-canvas" id="btnEndIcon" width="30" height="30" aria-hidden="true"></canvas>
+        </button>
       </div>
 
       <div class="game-area">
@@ -135,10 +164,10 @@
         </div>
 
         <div class="tools" aria-label="遊戲道具">
-          <button class="tool-btn tool-btn--emoji slowly-press" id="toolSingle" type="button" disabled aria-pressed="false" title="敲掉單顆" aria-label="敲掉單顆"><span class="tool-emoji" aria-hidden="true">✕</span></button>
+          <button class="tool-btn tool-btn--icon slowly-press" id="toolSingle" type="button" disabled aria-pressed="false" title="敲掉單顆" aria-label="敲掉單顆" data-tool-kind="single"><canvas class="tool-icon-canvas" id="toolSingleIcon" width="28" height="28" aria-hidden="true"></canvas></button>
           <button class="tool-btn tool-btn--icon slowly-press" id="toolRow" type="button" disabled aria-pressed="false" title="消除一行" aria-label="消除一行" data-tool-kind="row"><canvas class="tool-icon-canvas" id="toolRowIcon" width="28" height="28" aria-hidden="true"></canvas></button>
           <button class="tool-btn tool-btn--icon slowly-press" id="toolColumn" type="button" disabled aria-pressed="false" title="消除一列" aria-label="消除一列" data-tool-kind="column"><canvas class="tool-icon-canvas" id="toolColumnIcon" width="28" height="28" aria-hidden="true"></canvas></button>
-          <button class="tool-btn tool-btn--emoji slowly-press" id="toolSwap" type="button" disabled aria-pressed="false" title="交換任意兩顆" aria-label="交換任意兩顆"><span class="tool-emoji" aria-hidden="true">🔄</span></button>
+          <button class="tool-btn tool-btn--icon slowly-press" id="toolSwap" type="button" disabled aria-pressed="false" title="交換任意兩顆" aria-label="交換任意兩顆" data-tool-kind="swap"><canvas class="tool-icon-canvas" id="toolSwapIcon" width="28" height="28" aria-hidden="true"></canvas></button>
           <button class="tool-btn tool-btn--icon slowly-press" id="toolRefresh" type="button" disabled title="重整棋盤" aria-label="重整棋盤" data-tool-kind="refresh"><canvas class="tool-icon-canvas" id="toolRefreshIcon" width="28" height="28" aria-hidden="true"></canvas></button>
           <button class="tool-btn tool-btn--icon slowly-press" id="toolColor" type="button" disabled aria-pressed="false" title="消除棋盤同色糖果" aria-label="消除棋盤同色糖果" data-tool-kind="color"><canvas class="tool-icon-canvas" id="toolColorIcon" width="28" height="28" aria-hidden="true"></canvas></button>
         </div>
@@ -156,20 +185,13 @@
         <div class="rankList" id="rankList"></div>
       </section>
 
-      <section class="instructions" aria-labelledby="instructionsTitle">
-        <h2 class="section-title" id="instructionsTitle">遊戲說明</h2>
-        <div class="how">
-          <p>交換相鄰糖果連成 <b>3+</b> 即可消除。</p>
-          <p><b>4 連</b>產生條紋糖；<b>5 連</b>產生彩球；<b>T / L</b> 產生包裝糖。</p>
-          <p>條紋糖會清除整列或整行；包裝糖清除 3×3；彩球清除指定顏色。</p>
-          <p>盤面無可走步時會自動洗牌；下方道具列提供單顆、橫列、直列、任意交換、重整與同色消除。</p>
-          <p><b>無限</b>：不限時間、步數與道具次數。</p>
-          <p><b>計時</b>：每場 3 分鐘；六種道具每場各可使用一次。</p>
-          <p><b>計步</b>：每場 30 次有效交換；交換失敗與使用道具不扣步，六種道具每場各可使用一次。</p>
-          <p>三種模式各自保存本機 TOP 3；手動結束、時間到或步數用完都會結算。</p>
-        </div>
-      </section>
     </section>
+
+    <footer class="sbs-signature" aria-label="Stillness by Slowly">
+      <span class="sbs-signature-mark">慢 慢</span>
+      <span class="sbs-signature-separator" aria-hidden="true">|</span>
+      <span class="sbs-signature-name">Stillness by Slowly</span>
+    </footer>
   </main>
 
   <!-- 慢慢的倉庫｜Time -->
