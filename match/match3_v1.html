@@ -135,12 +135,12 @@
         </div>
 
         <div class="tools" aria-label="遊戲道具">
-          <button class="tool-btn slowly-press" id="toolSingle" type="button" disabled aria-pressed="false" title="敲掉單顆" aria-label="敲掉單顆">✕</button>
-          <button class="tool-btn slowly-press" id="toolRow" type="button" disabled aria-pressed="false" title="消除一行" aria-label="消除一行">↔️</button>
-          <button class="tool-btn slowly-press" id="toolColumn" type="button" disabled aria-pressed="false" title="消除一列" aria-label="消除一列">↕️</button>
-          <button class="tool-btn slowly-press" id="toolSwap" type="button" disabled aria-pressed="false" title="交換任意兩顆" aria-label="交換任意兩顆">🔄</button>
-          <button class="tool-btn slowly-press" id="toolRefresh" type="button" disabled title="重整棋盤" aria-label="重整棋盤">🔀</button>
-          <button class="tool-btn slowly-press" id="toolColor" type="button" disabled aria-pressed="false" title="消除棋盤同色糖果" aria-label="消除棋盤同色糖果">🎨</button>
+          <button class="tool-btn tool-btn--emoji slowly-press" id="toolSingle" type="button" disabled aria-pressed="false" title="敲掉單顆" aria-label="敲掉單顆"><span class="tool-emoji" aria-hidden="true">✕</span></button>
+          <button class="tool-btn tool-btn--icon slowly-press" id="toolRow" type="button" disabled aria-pressed="false" title="消除一行" aria-label="消除一行" data-tool-kind="row"><canvas class="tool-icon-canvas" id="toolRowIcon" width="28" height="28" aria-hidden="true"></canvas></button>
+          <button class="tool-btn tool-btn--icon slowly-press" id="toolColumn" type="button" disabled aria-pressed="false" title="消除一列" aria-label="消除一列" data-tool-kind="column"><canvas class="tool-icon-canvas" id="toolColumnIcon" width="28" height="28" aria-hidden="true"></canvas></button>
+          <button class="tool-btn tool-btn--emoji slowly-press" id="toolSwap" type="button" disabled aria-pressed="false" title="交換任意兩顆" aria-label="交換任意兩顆"><span class="tool-emoji" aria-hidden="true">🔄</span></button>
+          <button class="tool-btn tool-btn--icon slowly-press" id="toolRefresh" type="button" disabled title="重整棋盤" aria-label="重整棋盤" data-tool-kind="refresh"><canvas class="tool-icon-canvas" id="toolRefreshIcon" width="28" height="28" aria-hidden="true"></canvas></button>
+          <button class="tool-btn tool-btn--icon slowly-press" id="toolColor" type="button" disabled aria-pressed="false" title="消除棋盤同色糖果" aria-label="消除棋盤同色糖果" data-tool-kind="color"><canvas class="tool-icon-canvas" id="toolColorIcon" width="28" height="28" aria-hidden="true"></canvas></button>
         </div>
       </div>
     </section>

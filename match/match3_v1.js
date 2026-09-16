@@ -68,6 +68,10 @@
   const toolSwap = document.getElementById("toolSwap");
   const toolRefresh = document.getElementById("toolRefresh");
   const toolColor = document.getElementById("toolColor");
+  const toolRowIconCanvas = document.getElementById("toolRowIcon");
+  const toolColumnIconCanvas = document.getElementById("toolColumnIcon");
+  const toolRefreshIconCanvas = document.getElementById("toolRefreshIcon");
+  const toolColorIconCanvas = document.getElementById("toolColorIcon");
   const soundOnEl = document.getElementById("soundOn");
   const volumeLevelEl = document.getElementById("volumeLevel");
   const gameModeEl = document.getElementById("gameMode");
@@ -82,6 +86,132 @@
   // 同一支 HTML 內切換「遊戲 / 排行榜」；只切畫面，不改遊戲狀態。
   const viewTabs = document.querySelectorAll("[data-view-target]");
   const viewPanels = document.querySelectorAll("[data-view-panel]");
+
+  function getToolIconSize(button) {
+    const fallback = 28;
+    if (!button) return fallback;
+    return Math.max(22, Math.min(30, Math.round((button.clientHeight || 40) - 12)));
+  }
+
+  function prepareToolIconCanvas(canvas, size) {
+    if (!canvas) return null;
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+    canvas.width = Math.round(size * dpr);
+    canvas.height = Math.round(size * dpr);
+    canvas.style.width = `${size}px`;
+    canvas.style.height = `${size}px`;
+    const ctx = canvas.getContext("2d");
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, size, size);
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    return ctx;
+  }
+
+  function drawArrowHead(ctx, x, y, angle, length, spread = Math.PI / 5.3) {
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x - Math.cos(angle - spread) * length, y - Math.sin(angle - spread) * length);
+    ctx.moveTo(x, y);
+    ctx.lineTo(x - Math.cos(angle + spread) * length, y - Math.sin(angle + spread) * length);
+    ctx.stroke();
+  }
+
+  function drawDoubleArrowIcon(canvas, orientation = "horizontal", color = "#3f5553") {
+    const size = getToolIconSize(canvas?.parentElement);
+    const ctx = prepareToolIconCanvas(canvas, size);
+    if (!ctx) return;
+
+    const mid = size / 2;
+    const pad = 4.5;
+    const arrowLen = size * 0.23;
+    const stroke = Math.max(2.4, size * 0.11);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = stroke;
+
+    if (orientation === "horizontal") {
+      ctx.beginPath();
+      ctx.moveTo(pad + arrowLen, mid);
+      ctx.lineTo(size - pad - arrowLen, mid);
+      ctx.stroke();
+      drawArrowHead(ctx, pad, mid, Math.PI, arrowLen);
+      drawArrowHead(ctx, size - pad, mid, 0, arrowLen);
+      return;
+    }
+
+    ctx.beginPath();
+    ctx.moveTo(mid, pad + arrowLen);
+    ctx.lineTo(mid, size - pad - arrowLen);
+    ctx.stroke();
+    drawArrowHead(ctx, mid, pad, -Math.PI / 2, arrowLen);
+    drawArrowHead(ctx, mid, size - pad, Math.PI / 2, arrowLen);
+  }
+
+  function drawRotateClockwiseIcon(canvas, color = "#111111") {
+    const size = getToolIconSize(canvas?.parentElement);
+    const ctx = prepareToolIconCanvas(canvas, size);
+    if (!ctx) return;
+
+    const stroke = Math.max(2.6, size * 0.12);
+    const r = size * 0.28;
+    const cx = size / 2;
+    const cy = size / 2;
+    const topStart = Math.PI * 0.88;
+    const topEnd = Math.PI * 1.92;
+    const bottomStart = Math.PI * 0.08;
+    const bottomEnd = Math.PI * 1.12;
+
+    ctx.strokeStyle = color;
+    ctx.lineWidth = stroke;
+
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, topStart, topEnd, false);
+    ctx.stroke();
+    drawArrowHead(ctx, cx + Math.cos(topEnd) * r, cy + Math.sin(topEnd) * r, topEnd + Math.PI / 2, size * 0.16, Math.PI / 4.6);
+
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, bottomStart, bottomEnd, false);
+    ctx.stroke();
+    drawArrowHead(ctx, cx + Math.cos(bottomEnd) * r, cy + Math.sin(bottomEnd) * r, bottomEnd + Math.PI / 2, size * 0.16, Math.PI / 4.6);
+  }
+
+  function drawCandyCircle(ctx, x, y, r, topColor, bottomColor) {
+    const fill = ctx.createLinearGradient(x, y - r, x, y + r);
+    fill.addColorStop(0, topColor);
+    fill.addColorStop(1, bottomColor);
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fillStyle = fill;
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.strokeStyle = "rgba(63,85,83,.18)";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(x - r * 0.24, y - r * 0.3, r * 0.46, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(255,255,255,.62)";
+    ctx.fill();
+  }
+
+  function drawColorTripletIcon(canvas) {
+    const size = getToolIconSize(canvas?.parentElement);
+    const ctx = prepareToolIconCanvas(canvas, size);
+    if (!ctx) return;
+
+    const r = size * 0.16;
+    drawCandyCircle(ctx, size * 0.34, size * 0.42, r, "#c88a92", "#b86b75");
+    drawCandyCircle(ctx, size * 0.66, size * 0.42, r, "#d9a777", "#c4874d");
+    drawCandyCircle(ctx, size * 0.5, size * 0.68, r, "#e4d6bd", "#cdbb9c");
+  }
+
+  function renderToolIcons() {
+    // 直接沿用棋盤六色中的莫蘭迪色；emoji 道具先保持原樣。
+    drawDoubleArrowIcon(toolRowIconCanvas, "horizontal", "#6f93a4"); // dusty blue
+    drawDoubleArrowIcon(toolColumnIconCanvas, "vertical", "#7f9a7d");   // sage
+    drawRotateClockwiseIcon(toolRefreshIconCanvas, "#8e7fa0");          // mauve
+    drawColorTripletIcon(toolColorIconCanvas);
+  }
 
   function showView(viewName) {
     viewTabs.forEach(tab => {
@@ -690,10 +820,10 @@
 
   /* ===============================
      倉庫｜FictionStorage / FictionSort / FictionPaginate
-     三種模式各自保存 TOP 3；舊版 top3 保留作「無限」排行榜。
+     三種模式各自保存 TOP 3；排行榜使用獨立新版 namespace。
   =============================== */
   const scoreStore = FictionStorage.create({
-    namespace: "SBS_match3_v1"
+    namespace: "SBS_match3_rank_v2"
   });
 
   const rankingCollections = Object.freeze({
@@ -747,10 +877,14 @@
   }
 
   async function renderTop3(mode = activeRankingMode) {
-    activeRankingMode = normalizedGameMode(mode);
+    const requestedMode = normalizedGameMode(mode);
+    activeRankingMode = requestedMode;
     syncRankingTabs();
 
-    const top3 = await getTop3(activeRankingMode);
+    const top3 = await getTop3(requestedMode);
+
+    // 切換模式期間，較早發出的讀取若晚回來，不准覆蓋目前模式。
+    if (requestedMode !== activeRankingMode) return;
 
     rankListEl.replaceChildren();
 
@@ -2209,6 +2343,7 @@
      Init
   =============================== */
   async function init() {
+    renderToolIcons();
     createDom();
     activeGameMode = selectedGameMode();
     activeRankingMode = activeGameMode;
@@ -2225,6 +2360,7 @@
 
   void init();
 
+  window.addEventListener("resize", renderToolIcons);
   window.addEventListener("beforeunload", () => {
     gameTicker.stop();
     gameTimer.stop();
