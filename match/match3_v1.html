@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>無限消消樂｜match3_v1</title>
+  <title>消消樂｜match3_v1</title>
 
   <!-- 慢慢的倉庫｜Responsive Base -->
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/ui/responsive.css" />
@@ -30,7 +30,7 @@
 
   <main class="wrap">
     <header class="page-head">
-      <h1>無限消消樂</h1>
+      <h1>消消樂</h1>
 
       <nav class="view-tabs" role="tablist" aria-label="遊戲頁面">
         <button
@@ -88,10 +88,10 @@
             <div class="setting-control">
               <select class="setting-select" id="gameMode" data-slowly-select aria-label="遊戲模式">
                 <option value="infinite">無限</option>
-                <option value="timed" disabled>限時</option>
-                <option value="moves" disabled>限步</option>
+                <option value="timed">計時・3 分鐘</option>
+                <option value="moves">計步・30 步</option>
               </select>
-              <div class="setting-note">限時、限步模式先保留選項，規則之後再接。</div>
+              <div class="setting-note">無限模式道具不限次數；計時與計步模式的六種道具每場各可使用一次。</div>
             </div>
           </div>
         </div>
@@ -112,7 +112,7 @@
             <strong class="stat-value" id="score">0</strong>
           </div>
           <div class="stat">
-            <span class="stat-label">步數</span>
+            <span class="stat-label" id="stepsLabel">步數</span>
             <strong class="stat-value" id="steps">0</strong>
           </div>
           <div class="stat">
@@ -120,7 +120,7 @@
             <strong class="stat-value" id="combo">0</strong>
           </div>
           <div class="stat">
-            <span class="stat-label">時間</span>
+            <span class="stat-label" id="timeLabel">時間</span>
             <strong class="stat-value" id="time">00:00:00</strong>
           </div>
         </div>
@@ -144,6 +144,11 @@
     <section id="rankingView" class="view-panel" role="tabpanel" data-view-panel="ranking" hidden>
       <section class="rank" aria-labelledby="rankTitle">
         <h2 class="section-title" id="rankTitle">排行榜</h2>
+        <div class="rank-mode-tabs" role="tablist" aria-label="排行榜模式">
+          <button class="rank-mode-tab" type="button" role="tab" aria-selected="true" data-rank-mode="infinite">無限</button>
+          <button class="rank-mode-tab" type="button" role="tab" aria-selected="false" data-rank-mode="timed">計時</button>
+          <button class="rank-mode-tab" type="button" role="tab" aria-selected="false" data-rank-mode="moves">計步</button>
+        </div>
         <div class="rankList" id="rankList"></div>
       </section>
 
@@ -154,8 +159,10 @@
           <p><b>4 連</b>產生條紋糖；<b>5 連</b>產生彩球；<b>T / L</b> 產生包裝糖。</p>
           <p>條紋糖會清除整列或整行；包裝糖清除 3×3；彩球清除指定顏色。</p>
           <p>盤面無可走步時會自動洗牌；下方道具列提供單顆、橫列、直列、任意交換、重整與同色消除。</p>
-          <p>「整」每局可使用一次，並保留分數、時間與步數。</p>
-          <p>排行榜只會在按下「結束」時寫入本機 TOP 3。</p>
+          <p><b>無限</b>：不限時間、步數與道具次數。</p>
+          <p><b>計時</b>：每場 3 分鐘；六種道具每場各可使用一次。</p>
+          <p><b>計步</b>：每場 30 次有效交換；交換失敗與使用道具不扣步，六種道具每場各可使用一次。</p>
+          <p>三種模式各自保存本機 TOP 3；手動結束、時間到或步數用完都會結算。</p>
         </div>
       </section>
     </section>

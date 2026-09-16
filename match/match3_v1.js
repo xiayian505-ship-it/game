@@ -2,7 +2,7 @@
   "use strict";
 
   /* =========================================================
-     無限消消樂｜match3_v1
+     消消樂｜match3_v1
 
      Match3 自己保留：
      - 8x8 棋盤與交換規則
@@ -11,7 +11,8 @@
      - 特殊糖觸發
      - 提示 / 無步判定
      - BOM / Combo / 計分
-     - 無限重整
+     - 無限 / 3 分鐘計時 / 30 步計步
+     - 模式別道具次數與排行榜
 
      慢慢的倉庫接管：
      - Timer / Ticker
@@ -32,6 +33,18 @@
   const SIZE = 8;
   const COLORS = 6;
 
+  const GAME_MODE = Object.freeze({
+    infinite: Object.freeze({ label: "無限", durationMs: null, moveLimit: null, limitedTools: false }),
+    timed: Object.freeze({ label: "計時", durationMs: 3 * 60 * 1000, moveLimit: null, limitedTools: true }),
+    moves: Object.freeze({ label: "計步", durationMs: null, moveLimit: 30, limitedTools: true })
+  });
+
+  function normalizedGameMode(value) {
+    return Object.prototype.hasOwnProperty.call(GAME_MODE, value)
+      ? value
+      : "infinite";
+  }
+
   /* ===============================
      DOM
   =============================== */
@@ -39,8 +52,11 @@
   const scoreEl = document.getElementById("score");
   const comboEl = document.getElementById("combo");
   const timeEl = document.getElementById("time");
+  const timeLabelEl = document.getElementById("timeLabel");
   const stepsEl = document.getElementById("steps");
+  const stepsLabelEl = document.getElementById("stepsLabel");
   const rankListEl = document.getElementById("rankList");
+  const rankModeTabs = document.querySelectorAll("[data-rank-mode]");
 
   const btnStart = document.getElementById("btnStart");
   const btnPause = document.getElementById("btnPause");
@@ -54,6 +70,7 @@
   const toolColor = document.getElementById("toolColor");
   const soundOnEl = document.getElementById("soundOn");
   const volumeLevelEl = document.getElementById("volumeLevel");
+  const gameModeEl = document.getElementById("gameMode");
 
   const bombOverlayEl = document.getElementById("bombOverlay");
   const bombTextEl = document.getElementById("bombText");
@@ -141,10 +158,14 @@
   };
 
   let gameState = STATE.IDLE;
+  let activeGameMode = "infinite";
+  let activeRankingMode = "infinite";
+  let pendingAutoEnd = false;
   let nextBom = 10000;
   let bomShowing = false;
   let activeTool = null;
   let toolSwapFirst = null;
+  let toolUsed = createToolUsageState();
 
   /* ===============================
      倉庫｜Timer / Ticker
@@ -154,6 +175,7 @@
     interval: 250,
     callback() {
       renderElapsedTime();
+      checkModeEndCondition();
     }
   });
 
@@ -191,8 +213,32 @@
     return Math.max(0, Number(gameTimer.elapsed()) || 0);
   }
 
+  function displayTimeMs() {
+    const config = GAME_MODE[activeGameMode];
+
+    if (config.durationMs !== null) {
+      return Math.max(0, config.durationMs - syncElapsedTime());
+    }
+
+    return syncElapsedTime();
+  }
+
   function renderElapsedTime() {
-    timeEl.textContent = SlowlyElapsedFormat.formatHMS(syncElapsedTime());
+    timeLabelEl.textContent = activeGameMode === "timed" ? "剩餘" : "時間";
+    timeEl.textContent = SlowlyElapsedFormat.formatHMS(displayTimeMs());
+  }
+
+  function renderSteps() {
+    const config = GAME_MODE[activeGameMode];
+
+    if (config.moveLimit !== null) {
+      stepsLabelEl.textContent = "剩餘";
+      stepsEl.textContent = Math.max(0, config.moveLimit - steps);
+      return;
+    }
+
+    stepsLabelEl.textContent = "步數";
+    stepsEl.textContent = steps;
   }
 
   /* ===============================
@@ -538,15 +584,17 @@
 
   /* ===============================
      倉庫｜FictionStorage / FictionSort / FictionPaginate
-     排名規則仍是 Match3 專屬：
-     分數高 → 時間短 → 步數少。
-     排序執行與 TOP 3 切片交給軍火庫。
+     三種模式各自保存 TOP 3；舊版 top3 保留作「無限」排行榜。
   =============================== */
   const scoreStore = FictionStorage.create({
     namespace: "SBS_match3_v1"
   });
 
-  const rankings = scoreStore.collection("top3");
+  const rankingCollections = Object.freeze({
+    infinite: scoreStore.collection("top3"),
+    timed: scoreStore.collection("top3_timed"),
+    moves: scoreStore.collection("top3_moves")
+  });
 
   function rankingComparator(a, b) {
     if (Number(b.score) !== Number(a.score)) {
@@ -574,13 +622,29 @@
     }).data;
   }
 
-  async function getTop3() {
-    const rows = await rankings.all();
+  function rankingCollection(mode) {
+    return rankingCollections[normalizedGameMode(mode)];
+  }
+
+  async function getTop3(mode = activeRankingMode) {
+    const rows = await rankingCollection(mode).all();
     return takeTop3(sortRankings(rows));
   }
 
-  async function renderTop3() {
-    const top3 = await getTop3();
+  function syncRankingTabs() {
+    rankModeTabs.forEach(tab => {
+      tab.setAttribute(
+        "aria-selected",
+        tab.dataset.rankMode === activeRankingMode ? "true" : "false"
+      );
+    });
+  }
+
+  async function renderTop3(mode = activeRankingMode) {
+    activeRankingMode = normalizedGameMode(mode);
+    syncRankingTabs();
+
+    const top3 = await getTop3(activeRankingMode);
 
     rankListEl.replaceChildren();
 
@@ -630,25 +694,62 @@
     });
   }
 
-  async function saveCurrentToTop3() {
-    await rankings.add({
+  async function saveCurrentToTop3(mode = activeGameMode) {
+    const normalizedMode = normalizedGameMode(mode);
+    const collection = rankingCollection(normalizedMode);
+
+    const config = GAME_MODE[normalizedMode];
+    const resultTimeMs = config.durationMs !== null
+      ? Math.min(syncElapsedTime(), config.durationMs)
+      : syncElapsedTime();
+
+    await collection.add({
+      mode: normalizedMode,
       score,
       steps,
       maxCombo,
-      timeMs: syncElapsedTime(),
+      timeMs: resultTimeMs,
       at: now()
     });
 
-    const rows = await rankings.all();
+    const rows = await collection.all();
     const top3 = takeTop3(sortRankings(rows));
 
-    await rankings.replace(top3);
-    await renderTop3();
+    await collection.replace(top3);
+
+    activeRankingMode = normalizedMode;
+    await renderTop3(normalizedMode);
   }
 
   /* ===============================
      State UI
   =============================== */
+  function createToolUsageState() {
+    return {
+      single: false,
+      row: false,
+      column: false,
+      swap: false,
+      refresh: false,
+      color: false
+    };
+  }
+
+  function modeHasLimitedTools() {
+    return GAME_MODE[activeGameMode].limitedTools;
+  }
+
+  function canUseTool(name) {
+    return !modeHasLimitedTools() || !toolUsed[name];
+  }
+
+  function markToolUsed(name) {
+    if (!modeHasLimitedTools()) return;
+    toolUsed[name] = true;
+    syncToolButtons();
+    syncInteractionState();
+  }
+
   function syncInteractionState() {
     const running = gameState === STATE.RUNNING;
     const paused = gameState === STATE.PAUSED;
@@ -658,12 +759,9 @@
     btnPause.disabled = busy || !(running || paused);
     btnEnd.disabled = busy || !(running || paused);
 
-    toolSingle.disabled = !interactive;
-    toolRow.disabled = !interactive;
-    toolColumn.disabled = !interactive;
-    toolSwap.disabled = !interactive;
-    toolRefresh.disabled = !interactive;
-    toolColor.disabled = !interactive;
+    for (const [name, button] of Object.entries(ALL_TOOL_BUTTONS)) {
+      button.disabled = !interactive || !canUseTool(name);
+    }
 
     btnPause.textContent = paused ? "繼續" : "暫停";
 
@@ -675,6 +773,10 @@
   function setBusy(next) {
     busy = Boolean(next);
     syncInteractionState();
+
+    if (!busy) {
+      queueMicrotask(checkModeEndCondition);
+    }
   }
 
   function setState(next) {
@@ -761,7 +863,7 @@
 
     scoreEl.textContent = score;
     comboEl.textContent = combo;
-    stepsEl.textContent = steps;
+    renderSteps();
     renderElapsedTime();
   }
 
@@ -1302,10 +1404,9 @@
 
   /* ===============================
      Tools
-     先只做操作本體，不加數量 / 金幣 / 冷卻。
-     「整」與其他道具一樣，在無限模式可重複使用。
+     無限模式不限次數；計時 / 計步模式每種道具每場一次。
   =============================== */
-  const TOOL_BUTTONS = Object.freeze({
+  const TARGET_TOOL_BUTTONS = Object.freeze({
     single: toolSingle,
     row: toolRow,
     column: toolColumn,
@@ -1313,9 +1414,18 @@
     color: toolColor
   });
 
+  const ALL_TOOL_BUTTONS = Object.freeze({
+    ...TARGET_TOOL_BUTTONS,
+    refresh: toolRefresh
+  });
+
   function syncToolButtons() {
-    for (const [name, button] of Object.entries(TOOL_BUTTONS)) {
-      button.setAttribute("aria-pressed", activeTool === name ? "true" : "false");
+    for (const [name, button] of Object.entries(ALL_TOOL_BUTTONS)) {
+      const selectable = Object.prototype.hasOwnProperty.call(TARGET_TOOL_BUTTONS, name);
+      if (selectable) {
+        button.setAttribute("aria-pressed", activeTool === name ? "true" : "false");
+      }
+      button.classList.toggle("is-used", modeHasLimitedTools() && toolUsed[name]);
     }
   }
 
@@ -1328,7 +1438,7 @@
   }
 
   function toggleTool(name) {
-    if (gameState !== STATE.RUNNING || busy) return;
+    if (gameState !== STATE.RUNNING || busy || !canUseTool(name)) return;
 
     if (activeTool === name) {
       cancelTool();
@@ -1440,6 +1550,7 @@
       selected = null;
       syncToolButtons();
       await useFreeSwap(first, pos);
+      markToolUsed("swap");
       return;
     }
 
@@ -1470,11 +1581,14 @@
       }
     }
 
+    const usedTool = activeTool;
     activeTool = null;
     toolSwapFirst = null;
     selected = null;
     syncToolButtons();
-    await settleToolClear(toClear);
+
+    const used = await settleToolClear(toClear);
+    if (used) markToolUsed(usedTool);
   }
 
   /* ===============================
@@ -1609,6 +1723,55 @@
   /* ===============================
      Swap
   =============================== */
+  async function playSwapMotion(a, b, duration = 180) {
+    const cellA = domCells[k(a.r, a.c)];
+    const cellB = domCells[k(b.r, b.c)];
+    const candyA = cellA?.querySelector(".candy");
+    const candyB = cellB?.querySelector(".candy");
+
+    if (!candyA || !candyB) {
+      await sleep(duration);
+      return;
+    }
+
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) {
+      await sleep(50);
+      return;
+    }
+
+    const rectA = cellA.getBoundingClientRect();
+    const rectB = cellB.getBoundingClientRect();
+    const dx = rectB.left - rectA.left;
+    const dy = rectB.top - rectA.top;
+
+    if (typeof candyA.animate !== "function" || typeof candyB.animate !== "function") {
+      await sleep(duration);
+      return;
+    }
+
+    const easing = "cubic-bezier(.2,.8,.2,1)";
+    const animations = [
+      candyA.animate(
+        [
+          { transform: `translate(${dx}px, ${dy}px)` },
+          { transform: "translate(0, 0)" }
+        ],
+        { duration, easing }
+      ),
+      candyB.animate(
+        [
+          { transform: `translate(${-dx}px, ${-dy}px)` },
+          { transform: "translate(0, 0)" }
+        ],
+        { duration, easing }
+      )
+    ];
+
+    await Promise.all(
+      animations.map(animation => animation.finished.catch(() => undefined))
+    );
+  }
+
   async function trySwap(a, b) {
     if (gameState !== STATE.RUNNING || busy) return;
 
@@ -1623,6 +1786,7 @@
       swapCells(a, b);
       render();
       sfxSwap();
+      await playSwapMotion(a, b);
 
       const specialTriggered = await maybeTriggerSpecialOnSwap(a, b);
 
@@ -1637,9 +1801,13 @@
       const matches = findAllMatches();
 
       if (matches.groups.length === 0) {
+        // 讓玩家先看清楚「交換已發生」，再把無效交換退回。
+        await sleep(180);
+
         swapCells(a, b);
         render();
         sfxBad();
+        await playSwapMotion(a, b, 160);
         return;
       }
 
@@ -1695,8 +1863,10 @@
     steps = 0;
     nextBom = 10000;
     bomShowing = false;
+    pendingAutoEnd = false;
     activeTool = null;
     toolSwapFirst = null;
+    toolUsed = createToolUsageState();
     selected = null;
     syncToolButtons();
     resetBOMPresentation();
@@ -1709,13 +1879,66 @@
     setState(STATE.IDLE);
   }
 
+  function selectedGameMode() {
+    return normalizedGameMode(gameModeEl.value);
+  }
+
+  function syncModePreview() {
+    if (gameState !== STATE.IDLE) return;
+    activeGameMode = selectedGameMode();
+    renderSteps();
+    renderElapsedTime();
+    syncToolButtons();
+    syncInteractionState();
+  }
+
+  function modeLimitReached() {
+    const config = GAME_MODE[activeGameMode];
+
+    if (config.durationMs !== null && syncElapsedTime() >= config.durationMs) {
+      return "time";
+    }
+
+    if (config.moveLimit !== null && steps >= config.moveLimit) {
+      return "moves";
+    }
+
+    return null;
+  }
+
+  function checkModeEndCondition() {
+    if (gameState !== STATE.RUNNING) {
+      pendingAutoEnd = false;
+      return;
+    }
+
+    const reason = modeLimitReached();
+    if (!reason) {
+      pendingAutoEnd = false;
+      return;
+    }
+
+    if (busy) {
+      pendingAutoEnd = true;
+      return;
+    }
+
+    pendingAutoEnd = false;
+    void endGame(reason);
+  }
+
   function startGame() {
     if (busy) return;
     if (gameState !== STATE.IDLE && gameState !== STATE.ENDED) return;
 
+    activeGameMode = selectedGameMode();
+
     if (gameState === STATE.ENDED) {
       resetGameValues();
       newBoard();
+    } else {
+      resetTimer();
+      render();
     }
 
     setState(STATE.RUNNING);
@@ -1733,14 +1956,19 @@
     } else if (gameState === STATE.PAUSED) {
       setState(STATE.RUNNING);
       resumeTimer();
+      checkModeEndCondition();
     }
   }
 
-  async function endGame() {
-    if (busy) return;
+  async function endGame(reason = "manual") {
+    if (busy) {
+      if (reason !== "manual") pendingAutoEnd = true;
+      return;
+    }
     if (gameState !== STATE.RUNNING && gameState !== STATE.PAUSED) return;
 
     stopTimer();
+    pendingAutoEnd = false;
     activeTool = null;
     toolSwapFirst = null;
     syncToolButtons();
@@ -1749,20 +1977,20 @@
     selected = null;
     render();
 
-    // Match3 專屬規則：只有手動結束才寫入 TOP3。
     try {
-      await saveCurrentToTop3();
+      await saveCurrentToTop3(activeGameMode);
     } catch (error) {
       console.error("[Match3] 排行榜儲存失敗：", error);
     }
   }
 
   function refreshBoard() {
-    if (gameState !== STATE.RUNNING || busy) return;
+    if (gameState !== STATE.RUNNING || busy || !canUseTool("refresh")) return;
 
     const shuffled = doShuffle(false);
     if (!shuffled) return;
 
+    markToolUsed("refresh");
     syncInteractionState();
   }
 
@@ -1775,10 +2003,16 @@
     });
   });
 
+  rankModeTabs.forEach(tab => {
+    tab.addEventListener("click", () => {
+      void renderTop3(tab.dataset.rankMode);
+    });
+  });
+
   btnStart.addEventListener("click", startGame);
   btnPause.addEventListener("click", togglePause);
   btnEnd.addEventListener("click", () => {
-    void endGame();
+    void endGame("manual");
   });
 
   toolSingle.addEventListener("click", () => toggleTool("single"));
@@ -1806,15 +2040,26 @@
     }
   });
 
+  gameModeEl.addEventListener("change", () => {
+    if (gameState === STATE.RUNNING || gameState === STATE.PAUSED) {
+      gameModeEl.value = activeGameMode;
+      return;
+    }
+
+    syncModePreview();
+  });
+
 
   /* ===============================
      Init
   =============================== */
   async function init() {
     createDom();
+    activeGameMode = selectedGameMode();
+    activeRankingMode = activeGameMode;
 
     try {
-      await renderTop3();
+      await renderTop3(activeRankingMode);
     } catch (error) {
       console.error("[Match3] 排行榜初始化失敗：", error);
       rankListEl.textContent = "—";

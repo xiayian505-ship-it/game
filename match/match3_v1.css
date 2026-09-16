@@ -619,6 +619,38 @@ h1{
   font-weight:800;
 }
 
+
+.rank-mode-tabs{
+  display:flex;
+  gap:14px;
+  margin:0 0 12px;
+  border-bottom:1px solid var(--line);
+}
+
+.rank-mode-tab{
+  appearance:none;
+  padding:6px 0 7px;
+  border:0;
+  border-bottom:2px solid transparent;
+  background:transparent;
+  color:var(--muted);
+  font:inherit;
+  cursor:pointer;
+}
+
+.rank-mode-tab:hover,
+.rank-mode-tab:focus-visible{ color:var(--ink); }
+
+.rank-mode-tab[aria-selected="true"]{
+  color:var(--ink);
+  border-bottom-color:var(--ink);
+  font-weight:700;
+}
+
+.tool-btn.is-used{
+  opacity:.30;
+}
+
 .rankList{
   display:grid;
   gap:0;
