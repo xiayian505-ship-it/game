@@ -1055,7 +1055,7 @@
       bombMilestoneTextEl.textContent = `${formatBOMMilestone(milestone)}！`;
       bombOverlayEl.setAttribute("aria-hidden", "false");
 
-      // 第一拍：BOM + 里程碑一起出現；不再額外拉開字距。
+      // 第一拍：BOM + 里程碑兩排一起出現。
       bombOverlayEl.classList.add("is-active");
       void bombOverlayEl.offsetWidth;
       bombTextEl.classList.add("is-active");
@@ -1067,6 +1067,7 @@
           bombTitleTextEl.classList.remove("slowly-shine-text");
           bombMilestoneTextEl.classList.remove("slowly-shine-text");
           void bombTitleTextEl.offsetWidth;
+          void bombMilestoneTextEl.offsetWidth;
           bombTitleTextEl.classList.add("slowly-shine-text");
           bombMilestoneTextEl.classList.add("slowly-shine-text");
           await sleep(BOM_SHINE_MS);
