@@ -117,6 +117,7 @@
   const scoreGuideEl = document.getElementById("scoreGuide");
   const scoreBasicCandyCanvases = document.querySelectorAll("[data-score-basic-candy]");
   const scoreToolCanvases = document.querySelectorAll("[data-score-tool]");
+  const scoreComboCandyCanvases = document.querySelectorAll("[data-score-combo-kind]");
   const scoreSpecialStripedHIconCanvas = document.getElementById("scoreSpecialStripedHIcon");
   const scoreSpecialStripedVIconCanvas = document.getElementById("scoreSpecialStripedVIcon");
   const scoreSpecialWrappedIconCanvas = document.getElementById("scoreSpecialWrappedIcon");
@@ -350,6 +351,18 @@
     scoreBasicCandyCanvases.forEach(canvas => {
       const colorIndex = Number(canvas.dataset.scoreBasicCandy);
       drawSpecialGuideCandy(canvas, null, Number.isFinite(colorIndex) ? colorIndex : 0);
+    });
+
+    scoreComboCandyCanvases.forEach(canvas => {
+      const kind = canvas.dataset.scoreComboKind;
+      const colorIndex = kind === "sv"
+        ? 3
+        : kind === "w"
+          ? 4
+          : kind === "b"
+            ? 1
+            : 2;
+      drawSpecialGuideCandy(canvas, kind, colorIndex);
     });
   }
 
@@ -1704,6 +1717,11 @@
       return;
     }
 
+    if (!selected && grid[r][c].sp) {
+      void triggerStandaloneSpecial({ r, c });
+      return;
+    }
+
     if (!selected) {
       selected = { r, c };
       render();
@@ -1738,7 +1756,8 @@
         return cell.c;
       },
       isBlocked(cell) {
-        return !cell || cell.sp === "b" || cell.c === null;
+        // 花花保留產生時的顏色，因此也要能參與同色 3+ 配對。
+        return !cell || cell.c === null;
       }
     });
   }
@@ -1763,7 +1782,8 @@
       const r = Math.floor(key / SIZE);
       const c = key % SIZE;
       const cell = grid[r][c];
-      if (cell.sp === "b") continue;
+      // 已存在的特殊糖不被新的 T/L 特殊糖覆蓋。
+      if (cell.sp) continue;
 
       let hasH = false;
       let hasV = false;
@@ -1781,9 +1801,13 @@
     }
 
     // 5 => color bomb, 4 => striped
+    // 若配對裡已經有特殊糖，新的特殊糖只落在普通糖上，避免把既有能力覆蓋掉。
     for (const group of matches.groups) {
+      const ordinaryCells = group.cells.filter(pos => !grid[pos.r][pos.c].sp);
+      if (ordinaryCells.length === 0) continue;
+
       if (group.len >= 5) {
-        const mid = group.cells[Math.floor(group.cells.length / 2)];
+        const mid = ordinaryCells[Math.floor(ordinaryCells.length / 2)];
         const key = k(mid.r, mid.c);
         if (used.has(key)) continue;
 
@@ -1795,7 +1819,7 @@
         });
         used.add(key);
       } else if (group.len === 4) {
-        const mid = group.cells[1];
+        const mid = ordinaryCells[Math.min(1, ordinaryCells.length - 1)];
         const key = k(mid.r, mid.c);
         if (used.has(key)) continue;
 
@@ -1828,11 +1852,15 @@
         if (!cell || !cell.sp) return [];
 
         if (cell.sp === "b") {
+          // 花花本身帶有產生時的顏色。被一般配對／特殊糖波及時，
+          // 只觸發自己的同色清除；只有花花＋花花才由專用組合技清全盤。
           const positions = [];
 
           for (let rr = 0; rr < SIZE; rr += 1) {
             for (let cc = 0; cc < SIZE; cc += 1) {
-              positions.push({ r: rr, c: cc });
+              if (grid[rr][cc]?.c === cell.c) {
+                positions.push({ r: rr, c: cc });
+              }
             }
           }
 
@@ -2015,12 +2043,15 @@
     for (let r = 0; r < SIZE; r += 1) {
       for (let c = 0; c < SIZE; c += 1) {
         const cell = grid[r][c];
-        if (cell.sp === "b") continue;
         if (cell.c === targetColor) toClear.add(k(r, c));
       }
     }
 
     toClear.add(k(bombPos.r, bombPos.c));
+
+    // 這顆花花的目標顏色已由本次操作指定；先拔掉 sp，
+    // 避免通用 ChainExpand 又用花花自己的原色額外展開一次。
+    grid[bombPos.r][bombPos.c].sp = null;
 
     const expanded = await expandByTriggeredSpecials(toClear);
     const clearPresentation = await playClearPresentation({
@@ -2041,6 +2072,48 @@
     await sleep(120);
 
     await checkBOM();
+  }
+
+
+  async function triggerStandaloneSpecial(pos) {
+    if (gameState !== STATE.RUNNING || busy) return false;
+
+    const cell = grid[pos.r]?.[pos.c];
+    if (!cell?.sp) return false;
+
+    setBusy(true);
+    combo = 0;
+    clearHints();
+    selected = null;
+
+    let shouldEnsurePlayable = false;
+
+    try {
+      if (cell.sp === "b") {
+        // 單點花花時，直接清除這顆花花自己保留的顏色。
+        const targetColor = Number.isInteger(cell.c) ? cell.c : null;
+        if (targetColor === null) return false;
+        await triggerColorBombAt(pos, targetColor);
+      } else {
+        await finishSpecialClear({
+          toClear: new Set([k(pos.r, pos.c)]),
+          scoreMultiplier: cell.sp === "w" ? 14 : 12,
+          sound: cell.sp === "w" ? "bomb" : "special"
+        });
+      }
+
+      steps += 1;
+      render();
+      await resolveCascades();
+      shouldEnsurePlayable = true;
+      return true;
+    } finally {
+      setBusy(false);
+
+      if (shouldEnsurePlayable && gameState === STATE.RUNNING) {
+        ensurePlayableOrShuffle();
+      }
+    }
   }
 
   async function triggerClearAll() {
@@ -2155,7 +2228,7 @@
         const cell = grid[r][c];
         if (!cell || cell.c !== targetColor) continue;
 
-        // 彩球本身沒有顏色語意；資料裡殘留的 c 不參與「同色變身」。
+        // 彩球不參與這波「同色變身」，避免把另一顆彩球也轉成條紋／包裝。
         if (cell.sp === "b") continue;
 
         const key = k(r, c);
@@ -2557,6 +2630,15 @@
     }
   }
 
+  function findStandaloneSpecial() {
+    for (let r = 0; r < SIZE; r += 1) {
+      for (let c = 0; c < SIZE; c += 1) {
+        if (grid[r][c]?.sp) return { r, c };
+      }
+    }
+    return null;
+  }
+
   function showHint() {
     if (gameState !== STATE.RUNNING || busy) return;
 
@@ -2564,6 +2646,13 @@
     const move = findAnyMove();
 
     if (!move) {
+      const special = findStandaloneSpecial();
+      if (special) {
+        domCells[k(special.r, special.c)].classList.add("hint");
+        playTone({ freq: 620, dur: 0.08, type: "triangle", gain: 0.06, slide: 1.12 });
+        return;
+      }
+
       doShuffle(true);
       return;
     }
@@ -2656,7 +2745,8 @@
   function ensurePlayableOrShuffle() {
     if (gameState !== STATE.RUNNING || busy) return;
 
-    if (!findAnyMove()) {
+    // 特殊糖可以直接點擊，因此盤面只要還有特殊糖，就仍有可操作動作。
+    if (!findAnyMove() && !findStandaloneSpecial()) {
       doShuffle(true);
     }
   }

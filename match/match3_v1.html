@@ -184,7 +184,85 @@
             </div>
           </div>
 
+          <p>特殊糖可直接點擊觸發；彩球直接點擊時會清除與自己同色的糖果。</p>
           <p>盤面無可走步時會自動洗牌。</p>
+
+          <p><b>特殊糖組合技</b>：交換兩顆相鄰特殊糖，即可觸發對應效果。</p>
+
+          <div class="special-combo-guide" aria-label="六種特殊糖組合技">
+            <div class="special-combo-item">
+              <div class="special-combo-pair" aria-hidden="true">
+                <canvas class="special-combo-icon" data-score-combo-kind="sh" width="44" height="44"></canvas>
+                <span class="special-combo-plus">+</span>
+                <canvas class="special-combo-icon" data-score-combo-kind="sv" width="44" height="44"></canvas>
+              </div>
+              <div class="special-combo-copy">
+                <b>條紋＋條紋</b>
+                <span>清除交會的一整排與一整列。</span>
+              </div>
+            </div>
+
+            <div class="special-combo-item">
+              <div class="special-combo-pair" aria-hidden="true">
+                <canvas class="special-combo-icon" data-score-combo-kind="sh" width="44" height="44"></canvas>
+                <span class="special-combo-plus">+</span>
+                <canvas class="special-combo-icon" data-score-combo-kind="w" width="44" height="44"></canvas>
+              </div>
+              <div class="special-combo-copy">
+                <b>條紋＋包裝</b>
+                <span>清除中心周圍的 3 排與 3 列。</span>
+              </div>
+            </div>
+
+            <div class="special-combo-item">
+              <div class="special-combo-pair" aria-hidden="true">
+                <canvas class="special-combo-icon" data-score-combo-kind="w" width="44" height="44"></canvas>
+                <span class="special-combo-plus">+</span>
+                <canvas class="special-combo-icon" data-score-combo-kind="w" width="44" height="44"></canvas>
+              </div>
+              <div class="special-combo-copy">
+                <b>包裝＋包裝</b>
+                <span>清除中心周圍 5×5 的糖果。</span>
+              </div>
+            </div>
+
+            <div class="special-combo-item">
+              <div class="special-combo-pair" aria-hidden="true">
+                <canvas class="special-combo-icon" data-score-combo-kind="b" width="44" height="44"></canvas>
+                <span class="special-combo-plus">+</span>
+                <canvas class="special-combo-icon" data-score-combo-kind="sh" width="44" height="44"></canvas>
+              </div>
+              <div class="special-combo-copy">
+                <b>彩球＋條紋</b>
+                <span>同色普通糖先變成隨機橫／直條紋糖，再一起觸發。</span>
+              </div>
+            </div>
+
+            <div class="special-combo-item">
+              <div class="special-combo-pair" aria-hidden="true">
+                <canvas class="special-combo-icon" data-score-combo-kind="b" width="44" height="44"></canvas>
+                <span class="special-combo-plus">+</span>
+                <canvas class="special-combo-icon" data-score-combo-kind="w" width="44" height="44"></canvas>
+              </div>
+              <div class="special-combo-copy">
+                <b>彩球＋包裝</b>
+                <span>同色普通糖先變成包裝糖，再一起觸發。</span>
+              </div>
+            </div>
+
+            <div class="special-combo-item">
+              <div class="special-combo-pair" aria-hidden="true">
+                <canvas class="special-combo-icon" data-score-combo-kind="b" width="44" height="44"></canvas>
+                <span class="special-combo-plus">+</span>
+                <canvas class="special-combo-icon" data-score-combo-kind="b" width="44" height="44"></canvas>
+              </div>
+              <div class="special-combo-copy">
+                <b>彩球＋彩球</b>
+                <span>清除整個棋盤上的糖果。</span>
+              </div>
+            </div>
+          </div>
+
 
           <div class="tool-guide" aria-label="道具圖示說明">
             <div class="tool-guide-item">

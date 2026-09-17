@@ -926,9 +926,9 @@ input{ font:inherit; }
   align-items:center;
   min-height:66px;
   padding:8px 9px;
-  border:1px solid var(--panel-line);
+  border:1px solid transparent;
   border-radius:3px;
-  background:rgba(42,48,60,.72);
+  background:transparent;
 }
 
 .special-guide-item--striped{
@@ -980,9 +980,9 @@ input{ font:inherit; }
   align-items:center;
   min-height:54px;
   padding:8px 9px;
-  border:1px solid var(--panel-line);
+  border:1px solid transparent;
   border-radius:3px;
-  background:rgba(42,48,60,.72);
+  background:transparent;
 }
 
 .tool-guide-icon{
@@ -1183,6 +1183,63 @@ input{ font:inherit; }
   height:30px;
 }
 
+.special-combo-guide{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px 12px;
+  padding:12px 0;
+  border-bottom:1px solid var(--panel-line);
+}
+
+.special-combo-item{
+  display:grid;
+  grid-template-columns:104px minmax(0,1fr);
+  gap:9px;
+  align-items:center;
+  min-height:66px;
+  padding:8px 9px;
+  border:1px solid transparent;
+  border-radius:3px;
+  background:transparent;
+}
+
+.special-combo-pair{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  width:104px;
+}
+
+.special-combo-icon{
+  display:block;
+  width:44px;
+  height:44px;
+}
+
+.special-combo-plus{
+  color:var(--panel-muted);
+  font-size:.9rem;
+  font-weight:700;
+  line-height:1;
+}
+
+.special-combo-copy{ min-width:0; }
+
+.special-combo-copy b{
+  display:block;
+  margin-bottom:2px;
+  color:var(--panel-text);
+  font-size:.86rem;
+}
+
+.special-combo-copy span{
+  display:block;
+  color:var(--panel-muted);
+  font-size:.76rem;
+  line-height:1.45;
+}
+
 .score-combo-demo{
   min-height:52px;
   display:flex;
@@ -1340,6 +1397,27 @@ input{ font:inherit; }
   .special-guide-item--striped .special-guide-icon{
     width:39px;
     height:39px;
+  }
+
+  .special-combo-guide{
+    grid-template-columns:1fr;
+    gap:7px;
+  }
+
+  .special-combo-item{
+    grid-template-columns:94px minmax(0,1fr);
+    gap:7px;
+    padding:7px;
+  }
+
+  .special-combo-pair{
+    width:94px;
+    gap:3px;
+  }
+
+  .special-combo-icon{
+    width:40px;
+    height:40px;
   }
 
   .tool-guide{
