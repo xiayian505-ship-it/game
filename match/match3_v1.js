@@ -704,6 +704,7 @@
   let activeGameMode = "infinite";
   let activeRankingMode = "infinite";
   let pendingAutoEnd = false;
+  let pendingAutoPause = false;
   let nextBom = 10000;
   let bomShowing = false;
   let activeTool = null;
@@ -1438,7 +1439,12 @@
     syncInteractionState();
 
     if (!busy) {
-      queueMicrotask(checkModeEndCondition);
+      checkModeEndCondition();
+
+      if (pendingAutoPause && gameState === STATE.RUNNING) {
+        pendingAutoPause = false;
+        pauseRunningGame();
+      }
     }
   }
 
@@ -1662,7 +1668,7 @@
       resetBOMPresentation();
       bomShowing = false;
 
-      if (timerWasRunning && gameState === STATE.RUNNING) {
+      if (timerWasRunning && gameState === STATE.RUNNING && !pendingAutoPause) {
         resumeTimer();
       }
     }
@@ -2920,6 +2926,7 @@
     if (gameState !== STATE.IDLE && gameState !== STATE.ENDED) return;
 
     activeGameMode = selectedGameMode();
+    pendingAutoPause = false;
 
     if (gameState === STATE.ENDED) {
       resetGameValues();
@@ -2934,14 +2941,32 @@
     render();
   }
 
+  function pauseRunningGame() {
+    if (gameState !== STATE.RUNNING) return;
+    cancelTool();
+    setState(STATE.PAUSED);
+    pauseTimer();
+  }
+
+  function requestAutoPause() {
+    if (gameState !== STATE.RUNNING) return;
+
+    if (busy) {
+      pendingAutoPause = true;
+      pauseTimer();
+      return;
+    }
+
+    pauseRunningGame();
+  }
+
   function togglePause() {
     if (busy) return;
 
     if (gameState === STATE.RUNNING) {
-      cancelTool();
-      setState(STATE.PAUSED);
-      pauseTimer();
+      pauseRunningGame();
     } else if (gameState === STATE.PAUSED) {
+      pendingAutoPause = false;
       setState(STATE.RUNNING);
       resumeTimer();
       checkModeEndCondition();
@@ -2957,6 +2982,7 @@
 
     stopTimer();
     pendingAutoEnd = false;
+    pendingAutoPause = false;
     activeTool = null;
     toolSwapFirst = null;
     syncToolButtons();
@@ -2987,8 +3013,14 @@
   =============================== */
   viewTabs.forEach(tab => {
     tab.addEventListener("click", () => {
-      showView(tab.dataset.viewTarget);
+      const nextView = tab.dataset.viewTarget;
+      if (nextView !== "game") requestAutoPause();
+      showView(nextView);
     });
+  });
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) requestAutoPause();
   });
 
   rankModeTabs.forEach(tab => {
