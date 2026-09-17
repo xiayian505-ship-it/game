@@ -114,7 +114,7 @@
                 <option value="timed">計時・3 分鐘</option>
                 <option value="moves">步數・30 步</option>
               </select>
-              <div class="setting-note">無限模式道具不限次數；計時與步數模式的六種道具每場各可使用一次。</div>
+              <div class="setting-note" id="gameModeNote" aria-live="polite"></div>
             </div>
           </div>
         </div>
@@ -209,11 +209,6 @@
               </div>
             </div>
           </div>
-          <p><b>無限</b>：不限時間、步數與道具次數。</p>
-          <p><b>計時</b>：每場從 03:00 開始倒數至 00:00；六種道具每場各可使用一次。</p>
-          <p><b>步數</b>：每場 30 次有效交換；交換失敗與使用道具不扣步，六種道具每場各可使用一次。</p>
-          <p>三種模式各自保存本機 TOP 3；手動結束、時間到或步數用完都會結算。</p>
-
 
         </div>
       </details>

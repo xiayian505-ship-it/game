@@ -39,6 +39,12 @@
     moves: Object.freeze({ label: "步數", durationMs: null, moveLimit: 30, limitedTools: true })
   });
 
+  const GAME_MODE_DESCRIPTION = Object.freeze({
+    infinite: "不限時間、步數與道具次數；排行榜獨立保存本機 TOP 3，手動結束時結算。",
+    timed: "每場從 03:00 倒數至 00:00；六種道具每場各可使用一次。排行榜獨立保存本機 TOP 3，時間到或手動結束時結算。",
+    moves: "每場 30 次有效交換；交換失敗與使用道具不扣步，六種道具每場各可使用一次。排行榜獨立保存本機 TOP 3，步數用完或手動結束時結算。"
+  });
+
   function normalizedGameMode(value) {
     return Object.prototype.hasOwnProperty.call(GAME_MODE, value)
       ? value
@@ -94,6 +100,7 @@
   const soundOnEl = document.getElementById("soundOn");
   const volumeLevelEl = document.getElementById("volumeLevel");
   const gameModeEl = document.getElementById("gameMode");
+  const gameModeNoteEl = document.getElementById("gameModeNote");
 
   const bombOverlayEl = document.getElementById("bombOverlay");
   const bombTextEl = document.getElementById("bombText");
@@ -2857,9 +2864,16 @@
     return normalizedGameMode(gameModeEl.value);
   }
 
+  function renderModeDescription(mode = selectedGameMode()) {
+    if (!gameModeNoteEl) return;
+    const normalizedMode = normalizedGameMode(mode);
+    gameModeNoteEl.textContent = GAME_MODE_DESCRIPTION[normalizedMode];
+  }
+
   function syncModePreview() {
     if (gameState !== STATE.IDLE) return;
     activeGameMode = selectedGameMode();
+    renderModeDescription(activeGameMode);
     renderSteps();
     renderElapsedTime();
     syncToolButtons();
@@ -3017,6 +3031,7 @@
   gameModeEl.addEventListener("change", () => {
     if (gameState === STATE.RUNNING || gameState === STATE.PAUSED) {
       gameModeEl.value = activeGameMode;
+      renderModeDescription(activeGameMode);
       return;
     }
 
@@ -3033,6 +3048,7 @@
     createDom();
     activeGameMode = selectedGameMode();
     activeRankingMode = activeGameMode;
+    renderModeDescription(activeGameMode);
 
     try {
       await renderTop3(activeRankingMode);
