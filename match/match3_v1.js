@@ -102,6 +102,17 @@
   const comboFloatEl = document.getElementById("comboFloat");
   const comboShineTextEl = document.getElementById("comboShineText");
 
+  const scoreGuideEl = document.getElementById("scoreGuide");
+  const scoreBasicCandyCanvases = document.querySelectorAll("[data-score-basic-candy]");
+  const scoreToolCanvases = document.querySelectorAll("[data-score-tool]");
+  const scoreSpecialStripedHIconCanvas = document.getElementById("scoreSpecialStripedHIcon");
+  const scoreSpecialStripedVIconCanvas = document.getElementById("scoreSpecialStripedVIcon");
+  const scoreSpecialWrappedIconCanvas = document.getElementById("scoreSpecialWrappedIcon");
+  const scoreSpecialColorIconCanvas = document.getElementById("scoreSpecialColorIcon");
+  const scoreComboDemoTextEl = document.getElementById("scoreComboDemoText");
+  const scoreBomTitleTextEl = document.getElementById("scoreBomTitleText");
+  const scoreBomMilestoneTextEl = document.getElementById("scoreBomMilestoneText");
+
   // 同一支 HTML 內切換「遊戲 / 排行榜」；只切畫面，不改遊戲狀態。
   const viewTabs = document.querySelectorAll("[data-view-target]");
   const viewPanels = document.querySelectorAll("[data-view-panel]");
@@ -400,11 +411,21 @@
   }
 
   function renderSpecialGuideIcons() {
-    // 說明區與棋盤共用同一套特殊糖圖示；條紋糖同時展示橫列與直列兩種方向。
+    // 說明區、計分區與棋盤共用同一套特殊糖圖示。
     drawSpecialGuideCandy(guideSpecialStripedHIconCanvas, "sh", 2);
     drawSpecialGuideCandy(guideSpecialStripedVIconCanvas, "sv", 3);
     drawSpecialGuideCandy(guideSpecialWrappedIconCanvas, "w", 4);
     drawSpecialGuideCandy(guideSpecialColorIconCanvas, "b", 1);
+
+    drawSpecialGuideCandy(scoreSpecialStripedHIconCanvas, "sh", 2);
+    drawSpecialGuideCandy(scoreSpecialStripedVIconCanvas, "sv", 3);
+    drawSpecialGuideCandy(scoreSpecialWrappedIconCanvas, "w", 4);
+    drawSpecialGuideCandy(scoreSpecialColorIconCanvas, "b", 1);
+
+    scoreBasicCandyCanvases.forEach(canvas => {
+      const colorIndex = Number(canvas.dataset.scoreBasicCandy);
+      drawSpecialGuideCandy(canvas, null, Number.isFinite(colorIndex) ? colorIndex : 0);
+    });
   }
 
   function drawColorPaletteSymbol(ctx, size) {
@@ -511,12 +532,52 @@
     drawRepeatIcon(guideToolRefreshIconCanvas, "#8e7fa0");
     drawColorPaletteIcon(guideToolColorIconCanvas);
 
+    scoreToolCanvases.forEach(canvas => {
+      switch (canvas.dataset.scoreTool) {
+        case "single":
+          drawRecordDotIcon(canvas, "#c4874d");
+          break;
+        case "row":
+          drawDoubleArrowIcon(canvas, "horizontal", "#6f93a4");
+          break;
+        case "column":
+          drawDoubleArrowIcon(canvas, "vertical", "#7f9a7d");
+          break;
+        case "swap":
+          drawRightLeftStackIcon(canvas, "#b86b75");
+          break;
+        case "refresh":
+          drawRepeatIcon(canvas, "#8e7fa0");
+          break;
+        case "color":
+          drawColorPaletteIcon(canvas);
+          break;
+      }
+    });
+
     renderSpecialGuideIcons();
     renderControlIcons();
   }
 
+  function replayScoreGuideTextEffects() {
+    if (!scoreGuideEl?.open) return;
+
+    [scoreComboDemoTextEl, scoreBomTitleTextEl, scoreBomMilestoneTextEl].forEach((el, index) => {
+      if (!el) return;
+      el.classList.remove("slowly-shine-text");
+      void el.offsetWidth;
+      window.setTimeout(() => el.classList.add("slowly-shine-text"), index * 90);
+    });
+  }
+
   function showView(viewName) {
-    viewTabs.forEach(tab => {
+    scoreGuideEl?.addEventListener("toggle", () => {
+    if (!scoreGuideEl.open) return;
+    renderToolIcons();
+    replayScoreGuideTextEffects();
+  });
+
+  viewTabs.forEach(tab => {
       tab.setAttribute(
         "aria-selected",
         tab.dataset.viewTarget === viewName ? "true" : "false"
@@ -1118,7 +1179,9 @@
     matches = null,
     expandedSet,
     targetColor = null,
-    forceBoardBlast = false
+    forceBoardBlast = false,
+    extraSweepEffects = [],
+    extraBurstEffects = []
   }) {
     clearPresentationEffects();
 
@@ -1128,9 +1191,11 @@
     }
 
     // 第一拍：Sweep Line 只負責方向掃線；Match3 決定哪些範圍要掃。
+    // 組合技可以額外提供自己的掃線範圍，不改軍火庫零件本體。
     const sweepEffects = [
       ...matchSweepEffects(matches),
-      ...specialSweepEffects(specials, forceBoardBlast)
+      ...specialSweepEffects(specials, forceBoardBlast),
+      ...extraSweepEffects
     ];
 
     // 彩球先讓目標色醒來；這仍是 Match3 自己的語意。
@@ -1147,7 +1212,8 @@
     // 第二拍：Area Burst 只負責實際消除範圍爆亮。
     const burstEffects = [
       ...matchBurstEffects(matches),
-      ...specialBurstEffects(specials, forceBoardBlast)
+      ...specialBurstEffects(specials, forceBoardBlast),
+      ...extraBurstEffects
     ];
 
     await clearBurst.play(burstEffects, {
@@ -1872,7 +1938,103 @@
 
   /* ===============================
      Specials triggered on swap
+
+     組合技：
+     - 條紋 + 條紋：一整排 + 一整列
+     - 條紋 + 包裝：3 排 + 3 列
+     - 包裝 + 包裝：5x5
+     - 彩球 + 條紋：同色普通糖先變條紋，再一起觸發
+     - 彩球 + 包裝：同色普通糖先變包裝，再一起觸發
+     - 彩球 + 彩球：全盤清除
   =============================== */
+  const isStripedSpecial = sp => sp === "sh" || sp === "sv";
+
+  function addPositionsToSet(targetSet, positions) {
+    for (const pos of positions) {
+      if (inBounds(pos.r, pos.c)) targetSet.add(k(pos.r, pos.c));
+    }
+  }
+
+  function comboCenter(a, b) {
+    // 交換完成後以玩家第二個落點作為組合技中心；兩顆本身仍都會被清掉。
+    return { r: b.r, c: b.c };
+  }
+
+  function comboLineEffects(center, rowRadius = 0, columnRadius = 0) {
+    const sweepEffects = [];
+    const burstEffects = [];
+
+    for (let dr = -rowRadius; dr <= rowRadius; dr += 1) {
+      const r = center.r + dr;
+      if (!inBounds(r, center.c)) continue;
+      const targets = targetElements(rowPositions(r));
+      sweepEffects.push({
+        targets,
+        direction: "horizontal",
+        ...SPECIAL_SWEEP_STYLE
+      });
+      burstEffects.push({
+        targets,
+        type: "block",
+        className: "match3-special-burst",
+        ...SPECIAL_BLOCK_STYLE
+      });
+    }
+
+    for (let dc = -columnRadius; dc <= columnRadius; dc += 1) {
+      const c = center.c + dc;
+      if (!inBounds(center.r, c)) continue;
+      const targets = targetElements(columnPositions(c));
+      sweepEffects.push({
+        targets,
+        direction: "vertical",
+        ...SPECIAL_SWEEP_STYLE
+      });
+      burstEffects.push({
+        targets,
+        type: "block",
+        className: "match3-special-burst",
+        ...SPECIAL_BLOCK_STYLE
+      });
+    }
+
+    return { sweepEffects, burstEffects };
+  }
+
+  async function finishSpecialClear({
+    toClear,
+    scoreMultiplier = 12,
+    targetColor = null,
+    forceBoardBlast = false,
+    extraSweepEffects = [],
+    extraBurstEffects = [],
+    sound = "special"
+  }) {
+    const expanded = await expandByTriggeredSpecials(toClear);
+    const clearPresentation = await playClearPresentation({
+      expandedSet: expanded,
+      targetColor,
+      forceBoardBlast,
+      extraSweepEffects,
+      extraBurstEffects
+    });
+    const cleared = applyClear(expanded, new Set());
+    score += cleared * scoreMultiplier * Math.max(1, combo);
+
+    if (sound === "bomb") sfxBomb();
+    else sfxSpecial();
+
+    render();
+    clearPresentation();
+    await sleep(110);
+
+    dropDownAndFill();
+    render();
+    await sleep(140);
+
+    await checkBOM();
+  }
+
   async function triggerColorBombAt(bombPos, targetColor) {
     const toClear = new Set();
 
@@ -1936,31 +2098,145 @@
     await checkBOM();
   }
 
+  async function triggerStripedStriped(a, b) {
+    const center = comboCenter(a, b);
+    const toClear = new Set([k(a.r, a.c), k(b.r, b.c)]);
+    addPositionsToSet(toClear, rowPositions(center.r));
+    addPositionsToSet(toClear, columnPositions(center.c));
+
+    // 組合後不要再讓這兩顆各自追加一次原本的單顆效果。
+    grid[a.r][a.c].sp = null;
+    grid[b.r][b.c].sp = null;
+
+    const effects = comboLineEffects(center, 0, 0);
+    await finishSpecialClear({
+      toClear,
+      scoreMultiplier: 14,
+      extraSweepEffects: effects.sweepEffects,
+      extraBurstEffects: effects.burstEffects,
+      sound: "special"
+    });
+  }
+
+  async function triggerStripedWrapped(a, b) {
+    const center = comboCenter(a, b);
+    const toClear = new Set([k(a.r, a.c), k(b.r, b.c)]);
+
+    for (let dr = -1; dr <= 1; dr += 1) {
+      const r = center.r + dr;
+      if (inBounds(r, center.c)) addPositionsToSet(toClear, rowPositions(r));
+    }
+    for (let dc = -1; dc <= 1; dc += 1) {
+      const c = center.c + dc;
+      if (inBounds(center.r, c)) addPositionsToSet(toClear, columnPositions(c));
+    }
+
+    grid[a.r][a.c].sp = null;
+    grid[b.r][b.c].sp = null;
+
+    const effects = comboLineEffects(center, 1, 1);
+    await finishSpecialClear({
+      toClear,
+      scoreMultiplier: 16,
+      extraSweepEffects: effects.sweepEffects,
+      extraBurstEffects: effects.burstEffects,
+      sound: "bomb"
+    });
+  }
+
+  async function triggerWrappedWrapped(a, b) {
+    const center = comboCenter(a, b);
+    const toClear = new Set([k(a.r, a.c), k(b.r, b.c)]);
+    const area = areaPositions(center.r, center.c, 2);
+    addPositionsToSet(toClear, area);
+
+    grid[a.r][a.c].sp = null;
+    grid[b.r][b.c].sp = null;
+
+    await finishSpecialClear({
+      toClear,
+      scoreMultiplier: 16,
+      extraBurstEffects: [{
+        targets: targetElements(area),
+        type: "radial",
+        duration: SPECIAL_BLOCK_MS,
+        radialCore: "rgba(255,255,255,1)",
+        radialMid: "rgba(255,229,180,.84)",
+        radialSoft: "rgba(255,255,255,.54)",
+        glow: "rgba(255,255,255,.98)"
+      }],
+      sound: "bomb"
+    });
+  }
+
+  async function triggerColorBombSpecial(bombPos, specialPos, specialKind, targetColor) {
+    const toClear = new Set([k(bombPos.r, bombPos.c), k(specialPos.r, specialPos.c)]);
+    const converted = [];
+
+    // 彩球本身先失去「全盤爆」語意，避免後面的 ChainExpand 把整盤誤清。
+    grid[bombPos.r][bombPos.c].sp = null;
+
+    for (let r = 0; r < SIZE; r += 1) {
+      for (let c = 0; c < SIZE; c += 1) {
+        const cell = grid[r][c];
+        if (!cell || cell.c !== targetColor) continue;
+
+        // 彩球本身沒有顏色語意；資料裡殘留的 c 不參與「同色變身」。
+        if (cell.sp === "b") continue;
+
+        const key = k(r, c);
+
+        // 搭配的那顆特殊糖保留自己，並一起作為起爆點。
+        if (r === specialPos.r && c === specialPos.c) {
+          toClear.add(key);
+          continue;
+        }
+
+        // 規格：只把同色「普通糖」轉成對應特殊糖；既有特殊糖維持原能力。
+        if (!cell.sp) {
+          cell.sp = specialKind === "striped"
+            ? (SlowlyRandom.int(0, 1) === 0 ? "sh" : "sv")
+            : "w";
+          converted.push({ r, c });
+          pendingSpecialReveal.add(key);
+        }
+
+        toClear.add(key);
+      }
+    }
+
+    // 先讓玩家看到「同色糖全部變身」，再一起爆。
+    render();
+    if (converted.length > 0) await sleep(300);
+
+    await finishSpecialClear({
+      toClear,
+      scoreMultiplier: specialKind === "striped" ? 18 : 20,
+      targetColor,
+      sound: specialKind === "wrapped" ? "bomb" : "special"
+    });
+  }
+
   async function triggerSpecialPair(a, b) {
     const first = { ...grid[a.r][a.c] };
     const second = { ...grid[b.r][b.c] };
 
-    const seeds = new Set([k(a.r, a.c), k(b.r, b.c)]);
-    const expanded = await expandByTriggeredSpecials(seeds);
-    const clearPresentation = await playClearPresentation({
-      expandedSet: expanded
-    });
-    const count = applyClear(expanded, new Set());
+    if (isStripedSpecial(first.sp) && isStripedSpecial(second.sp)) {
+      await triggerStripedStriped(a, b);
+      return;
+    }
 
-    score += count * 12 * Math.max(1, combo);
+    if (
+      (isStripedSpecial(first.sp) && second.sp === "w") ||
+      (first.sp === "w" && isStripedSpecial(second.sp))
+    ) {
+      await triggerStripedWrapped(a, b);
+      return;
+    }
 
-    if (first.sp === "w" || second.sp === "w") sfxBomb();
-    else sfxSpecial();
-
-    render();
-    clearPresentation();
-    await sleep(100);
-
-    dropDownAndFill();
-    render();
-    await sleep(120);
-
-    await checkBOM();
+    if (first.sp === "w" && second.sp === "w") {
+      await triggerWrappedWrapped(a, b);
+    }
   }
 
   async function maybeTriggerSpecialOnSwap(a, b) {
@@ -1969,6 +2245,26 @@
 
     if (ca.sp === "b" && cb.sp === "b") {
       await triggerClearAll();
+      return true;
+    }
+
+    if (ca.sp === "b" && isStripedSpecial(cb.sp)) {
+      await triggerColorBombSpecial(a, b, "striped", cb.c);
+      return true;
+    }
+
+    if (cb.sp === "b" && isStripedSpecial(ca.sp)) {
+      await triggerColorBombSpecial(b, a, "striped", ca.c);
+      return true;
+    }
+
+    if (ca.sp === "b" && cb.sp === "w") {
+      await triggerColorBombSpecial(a, b, "wrapped", cb.c);
+      return true;
+    }
+
+    if (cb.sp === "b" && ca.sp === "w") {
+      await triggerColorBombSpecial(b, a, "wrapped", ca.c);
       return true;
     }
 
@@ -2030,9 +2326,22 @@
         pendingSpecialReveal.add(k(special.r, special.c));
       }
 
-      score += clearedCount * 10 * combo;
+      // 基本消除：形成特殊糖時，被保留下來的那一顆仍算進這次配對分數。
+      // 例如 4 連就是 4 顆、5 連就是 5 顆，不會因為留下一顆特殊糖而少算。
+      const matchedBaseCount = clearedCount + specialsToCreate.length;
+      score += matchedBaseCount * 10 * combo;
 
-      sfxPop(Math.min(6, clearedCount));
+      // 特殊糖成立獎勵：固定加分，不再乘 Combo。
+      // 條紋 +40、包裝 +80、彩球 +120。
+      const specialCreationBonus = specialsToCreate.reduce((total, special) => {
+        if (special.sp === "sh" || special.sp === "sv") return total + 40;
+        if (special.sp === "w") return total + 80;
+        if (special.sp === "b") return total + 120;
+        return total;
+      }, 0);
+      score += specialCreationBonus;
+
+      sfxPop(Math.min(6, matchedBaseCount));
       if (specialsToCreate.length > 0) sfxSpecial();
 
       render();
@@ -2128,9 +2437,13 @@
         return false;
       }
 
+      // 道具直接清除只吃基本分：每顆 10 分，不套 Combo 倍率。
+      score += cleared * 10;
+
       sfxSpecial();
       render();
       clearPresentation();
+      await checkBOM();
       await sleep(90);
 
       dropDownAndFill();

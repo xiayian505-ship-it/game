@@ -210,6 +210,86 @@
           <p><b>計時</b>：每場從 03:00 開始倒數至 00:00；六種道具每場各可使用一次。</p>
           <p><b>步數</b>：每場 30 次有效交換；交換失敗與使用道具不扣步，六種道具每場各可使用一次。</p>
           <p>三種模式各自保存本機 TOP 3；手動結束、時間到或步數用完都會結算。</p>
+
+          <details class="score-guide" id="scoreGuide">
+            <summary class="score-guide-summary">
+              <span>計分說明</span>
+              <span class="score-guide-summary-note">點擊展開</span>
+            </summary>
+
+            <div class="score-guide-body">
+              <section class="score-section" aria-labelledby="scoreBasicTitle">
+                <h3 id="scoreBasicTitle">基本</h3>
+                <div class="score-basic-candies" aria-label="六種基本糖，每顆 10 分">
+                  <div class="score-basic-candy"><canvas data-score-basic-candy="0" width="44" height="44" aria-hidden="true"></canvas><span>+10</span></div>
+                  <div class="score-basic-candy"><canvas data-score-basic-candy="1" width="44" height="44" aria-hidden="true"></canvas><span>+10</span></div>
+                  <div class="score-basic-candy"><canvas data-score-basic-candy="2" width="44" height="44" aria-hidden="true"></canvas><span>+10</span></div>
+                  <div class="score-basic-candy"><canvas data-score-basic-candy="3" width="44" height="44" aria-hidden="true"></canvas><span>+10</span></div>
+                  <div class="score-basic-candy"><canvas data-score-basic-candy="4" width="44" height="44" aria-hidden="true"></canvas><span>+10</span></div>
+                  <div class="score-basic-candy"><canvas data-score-basic-candy="5" width="44" height="44" aria-hidden="true"></canvas><span>+10</span></div>
+                </div>
+                <p>六種基本糖每消除 1 顆得 10 分。</p>
+              </section>
+
+              <section class="score-section" aria-labelledby="scoreSpecialTitle">
+                <h3 id="scoreSpecialTitle">特殊</h3>
+                <div class="score-specials">
+                  <div class="score-special-item">
+                    <div class="score-special-pair" aria-hidden="true">
+                      <canvas id="scoreSpecialStripedHIcon" width="44" height="44"></canvas>
+                      <canvas id="scoreSpecialStripedVIcon" width="44" height="44"></canvas>
+                    </div>
+                    <b>條紋糖 +40</b>
+                    <span>成立獎勵</span>
+                  </div>
+                  <div class="score-special-item">
+                    <canvas class="score-special-icon" id="scoreSpecialWrappedIcon" width="44" height="44" aria-hidden="true"></canvas>
+                    <b>包裝糖 +80</b>
+                    <span>成立獎勵</span>
+                  </div>
+                  <div class="score-special-item">
+                    <canvas class="score-special-icon" id="scoreSpecialColorIcon" width="44" height="44" aria-hidden="true"></canvas>
+                    <b>彩球 +120</b>
+                    <span>成立獎勵</span>
+                  </div>
+                </div>
+                <p>特殊糖成立獎勵不乘 COMBO；引爆與特殊糖組合會依實際消除範圍獲得較高分數。</p>
+              </section>
+
+              <section class="score-section" aria-labelledby="scoreToolTitle">
+                <h3 id="scoreToolTitle">道具</h3>
+                <div class="score-tools" aria-label="六種道具">
+                  <div class="score-tool"><canvas data-score-tool="single" width="30" height="30" aria-hidden="true"></canvas><span>單顆</span></div>
+                  <div class="score-tool"><canvas data-score-tool="row" width="30" height="30" aria-hidden="true"></canvas><span>橫列</span></div>
+                  <div class="score-tool"><canvas data-score-tool="column" width="30" height="30" aria-hidden="true"></canvas><span>直列</span></div>
+                  <div class="score-tool"><canvas data-score-tool="swap" width="30" height="30" aria-hidden="true"></canvas><span>交換</span></div>
+                  <div class="score-tool"><canvas data-score-tool="refresh" width="30" height="30" aria-hidden="true"></canvas><span>重整</span></div>
+                  <div class="score-tool"><canvas data-score-tool="color" width="30" height="30" aria-hidden="true"></canvas><span>同色</span></div>
+                </div>
+                <p>單顆／橫列／直列／同色直接消除時，每顆 10 分、不套 COMBO。交換與重整本身不直接加分；操作後若自然形成消除，照一般規則計分。</p>
+              </section>
+
+              <section class="score-section" aria-labelledby="scoreComboTitle">
+                <h3 id="scoreComboTitle">COMBO</h3>
+                <div class="score-combo-demo" aria-hidden="true">
+                  <span id="scoreComboDemoText" class="score-demo-shine slowly-shine-text">COMBO ×2</span>
+                </div>
+                <div class="score-rule-pair">
+                  <p><b>有 COMBO</b>：同一次操作後，糖果掉落再次形成消除時，從 ×2 開始累積；自然連鎖中觸發的特殊糖跟著當下 COMBO 計分。</p>
+                  <p><b>沒有 COMBO</b>：第一輪消除為 ×1；特殊糖成立獎勵、道具直接消除，以及特殊糖互換組合本身不另外套 COMBO。</p>
+                </div>
+              </section>
+
+              <section class="score-section score-section--achievement" aria-labelledby="scoreAchievementTitle">
+                <h3 id="scoreAchievementTitle">成就</h3>
+                <div class="score-bom-demo" aria-hidden="true">
+                  <span id="scoreBomTitleText" class="score-demo-shine slowly-shine-text">BOM！</span>
+                  <span id="scoreBomMilestoneText" class="score-demo-shine slowly-shine-text">10K！</span>
+                </div>
+                <p>總分每達成新的 10,000 分成就，就會觸發一次 BOM 演出：10K、20K、30K……。BOM 是成就演出，本身不另外加分。</p>
+              </section>
+            </div>
+          </details>
         </div>
       </section>
     </section>

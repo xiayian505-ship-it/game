@@ -1021,6 +1021,235 @@ input{ font:inherit; }
   line-height:1.45;
 }
 
+/* ===============================
+   計分說明：預設收合，展開後用圖文分成五區。
+================================ */
+.score-guide{
+  margin-top:18px;
+  border-top:1px solid var(--panel-line);
+  border-bottom:1px solid var(--panel-line);
+}
+
+.score-guide-summary{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:13px 0;
+  color:var(--panel-text);
+  font-weight:800;
+  cursor:pointer;
+  list-style:none;
+  user-select:none;
+}
+
+.score-guide-summary::-webkit-details-marker{ display:none; }
+.score-guide-summary::after{
+  content:"＋";
+  flex:0 0 auto;
+  color:var(--panel-muted);
+  font-size:1.1rem;
+  font-weight:500;
+}
+.score-guide[open] > .score-guide-summary::after{ content:"－"; }
+
+.score-guide-summary-note{
+  margin-left:auto;
+  color:var(--panel-muted);
+  font-size:.76rem;
+  font-weight:500;
+}
+
+.score-guide[open] .score-guide-summary-note{ opacity:.62; }
+
+.score-guide-body{
+  padding:0 0 8px;
+}
+
+.score-section{
+  padding:16px 0;
+  border-top:1px solid var(--panel-line);
+}
+
+.score-section h3{
+  margin:0 0 12px;
+  color:var(--panel-text);
+  font-size:.95rem;
+  font-weight:850;
+  letter-spacing:.04em;
+}
+
+.score-section > p{
+  margin:10px 0 0;
+  padding:0;
+  border:0;
+  color:var(--panel-muted);
+  font-size:.82rem;
+  line-height:1.65;
+}
+
+.score-section > p b{ color:var(--panel-text); }
+
+.score-basic-candies{
+  display:grid;
+  grid-template-columns:repeat(6,minmax(0,1fr));
+  gap:6px;
+}
+
+.score-basic-candy{
+  display:grid;
+  justify-items:center;
+  gap:3px;
+  min-width:0;
+}
+
+.score-basic-candy canvas{
+  display:block;
+  width:44px;
+  height:44px;
+  max-width:100%;
+}
+
+.score-basic-candy span{
+  color:var(--panel-text);
+  font-size:.75rem;
+  font-weight:800;
+  font-variant-numeric:tabular-nums;
+}
+
+.score-specials{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;
+}
+
+.score-special-item{
+  display:grid;
+  justify-items:center;
+  align-content:start;
+  gap:4px;
+  min-width:0;
+  text-align:center;
+}
+
+.score-special-icon,
+.score-special-pair canvas{
+  display:block;
+  width:44px;
+  height:44px;
+}
+
+.score-special-pair{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:2px;
+  min-height:44px;
+}
+
+.score-special-item b{
+  color:var(--panel-text);
+  font-size:.8rem;
+}
+
+.score-special-item span{
+  color:var(--panel-muted);
+  font-size:.72rem;
+}
+
+.score-tools{
+  display:grid;
+  grid-template-columns:repeat(6,minmax(0,1fr));
+  gap:6px;
+}
+
+.score-tool{
+  display:grid;
+  justify-items:center;
+  gap:5px;
+  min-width:0;
+  color:var(--panel-muted);
+  font-size:.7rem;
+  text-align:center;
+}
+
+.score-tool canvas{
+  display:block;
+  width:30px;
+  height:30px;
+}
+
+.score-combo-demo{
+  min-height:52px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:clamp(1.65rem, 7vw, 2.6rem);
+  font-weight:950;
+  letter-spacing:.02em;
+  text-shadow:0 8px 22px rgba(0,0,0,.2);
+}
+
+.score-demo-shine.slowly-shine-text{
+  --sl-shine-duration:.72s;
+  animation-iteration-count:1;
+  animation-fill-mode:both;
+}
+
+.score-rule-pair{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+  margin-top:8px;
+}
+
+.score-rule-pair p{
+  margin:0;
+  padding:0;
+  border:0;
+  color:var(--panel-muted);
+  font-size:.8rem;
+  line-height:1.6;
+}
+
+.score-rule-pair b{ color:var(--panel-text); }
+
+.score-bom-demo{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:.04em;
+  min-height:92px;
+  color:#f7f2ea;
+  font-weight:950;
+  line-height:.88;
+  text-align:center;
+  text-shadow:
+    0 0 18px rgba(255,255,255,.12),
+    0 14px 34px rgba(0,0,0,.28);
+}
+
+#scoreBomTitleText{ font-size:clamp(2.15rem, 9vw, 3.65rem); }
+#scoreBomMilestoneText{ font-size:clamp(1.55rem, 7vw, 2.65rem); }
+
+@media (max-width:520px){
+  .score-rule-pair{ grid-template-columns:1fr; gap:8px; }
+  .score-basic-candy canvas{ width:40px; height:40px; }
+  .score-special-icon,
+  .score-special-pair canvas{ width:40px; height:40px; }
+  .score-special-pair{ gap:0; }
+}
+
+@media (max-width:380px){
+  .score-basic-candies,
+  .score-tools{ gap:3px; }
+
+  .score-basic-candy canvas{ width:36px; height:36px; }
+  .score-tool canvas{ width:27px; height:27px; }
+  .score-guide-summary-note{ display:none; }
+}
+
 
 /* ===============================
    SBS 品牌署名
