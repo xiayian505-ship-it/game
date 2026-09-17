@@ -92,6 +92,10 @@
   const guideToolRefreshIconCanvas = document.getElementById("guideToolRefreshIcon");
   const guideToolColorIconCanvas = document.getElementById("guideToolColorIcon");
 
+  const guideControlStartIconCanvas = document.getElementById("guideControlStartIcon");
+  const guideControlPauseIconCanvas = document.getElementById("guideControlPauseIcon");
+  const guideControlEndIconCanvas = document.getElementById("guideControlEndIcon");
+
   const guideSpecialStripedHIconCanvas = document.getElementById("guideSpecialStripedHIcon");
   const guideSpecialStripedVIconCanvas = document.getElementById("guideSpecialStripedVIcon");
   const guideSpecialWrappedIconCanvas = document.getElementById("guideSpecialWrappedIcon");
@@ -146,136 +150,46 @@
     return ctx;
   }
 
-  function drawArrowHead(ctx, x, y, angle, length, spread = Math.PI / 5.3) {
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.lineTo(x - Math.cos(angle - spread) * length, y - Math.sin(angle - spread) * length);
-    ctx.moveTo(x, y);
-    ctx.lineTo(x - Math.cos(angle + spread) * length, y - Math.sin(angle + spread) * length);
-    ctx.stroke();
-  }
-
-  function drawRecordDotIcon(canvas, color = "#c4874d") {
-    const size = getToolIconSize(canvas?.parentElement);
-    const ctx = prepareToolIconCanvas(canvas, size);
-    if (!ctx) return;
-
-    const r = size * 0.22;
-    const x = size / 2;
-    const y = size / 2;
-    const fill = ctx.createRadialGradient(x - r * 0.35, y - r * 0.35, r * 0.25, x, y, r);
-    fill.addColorStop(0, "rgba(255,255,255,.72)");
-    fill.addColorStop(0.2, color);
-    fill.addColorStop(1, color);
-    ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.fillStyle = fill;
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.strokeStyle = "rgba(63,85,83,.18)";
-    ctx.lineWidth = 1;
-    ctx.stroke();
-  }
-
-  function drawDoubleArrowSymbol(ctx, size, orientation = "horizontal", color = "#3f5553") {
-    if (!ctx) return;
-
-    const mid = size / 2;
-    const pad = size * 0.15;
-    const arrowLen = size * 0.23;
-    const stroke = Math.max(2.4, size * 0.11);
-    ctx.strokeStyle = color;
-    ctx.lineWidth = stroke;
-
-    if (orientation === "horizontal") {
-      ctx.beginPath();
-      ctx.moveTo(pad + arrowLen, mid);
-      ctx.lineTo(size - pad - arrowLen, mid);
-      ctx.stroke();
-      drawArrowHead(ctx, pad, mid, Math.PI, arrowLen);
-      drawArrowHead(ctx, size - pad, mid, 0, arrowLen);
-      return;
+  /* ===============================
+     軍火庫｜Canvas Icons
+     宿主只決定 family / variant 與視覺參數；圖形本體交給軍火庫。
+  =============================== */
+  function drawWarehouseIcon(canvas, family, variant, options = {}) {
+    if (!canvas) return false;
+    if (!globalThis.SlowlyCanvasIcons?.draw) {
+      console.warn("[Match3] SlowlyCanvasIcons 尚未載入。", { family, variant });
+      return false;
     }
 
-    ctx.beginPath();
-    ctx.moveTo(mid, pad + arrowLen);
-    ctx.lineTo(mid, size - pad - arrowLen);
-    ctx.stroke();
-    drawArrowHead(ctx, mid, pad, -Math.PI / 2, arrowLen);
-    drawArrowHead(ctx, mid, size - pad, Math.PI / 2, arrowLen);
+    const size = Number.isFinite(options.size)
+      ? options.size
+      : getToolIconSize(canvas.parentElement);
+    const visualScale = Number.isFinite(options.visualScale)
+      ? Math.max(0.5, options.visualScale)
+      : 1;
+    const drawOptions = { ...options, size };
+    delete drawOptions.visualScale;
+
+    // 直接讓軍火庫負責畫圖，再由宿主只調整畫面上的視覺佔比。
+    // 不再轉繪到暫存 Canvas，避免 family 內部尺寸 / DPR 規則被二次縮放。
+    globalThis.SlowlyCanvasIcons.draw(family, variant, canvas, drawOptions);
+    canvas.style.transformOrigin = "center center";
+    canvas.style.transform = visualScale === 1 ? "" : `scale(${visualScale})`;
+    return true;
   }
 
-  function drawDoubleArrowIcon(canvas, orientation = "horizontal", color = "#3f5553") {
-    const size = getToolIconSize(canvas?.parentElement);
-    const ctx = prepareToolIconCanvas(canvas, size);
-    if (!ctx) return;
-    drawDoubleArrowSymbol(ctx, size, orientation, color);
-  }
+  function drawWarehouseIconToContext(ctx, family, variant, size, options = {}) {
+    if (!ctx || !globalThis.SlowlyCanvasIcons?.draw) return false;
 
-  function drawRightLeftStackIcon(canvas, color = "#111111") {
-    const size = getToolIconSize(canvas?.parentElement);
-    const ctx = prepareToolIconCanvas(canvas, size);
-    if (!ctx) return;
+    const buffer = document.createElement("canvas");
+    globalThis.SlowlyCanvasIcons.draw(family, variant, buffer, {
+      ...options,
+      size
+    });
 
-    const pad = size * 0.2;
-    const arrowLen = size * 0.2;
-    const stroke = Math.max(2.5, size * 0.12);
-    const topY = size * 0.36;
-    const bottomY = size * 0.66;
-
-    ctx.strokeStyle = color;
-    ctx.lineWidth = stroke;
-
-    ctx.beginPath();
-    ctx.moveTo(pad, topY);
-    ctx.lineTo(size - pad, topY);
-    ctx.stroke();
-    drawArrowHead(ctx, size - pad, topY, 0, arrowLen, Math.PI / 4.8);
-
-    ctx.beginPath();
-    ctx.moveTo(size - pad, bottomY);
-    ctx.lineTo(pad, bottomY);
-    ctx.stroke();
-    drawArrowHead(ctx, pad, bottomY, Math.PI, arrowLen, Math.PI / 4.8);
-  }
-
-  function drawRepeatIcon(canvas, color = "#111111") {
-    const size = getToolIconSize(canvas?.parentElement);
-    const ctx = prepareToolIconCanvas(canvas, size);
-    if (!ctx) return;
-
-    const pad = size * 0.23;
-    const left = pad;
-    const right = size - pad;
-    const top = size * 0.34;
-    const bottom = size * 0.68;
-    const radius = size * 0.12;
-    const arrowLen = size * 0.18;
-    const stroke = Math.max(2.4, size * 0.105);
-
-    ctx.strokeStyle = color;
-    ctx.lineWidth = stroke;
-
-    ctx.beginPath();
-    ctx.moveTo(left + radius, bottom);
-    ctx.lineTo(right - radius, bottom);
-    ctx.quadraticCurveTo(right, bottom, right, bottom - radius);
-    ctx.lineTo(right, top + radius);
-    ctx.quadraticCurveTo(right, top, right - radius, top);
-    ctx.lineTo(left + arrowLen, top);
-    ctx.stroke();
-    drawArrowHead(ctx, right, top, 0, arrowLen, Math.PI / 4.8);
-
-    ctx.beginPath();
-    ctx.moveTo(right - arrowLen, bottom);
-    ctx.lineTo(left + radius, bottom);
-    ctx.quadraticCurveTo(left, bottom, left, bottom - radius);
-    ctx.lineTo(left, top + radius);
-    ctx.quadraticCurveTo(left, top, left + radius, top);
-    ctx.lineTo(left + arrowLen, top);
-    ctx.stroke();
-    drawArrowHead(ctx, left, bottom, Math.PI, arrowLen, Math.PI / 4.8);
+    if (!buffer.width || !buffer.height) return false;
+    ctx.drawImage(buffer, 0, 0, buffer.width, buffer.height, 0, 0, size, size);
+    return true;
   }
 
   function drawCandyCircle(ctx, x, y, r, topColor, bottomColor) {
@@ -332,14 +246,17 @@
     ctx.shadowBlur = size * 0.08;
 
     if (kind === "sh" || kind === "sv") {
-      // 特殊糖直接沿用下方「橫列 / 直列」道具的雙箭頭語言。
-      ctx.shadowColor = "rgba(255,255,255,.72)";
-      ctx.shadowBlur = size * 0.10;
-      drawDoubleArrowSymbol(
+      // 特殊糖的箭頭也吃軍火庫；先畫到暫存 Canvas，再疊回糖果，避免清掉糖果材質。
+      drawWarehouseIconToContext(
         ctx,
-        size,
+        "arrows",
         kind === "sh" ? "horizontal" : "vertical",
-        kind === "sh" ? "#6f93a4" : "#7f9a7d"
+        size,
+        {
+          color: kind === "sh" ? "#6f93a4" : "#7f9a7d",
+          thickness: Math.max(2.4, size * 0.11),
+          padding: size * 0.15
+        }
       );
 
       ctx.restore();
@@ -470,97 +387,135 @@
     const size = getToolIconSize(canvas?.parentElement);
     const ctx = prepareToolIconCanvas(canvas, size);
     if (!ctx) return;
+    canvas.style.transform = "";
+    canvas.style.transformOrigin = "center center";
     drawColorPaletteSymbol(ctx, size);
   }
 
-  function drawPlaybackIcon(canvas, kind, color) {
-    const size = Math.max(24, Math.min(32, Math.round((canvas?.parentElement?.clientHeight || 40) - 10)));
-    const ctx = prepareToolIconCanvas(canvas, size);
-    if (!ctx) return;
+  function renderControlIcons() {
+    const controlSize = canvas => Math.max(
+      24,
+      Math.min(32, Math.round((canvas?.parentElement?.clientHeight || 40) - 10))
+    );
 
-    ctx.fillStyle = color;
-    ctx.strokeStyle = color;
-    ctx.lineWidth = Math.max(2.4, size * 0.11);
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
+    const startSize = controlSize(btnStartIconCanvas);
+    drawWarehouseIcon(btnStartIconCanvas, "playback", "play", {
+      size: startSize,
+      color: "#7f9a7d",
+      padding: startSize * 0.18,
+      visualScale: 1.48
+    });
+    const pauseSize = controlSize(btnPauseIconCanvas);
+    drawWarehouseIcon(
+      btnPauseIconCanvas,
+      "playback",
+      gameState === STATE.PAUSED ? "play" : "pause",
+      {
+        size: pauseSize,
+        color: "#6f93a4",
+        padding: pauseSize * 0.18,
+        visualScale: 1.48
+      }
+    );
+    const endSize = controlSize(btnEndIconCanvas);
+    drawWarehouseIcon(btnEndIconCanvas, "playback", "stop", {
+      size: endSize,
+      color: "#b86b75",
+      padding: endSize * 0.18,
+      visualScale: 1.48
+    });
 
-    if (kind === "play") {
-      const left = size * 0.35;
-      const top = size * 0.24;
-      const bottom = size * 0.76;
-      const right = size * 0.75;
-      ctx.beginPath();
-      ctx.moveTo(left, top);
-      ctx.lineTo(right, size / 2);
-      ctx.lineTo(left, bottom);
-      ctx.closePath();
-      ctx.fill();
-      return;
-    }
-
-    if (kind === "pause") {
-      const w = size * 0.16;
-      const h = size * 0.5;
-      const y = (size - h) / 2;
-      ctx.fillRect(size * 0.32, y, w, h);
-      ctx.fillRect(size * 0.52, y, w, h);
-      return;
-    }
-
-    if (kind === "stop") {
-      const side = size * 0.46;
-      const xy = (size - side) / 2;
-      ctx.fillRect(xy, xy, side, side);
-    }
+    const guideSize = getToolIconSize(guideControlStartIconCanvas?.parentElement);
+    drawWarehouseIcon(guideControlStartIconCanvas, "playback", "play", {
+      size: guideSize,
+      color: "#7f9a7d",
+      padding: guideSize * 0.18,
+      visualScale: 1.48
+    });
+    drawWarehouseIcon(guideControlPauseIconCanvas, "playback", "pause", {
+      size: guideSize,
+      color: "#6f93a4",
+      padding: guideSize * 0.18,
+      visualScale: 1.48
+    });
+    drawWarehouseIcon(guideControlEndIconCanvas, "playback", "stop", {
+      size: guideSize,
+      color: "#b86b75",
+      padding: guideSize * 0.18,
+      visualScale: 1.48
+    });
   }
 
-  function renderControlIcons() {
-    drawPlaybackIcon(btnStartIconCanvas, "play", "#7f9a7d");   // sage
-    drawPlaybackIcon(
-      btnPauseIconCanvas,
-      gameState === STATE.PAUSED ? "play" : "pause",
-      "#6f93a4"
-    );
-    drawPlaybackIcon(btnEndIconCanvas, "stop", "#b86b75");     // dusty rose
+  function renderSharedToolIcon(canvas, kind) {
+    switch (kind) {
+      case "single": {
+        const size = getToolIconSize(canvas?.parentElement);
+        drawWarehouseIcon(canvas, "playback", "record", {
+          size,
+          color: "#c4874d",
+          padding: size * 0.14,
+          visualScale: 1.62
+        });
+        break;
+      }
+      case "row":
+        drawWarehouseIcon(canvas, "arrows", "horizontal", {
+          color: "#6f93a4",
+          thickness: Math.max(2.4, getToolIconSize(canvas?.parentElement) * 0.11),
+          padding: getToolIconSize(canvas?.parentElement) * 0.08,
+          visualScale: 1.52
+        });
+        break;
+      case "column":
+        drawWarehouseIcon(canvas, "arrows", "vertical", {
+          color: "#7f9a7d",
+          thickness: Math.max(2.4, getToolIconSize(canvas?.parentElement) * 0.11),
+          padding: getToolIconSize(canvas?.parentElement) * 0.08,
+          visualScale: 1.52
+        });
+        break;
+      case "swap":
+        drawWarehouseIcon(canvas, "arrows", "rightLeftStack", {
+          color: "#b86b75",
+          thickness: Math.max(2.5, getToolIconSize(canvas?.parentElement) * 0.12),
+          padding: getToolIconSize(canvas?.parentElement) * 0.10,
+          visualScale: 1.52
+        });
+        break;
+      case "refresh":
+        drawWarehouseIcon(canvas, "playback", "repeat", {
+          color: "#8e7fa0",
+          thickness: Math.max(2.4, getToolIconSize(canvas?.parentElement) * 0.105),
+          padding: getToolIconSize(canvas?.parentElement) * 0.10,
+          visualScale: 1.52
+        });
+        break;
+      case "color":
+        // 六色花花目前仍是 Match3 宿主圖示；軍火庫尚未確認對應 family / variant。
+        drawColorPaletteIcon(canvas);
+        break;
+    }
   }
 
   function renderToolIcons() {
-    // 遊戲列與說明區共用同一套 Canvas 畫法，避免圖示與文字對不上。
-    drawRecordDotIcon(toolSingleIconCanvas, "#c4874d");                 // sand
-    drawDoubleArrowIcon(toolRowIconCanvas, "horizontal", "#6f93a4");   // dusty blue
-    drawDoubleArrowIcon(toolColumnIconCanvas, "vertical", "#7f9a7d");  // sage
-    drawRightLeftStackIcon(toolSwapIconCanvas, "#b86b75");             // dusty rose
-    drawRepeatIcon(toolRefreshIconCanvas, "#8e7fa0");                  // mauve
-    drawColorPaletteIcon(toolColorIconCanvas);
-
-    drawRecordDotIcon(guideToolSingleIconCanvas, "#c4874d");
-    drawDoubleArrowIcon(guideToolRowIconCanvas, "horizontal", "#6f93a4");
-    drawDoubleArrowIcon(guideToolColumnIconCanvas, "vertical", "#7f9a7d");
-    drawRightLeftStackIcon(guideToolSwapIconCanvas, "#b86b75");
-    drawRepeatIcon(guideToolRefreshIconCanvas, "#8e7fa0");
-    drawColorPaletteIcon(guideToolColorIconCanvas);
+    // 遊戲列、遊戲說明、計分說明共用同一份 icon 對應。
+    [
+      [toolSingleIconCanvas, "single"],
+      [toolRowIconCanvas, "row"],
+      [toolColumnIconCanvas, "column"],
+      [toolSwapIconCanvas, "swap"],
+      [toolRefreshIconCanvas, "refresh"],
+      [toolColorIconCanvas, "color"],
+      [guideToolSingleIconCanvas, "single"],
+      [guideToolRowIconCanvas, "row"],
+      [guideToolColumnIconCanvas, "column"],
+      [guideToolSwapIconCanvas, "swap"],
+      [guideToolRefreshIconCanvas, "refresh"],
+      [guideToolColorIconCanvas, "color"]
+    ].forEach(([canvas, kind]) => renderSharedToolIcon(canvas, kind));
 
     scoreToolCanvases.forEach(canvas => {
-      switch (canvas.dataset.scoreTool) {
-        case "single":
-          drawRecordDotIcon(canvas, "#c4874d");
-          break;
-        case "row":
-          drawDoubleArrowIcon(canvas, "horizontal", "#6f93a4");
-          break;
-        case "column":
-          drawDoubleArrowIcon(canvas, "vertical", "#7f9a7d");
-          break;
-        case "swap":
-          drawRightLeftStackIcon(canvas, "#b86b75");
-          break;
-        case "refresh":
-          drawRepeatIcon(canvas, "#8e7fa0");
-          break;
-        case "color":
-          drawColorPaletteIcon(canvas);
-          break;
-      }
+      renderSharedToolIcon(canvas, canvas.dataset.scoreTool);
     });
 
     renderSpecialGuideIcons();
@@ -583,14 +538,14 @@
     renderToolIcons();
   });
 
-  function showView(viewName) {
-    scoreGuideEl?.addEventListener("toggle", () => {
+  scoreGuideEl?.addEventListener("toggle", () => {
     if (!scoreGuideEl.open) return;
     renderToolIcons();
     replayScoreGuideTextEffects();
   });
 
-  viewTabs.forEach(tab => {
+  function showView(viewName) {
+    viewTabs.forEach(tab => {
       tab.setAttribute(
         "aria-selected",
         tab.dataset.viewTarget === viewName ? "true" : "false"

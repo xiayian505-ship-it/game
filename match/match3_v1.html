@@ -126,6 +126,32 @@
           <span class="score-guide-summary-note">點擊展開</span>
         </summary>
         <div class="how instruction-guide-body">
+          <div class="tool-guide" aria-label="遊戲控制說明">
+            <div class="tool-guide-item">
+              <canvas class="tool-guide-icon" id="guideControlStartIcon" width="30" height="30" aria-hidden="true"></canvas>
+              <div class="tool-guide-copy">
+                <b>開始</b>
+                <span>開始目前選擇模式的遊戲。</span>
+              </div>
+            </div>
+
+            <div class="tool-guide-item">
+              <canvas class="tool-guide-icon" id="guideControlPauseIcon" width="30" height="30" aria-hidden="true"></canvas>
+              <div class="tool-guide-copy">
+                <b>暫停</b>
+                <span>暫停目前遊戲；再次按下可繼續。</span>
+              </div>
+            </div>
+
+            <div class="tool-guide-item">
+              <canvas class="tool-guide-icon" id="guideControlEndIcon" width="30" height="30" aria-hidden="true"></canvas>
+              <div class="tool-guide-copy">
+                <b>停止</b>
+                <span>提前結束本局，並依目前分數結算。</span>
+              </div>
+            </div>
+          </div>
+
           <p>交換相鄰糖果連成 <b>3+</b> 即可消除。</p>
           <p><b>4 連</b>產生條紋糖；<b>5 連</b>產生彩球；<b>T / L</b> 產生包裝糖。</p>
 
@@ -400,6 +426,11 @@
   <script src="https://lib.stillnessbyslowly.com/game/grid/swap_search.js"></script>
   <script src="https://lib.stillnessbyslowly.com/game/grid/shuffle_until.js"></script>
   <script src="https://lib.stillnessbyslowly.com/game/grid/chain_expand.js"></script>
+
+  <!-- 慢慢的倉庫｜Canvas Icons：core 必須先於家族檔 -->
+  <script src="https://lib.stillnessbyslowly.com/canvas/icons/core.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/canvas/icons/arrows.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/canvas/icons/playback.js"></script>
 
   <!-- Match3 host logic -->
   <script src="./match3_v1.js"></script>
