@@ -102,6 +102,7 @@
   const comboFloatEl = document.getElementById("comboFloat");
   const comboShineTextEl = document.getElementById("comboShineText");
 
+  const instructionsGuideEl = document.getElementById("instructionsGuide");
   const scoreGuideEl = document.getElementById("scoreGuide");
   const scoreBasicCandyCanvases = document.querySelectorAll("[data-score-basic-candy]");
   const scoreToolCanvases = document.querySelectorAll("[data-score-tool]");
@@ -569,6 +570,11 @@
       window.setTimeout(() => el.classList.add("slowly-shine-text"), index * 90);
     });
   }
+
+  instructionsGuideEl?.addEventListener("toggle", () => {
+    if (!instructionsGuideEl.open) return;
+    renderToolIcons();
+  });
 
   function showView(viewName) {
     scoreGuideEl?.addEventListener("toggle", () => {

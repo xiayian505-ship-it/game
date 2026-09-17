@@ -1030,6 +1030,20 @@ input{ font:inherit; }
   border-bottom:1px solid var(--panel-line);
 }
 
+.instructions-guide{
+  border-top:1px solid var(--panel-line);
+  border-bottom:1px solid var(--panel-line);
+}
+
+.instructions-guide + .score-guide{
+  margin-top:0;
+  border-top:0;
+}
+
+.instruction-guide-body{
+  padding-bottom:8px;
+}
+
 .score-guide-summary{
   display:flex;
   align-items:center;
@@ -1045,13 +1059,14 @@ input{ font:inherit; }
 
 .score-guide-summary::-webkit-details-marker{ display:none; }
 .score-guide-summary::after{
-  content:"＋";
+  content:"+";
   flex:0 0 auto;
   color:var(--panel-muted);
   font-size:1.1rem;
   font-weight:500;
 }
-.score-guide[open] > .score-guide-summary::after{ content:"－"; }
+.score-guide[open] > .score-guide-summary::after,
+.instructions-guide[open] > .score-guide-summary::after{ content:"-"; }
 
 .score-guide-summary-note{
   margin-left:auto;
@@ -1060,7 +1075,8 @@ input{ font:inherit; }
   font-weight:500;
 }
 
-.score-guide[open] .score-guide-summary-note{ opacity:.62; }
+.score-guide[open] .score-guide-summary-note,
+.instructions-guide[open] .score-guide-summary-note{ opacity:.62; }
 
 .score-guide-body{
   padding:0 0 8px;

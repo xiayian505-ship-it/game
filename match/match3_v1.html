@@ -120,9 +120,12 @@
         </div>
       </section>
 
-      <section class="instructions" aria-labelledby="instructionsTitle">
-        <h2 class="section-title" id="instructionsTitle">遊戲說明</h2>
-        <div class="how">
+      <details class="instructions instructions-guide" id="instructionsGuide">
+        <summary class="score-guide-summary">
+          <span id="instructionsTitle">遊戲說明</span>
+          <span class="score-guide-summary-note">點擊展開</span>
+        </summary>
+        <div class="how instruction-guide-body">
           <p>交換相鄰糖果連成 <b>3+</b> 即可消除。</p>
           <p><b>4 連</b>產生條紋糖；<b>5 連</b>產生彩球；<b>T / L</b> 產生包裝糖。</p>
 
@@ -211,7 +214,11 @@
           <p><b>步數</b>：每場 30 次有效交換；交換失敗與使用道具不扣步，六種道具每場各可使用一次。</p>
           <p>三種模式各自保存本機 TOP 3；手動結束、時間到或步數用完都會結算。</p>
 
-          <details class="score-guide" id="scoreGuide">
+
+        </div>
+      </details>
+
+      <details class="score-guide" id="scoreGuide">
             <summary class="score-guide-summary">
               <span>計分說明</span>
               <span class="score-guide-summary-note">點擊展開</span>
@@ -289,9 +296,7 @@
                 <p>總分每達成新的 10,000 分成就，就會觸發一次 BOM 演出：10K、20K、30K……。BOM 是成就演出，本身不另外加分。</p>
               </section>
             </div>
-          </details>
-        </div>
-      </section>
+      </details>
     </section>
 
     <section id="gameView" class="view-panel" role="tabpanel" data-view-panel="game">
