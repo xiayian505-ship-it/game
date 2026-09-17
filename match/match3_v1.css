@@ -280,15 +280,6 @@ input{ font:inherit; }
   user-select:none;
 }
 
-.tool-btn--emoji{
-  font-size:20px;
-  line-height:1;
-}
-
-.tool-emoji{
-  display:block;
-  line-height:1;
-}
 
 .tool-btn--icon{
   padding:6px 4px;
@@ -827,7 +818,6 @@ input{ font:inherit; }
   display:flex;
   gap:14px;
   margin:0 0 12px;
-  border-bottom:1px solid var(--panel-line);
 }
 
 .rank-mode-tab{
@@ -857,12 +847,10 @@ input{ font:inherit; }
 .rankList{
   display:grid;
   gap:0;
-  border-top:1px solid var(--panel-line);
 }
 
 .rankLine{
   padding:12px 0;
-  border-bottom:1px solid var(--panel-line);
   color:var(--panel-muted);
   font-size:.92rem;
   line-height:1.5;
