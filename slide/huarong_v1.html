@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>SBS | HUARONG_V1</title>
+
+  <!-- 慢慢的倉庫 -->
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/ui/responsive.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/ui/toast.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/feedback/press.css">
+
+  <link rel="stylesheet" href="./huarong_v1.css">
+</head>
+
+<body>
+  <main class="wrap">
+    <header class="page-head">
+      <div class="page-title-row">
+        <div>
+          <h1>SBS | HUARONG_V1</h1>
+          <p class="sub" id="gameSub">華容道・前呼後擁</p>
+        </div>
+        <div class="step-label">步數 <b id="moveCount">0</b></div>
+      </div>
+
+      <div class="page-nav-row">
+        <nav class="view-tabs" role="tablist" aria-label="遊戲頁面">
+          <button
+            class="view-tab"
+            type="button"
+            role="tab"
+            aria-selected="false"
+            aria-controls="settingsView"
+            data-view-target="settings"
+          >設定</button>
+          <button
+            class="view-tab"
+            type="button"
+            role="tab"
+            aria-selected="true"
+            aria-controls="gameView"
+            data-view-target="game"
+          >遊戲</button>
+          <button
+            class="view-tab"
+            type="button"
+            role="tab"
+            aria-selected="false"
+            aria-controls="rankingView"
+            data-view-target="ranking"
+          >排行</button>
+        </nav>
+
+        <a
+          class="home-link"
+          href="https://game.stillnessbyslowly.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >回家</a>
+      </div>
+    </header>
+
+    <section id="settingsView" class="view-panel" role="tabpanel" data-view-panel="settings" hidden>
+      <section class="utility-card settings" aria-labelledby="settingsTitle">
+        <h2 class="section-title" id="settingsTitle">設定</h2>
+
+        <div class="settings-list">
+          <div class="setting-row">
+            <label class="setting-label" for="gameMode">遊戲模式</label>
+            <div class="setting-control">
+              <select class="setting-select" id="gameMode" aria-label="遊戲模式">
+                <option value="qianhuhouyong" selected>前呼後擁｜經典最佳 22 步</option>
+                <option value="biyihengkong">比翼橫空｜經典最佳 28 步</option>
+                <option value="jiezuxiandeng">捷足先登｜經典最佳 32 步</option>
+                <option value="yongchuangwuguan">勇闖五關｜經典最佳 34 步</option>
+                <option value="yilushunfeng">一路順風｜經典最佳 39 步</option>
+                <option value="hengdao">橫刀立馬｜經典最佳 81 步</option>
+              </select>
+              <div class="setting-note">切換關卡會重新開始。以上皆為經典牌面，網路可查解法；「經典最佳」採連步算法，本頁步數維持逐格計數。</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <section id="gameView" class="view-panel" role="tabpanel" data-view-panel="game">
+      <section class="game-card">
+        <p class="goal">把「曹操」移到最下方中央出口。</p>
+
+        <div class="actions">
+          <button class="action-btn slowly-press" id="resetBtn" type="button">重來</button>
+        </div>
+
+        <div class="board-shell">
+          <div id="board" class="board" aria-label="華容道棋盤"></div>
+        </div>
+
+        <div class="selected-info">
+          已選：<b id="selectedName">尚未選擇</b>
+        </div>
+
+        <div class="dpad" aria-label="方向控制">
+          <span></span>
+          <button class="dir-btn slowly-press" type="button" data-dir="up" aria-label="向上">▲</button>
+          <span></span>
+
+          <button class="dir-btn slowly-press" type="button" data-dir="left" aria-label="向左">◀</button>
+          <button class="dir-btn center-btn slowly-press" id="undoBtn" type="button" aria-label="復原一步">↶</button>
+          <button class="dir-btn slowly-press" type="button" data-dir="right" aria-label="向右">▶</button>
+
+          <span></span>
+          <button class="dir-btn slowly-press" type="button" data-dir="down" aria-label="向下">▼</button>
+          <span></span>
+        </div>
+
+        <p class="help">
+          點一個方塊選中，再按方向鍵移動。方塊不能穿過其他方塊。電腦也可用方向鍵／WASD，Z 復原。
+        </p>
+      </section>
+    </section>
+
+    <section id="rankingView" class="view-panel" role="tabpanel" data-view-panel="ranking" hidden>
+      <section class="utility-card rank" aria-labelledby="rankTitle">
+        <h2 class="section-title" id="rankTitle">排行榜</h2>
+        <div class="rank-mode-tabs" role="tablist" aria-label="排行榜模式">
+          <button class="rank-mode-tab" type="button" role="tab" aria-selected="true" data-rank-level="qianhuhouyong">前呼後擁</button>
+          <button class="rank-mode-tab" type="button" role="tab" aria-selected="false" data-rank-level="biyihengkong">比翼橫空</button>
+          <button class="rank-mode-tab" type="button" role="tab" aria-selected="false" data-rank-level="jiezuxiandeng">捷足先登</button>
+          <button class="rank-mode-tab" type="button" role="tab" aria-selected="false" data-rank-level="yongchuangwuguan">勇闖五關</button>
+          <button class="rank-mode-tab" type="button" role="tab" aria-selected="false" data-rank-level="yilushunfeng">一路順風</button>
+          <button class="rank-mode-tab" type="button" role="tab" aria-selected="false" data-rank-level="hengdao">橫刀立馬</button>
+        </div>
+        <div class="rank-list" aria-live="polite">
+          <div class="empty-data">尚無排行資料</div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <div id="resetConfirm" class="confirm-overlay" hidden>
+    <div class="confirm-card" role="dialog" aria-modal="true" aria-labelledby="resetConfirmTitle">
+      <strong id="resetConfirmTitle">確定要重來嗎？</strong>
+      <p id="resetConfirmText">目前的進度會全部清空。</p>
+
+      <div class="confirm-actions">
+        <button id="cancelResetBtn" class="confirm-btn cancel slowly-press" type="button">取消</button>
+        <button id="confirmResetBtn" class="confirm-btn danger slowly-press" type="button">確定重來</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="slowly-toast game-toast" role="status" aria-live="polite"></div>
+
+  <script src="https://lib.stillnessbyslowly.com/ui/toast.js"></script>
+  <script src="./huarong_v1.js"></script>
+</body>
+</html>
