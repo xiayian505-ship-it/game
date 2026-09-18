@@ -320,7 +320,7 @@
 
   function selectPiece(id){
     if(activeView !== "game") return;
-    selectedId = selectedId === id ? null : id;
+    selectedId = id;
     render();
   }
 
