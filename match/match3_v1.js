@@ -301,6 +301,32 @@
     const logicalSize = 64;
     const ctx = prepareSpecialCanvas(canvas, logicalSize);
     if (!ctx) return;
+
+    // 棋盤上的條紋糖使用軍火庫箭頭；原圖示在 8×8 棋盤裡視覺佔比太小。
+    // 只在棋盤這裡把箭頭放大後置中裁入糖果，不影響說明區／道具列，
+    // 也不改宿主自己畫的包裝糖與花花。
+    if (kind === "sh" || kind === "sv") {
+      const stripeScale = 1.9;
+      const stripeSize = logicalSize * stripeScale;
+      const offset = (logicalSize - stripeSize) / 2;
+
+      ctx.save();
+      ctx.translate(offset, offset);
+      drawWarehouseIconToContext(
+        ctx,
+        "arrows",
+        kind === "sh" ? "horizontal" : "vertical",
+        stripeSize,
+        {
+          color: kind === "sh" ? "#6f93a4" : "#7f9a7d",
+          thickness: Math.max(6, stripeSize * 0.12),
+          padding: stripeSize * 0.025
+        }
+      );
+      ctx.restore();
+      return;
+    }
+
     drawSpecialMark(ctx, kind, logicalSize);
   }
 
