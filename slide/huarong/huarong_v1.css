@@ -83,6 +83,12 @@ h1{
   font-size:13px;
 }
 
+.board-controls{
+  position:relative;
+  width:fit-content;
+  margin:52px auto 50px;
+}
+
 .board-shell{
   display:flex;
   justify-content:center;
@@ -173,7 +179,7 @@ h1{
 
 .selected-info{
   min-height:22px;
-  margin-top:13px;
+  margin-top:0;
   text-align:center;
   color:var(--muted);
   font-size:13px;
@@ -183,16 +189,64 @@ h1{
   color:var(--text);
 }
 
-.dpad{
-  display:grid;
-  grid-template-columns:repeat(3,54px);
-  grid-template-rows:repeat(3,48px);
-  justify-content:center;
-  gap:5px;
-  margin-top:10px;
+.board-control{
+  position:absolute;
+  z-index:30;
+}
+
+/* 手機觸控熱區：不放大按鈕外觀，只增加可點擊範圍。 */
+.board-control::before{
+  content:"";
+  position:absolute;
+  pointer-events:auto;
+}
+
+.control-up::before{
+  top:-14px;
+  right:-10px;
+  bottom:-2px;
+  left:-10px;
+}
+
+.control-down::before{
+  top:-2px;
+  right:-10px;
+  bottom:-14px;
+  left:-10px;
+}
+
+.control-left::before{
+  top:-10px;
+  right:-2px;
+  bottom:-10px;
+  left:-14px;
+}
+
+.control-right::before{
+  top:-10px;
+  right:-14px;
+  bottom:-10px;
+  left:-2px;
+}
+
+.control-reset::before{
+  top:-12px;
+  right:-12px;
+  bottom:-6px;
+  left:-8px;
+}
+
+.control-undo::before{
+  top:-6px;
+  right:-8px;
+  bottom:-12px;
+  left:-12px;
 }
 
 .dir-btn{
+  width:40px;
+  height:40px;
+  padding:0;
   border:1px solid var(--line);
   border-radius:12px;
   background:#fff;
@@ -202,30 +256,54 @@ h1{
   touch-action:manipulation;
 }
 
-.center-btn{
-  color:var(--accent);
-  font-size:24px;
-}
-
 .dir-btn:disabled{
   opacity:.35;
 }
 
-.actions{
-  display:flex;
-  justify-content:center;
-  margin-top:12px;
-}
-
 .action-btn{
-  min-height:40px;
-  padding:0 18px;
+  min-height:38px;
+  padding:0 12px;
   border:1px solid var(--line);
   border-radius:10px;
   background:#fff;
   color:var(--text);
   font:600 13px/1 inherit;
   cursor:pointer;
+}
+
+.control-up{
+  top:-46px;
+  left:50%;
+  transform:translateX(-50%);
+}
+
+.control-down{
+  bottom:-46px;
+  left:50%;
+  transform:translateX(-50%);
+}
+
+.control-left{
+  top:50%;
+  left:-34px;
+  transform:translateY(-50%);
+}
+
+.control-right{
+  top:50%;
+  right:-34px;
+  transform:translateY(-50%);
+}
+
+.control-reset{
+  top:-46px;
+  right:0;
+}
+
+.control-undo{
+  bottom:-46px;
+  left:0;
+  color:var(--accent);
 }
 
 .help{
@@ -329,6 +407,10 @@ h1{
   .wrap{padding-inline:8px}
   .game-card{padding:12px 8px}
   .sub{display:none}
+  .control-left{left:-28px}
+  .control-right{right:-28px}
+  .dir-btn{width:36px;height:40px}
+  .action-btn{padding-inline:10px}
 }
 
 @media(prefers-reduced-motion:reduce){
