@@ -1,0 +1,11 @@
+.cell:active {
+    transform: scale(.94);
+}
+
+.cell:focus-visible {
+    outline: 3px solid #6c9fc3;
+}
+
+.cell.empty:hover {
+    background: #e2f2ea;
+}

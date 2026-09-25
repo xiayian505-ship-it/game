@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
+<title>
+   慢慢化學實驗室
+  </title>
+<link href="https://lib.stillnessbyslowly.com/ui/responsive.css" rel="stylesheet"/>
+<link href="https://lib.stillnessbyslowly.com/effects/feedback/press.css" rel="stylesheet"/>
+<link href="sbs_chemistry_v1.css" rel="stylesheet"/>
+<link href="style/sbs_chemistry_v1_ui_style.css" rel="stylesheet"/>
+<link href="function/sbs_chemistry_v1_game_function.css" rel="stylesheet"/>
+<link href="interact/sbs_chemistry_v1_game_interact.css" rel="stylesheet"/>
+</head>
+<body>
+<main class="shell">
+<header><h1>慢 慢 | 化學實驗室</h1></header>
+<div class="page-nav-row"><nav aria-label="實驗室頁面" class="view-tabs" role="tablist">
+<button aria-controls="settingsView" aria-selected="false" class="view-tab slowly-press" data-view-target="settings" id="tab-settings" role="tab" type="button">設定</button>
+<button aria-controls="gameView" aria-selected="true" class="view-tab slowly-press" data-view-target="game" id="tab-game" role="tab" type="button">遊戲</button>
+<button aria-controls="achievementsView" aria-selected="false" class="view-tab slowly-press" data-view-target="achievements" id="tab-achievements" role="tab" type="button">成就</button>
+</nav><a class="home-link" href="https://game.stillnessbyslowly.com/">回家</a></div>
+<section aria-labelledby="tab-settings" class="view-panel settings-panel" data-view-panel="settings" hidden="" id="settingsView" role="tabpanel">
+<h2>設定</h2><p>目前保留懷舊版的原子合成玩法；遊戲規則可以在這裡查看。</p>
+<button class="panel-button slowly-press" id="settingsHelp" type="button">玩法說明</button>
+</section>
+<section aria-labelledby="tab-game" class="view-panel" data-view-panel="game" id="gameView" role="tabpanel">
+<section class="game-overview">
+
+
+
+
+<section aria-label="本關合成表" class="recipe-tree"><button aria-controls="recipeContent" aria-expanded="false" class="recipe-toggle" id="recipeToggle" type="button">本關合成表 ＋</button><div class="recipe-content" hidden="" id="recipeContent"><div class="recipes" id="recipes">
+</div><p class="hint warning" id="danger">
+</p></div></section><div class="stats"><div>
+     關卡
+     <strong id="level">
+      1
+     </strong>
+</div><div>
+     本關分數
+     <strong id="score">
+      0 / 3
+     </strong>
+</div><div>
+     累計分數
+     <strong id="total">
+      0
+     </strong>
+</div><div>
+     剩餘原子
+     <strong id="remaining">
+      12
+     </strong>
+</div></div></section>
+<div class="progress">
+<div id="progress">
+</div>
+</div>
+<section class="game">
+<div class="left">
+<div class="queue">
+<div>
+<span class="small">
+        目前原子
+       </span>
+<div class="atom large" id="current">
+</div>
+</div>
+<div>
+<span class="small">
+        接下來
+       </span>
+<div class="next" id="next">
+</div>
+</div>
+</div>
+<div class="board-toolbar"><button class="restart-link" id="restart" type="button">
+       重新開始
+      </button></div><div class="board-wrap"><div aria-label="六乘六原子棋盤" class="board" id="board">
+</div></div>
+<p aria-live="polite" class="message" id="message">
+      點擊空格放入原子，相鄰的原子可以合成分子！
+     </p>
+
+</div>
+
+</section>
+</section>
+<section aria-labelledby="tab-achievements" class="view-panel achievements-panel" data-view-panel="achievements" hidden="" id="achievementsView" role="tabpanel">
+<h2>成就</h2><p>這裡先顯示本次遊玩的進度；新化學實驗室的元素圖鑑與成就規則之後再接入。</p>
+<div class="achievement-stats"><div>目前關卡<strong id="achievementLevel">1</strong></div><div>累計分數<strong id="achievementTotal">0</strong></div></div>
+</section>
+<footer>慢 慢 | Stillness by Slowly</footer>
+</main>
+<dialog id="modal">
+<h2 id="modalTitle">
+    玩法說明
+   </h2>
+<div id="modalBody">
+</div>
+<button id="modalClose">
+    知道了
+   </button>
+</dialog>
+<script src="https://lib.stillnessbyslowly.com/state/tree_selection.js"></script><script src="sbs_chemistry_v1.js">
+</script>
+<script src="function/sbs_chemistry_v1_game_function.js"></script>
+<script src="style/sbs_chemistry_v1_ui_style.js"></script>
+<script src="interact/sbs_chemistry_v1_game_interact.js">
+</script>
+</body>
+</html>
