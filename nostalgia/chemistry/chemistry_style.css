@@ -1,0 +1,135 @@
+.shell {
+    max-width: 1000px;
+    margin: auto;
+    padding: 18px 14px 35px;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 19px;
+}
+
+.eyebrow {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: #7cc7b2;
+}
+
+h1 {
+    font-size: clamp(25px,5vw,38px);
+    margin: 8px 0;
+}
+
+header p {
+    color: #b4c6ce;
+    font-size: 13px;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(4,1fr);
+    gap: 7px;
+    margin-bottom: 10px;
+}
+
+.stats>div {
+    background: #233740;
+    border: 1px solid #38545d;
+    border-radius: 11px;
+    padding: 10px 5px;
+    text-align: center;
+    color: #b6cbd1;
+    font-size: 11px;
+}
+
+.stats strong {
+    display: block;
+    color: #fff;
+    font-size: clamp(15px,3.5vw,22px);
+    margin-top: 5px;
+}
+
+.progress {
+    height: 7px;
+    background: #30434b;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 17px;
+}
+
+.progress>div {
+    height: 100%;
+    background: #7bceb1;
+    width: 0;
+    transition: width .2s;
+}
+
+.game {
+    display: grid;
+    grid-template-columns: minmax(0,1.35fr) minmax(230px,.85fr);
+    gap: 20px;
+}
+
+.left,aside {
+    background: #1b2d35;
+    border: 1px solid #34505a;
+    border-radius: 17px;
+    padding: 15px;
+}
+
+aside h2 {
+    font-size: 18px;
+    margin: 2px 0 15px;
+}
+
+.actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+button {
+    font: inherit;
+    cursor: pointer;
+}
+
+.actions button,dialog button {
+    background: #72c4a7;
+    color: #10251f;
+    border: 0;
+    border-radius: 10px;
+    padding: 11px 16px;
+    font-weight: 800;
+}
+
+.actions button+button {
+    background: #365460;
+    color: #fff;
+}
+
+footer {
+    text-align: center;
+    color: #77949c;
+    font-size: 12px;
+    margin-top: 22px;
+}
+
+dialog {
+    background: #20343c;
+    color: #f0f4f7;
+    border: 1px solid #6a9d9d;
+    border-radius: 16px;
+    max-width: min(90vw,450px);
+    line-height: 1.7;
+    padding: 24px;
+}
+
+dialog::backdrop {
+    background: #000b;
+}
+
+dialog h2 {
+    margin-top: 0;
+}
+
+@media(max-width:720px){.game{grid-template-columns:1fr}.left,aside{padding:12px}.shell{padding:13px 10px 30px}.board{gap:4px;padding:6px}.queue{gap:18px}.stats{gap:5px}.stats>div{padding:9px 2px}}

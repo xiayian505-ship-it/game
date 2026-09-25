@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="zh-Hant">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
+  <title>
+   慢慢化學實驗室
+  </title>
+  <link href="chemistry.css" rel="stylesheet"/>
+  <link href="chemistry_style.css" rel="stylesheet"/>
+ </head>
+ <body>
+  <main class="shell">
+   <header>
+    <div class="eyebrow">
+     STILLNESS BY SLOWLY · MINI ARCADE
+    </div>
+    <h1>
+     🧪 慢慢化學實驗室
+    </h1>
+    <p>
+     懷舊原子合成益智遊戲 · 非官方自製版
+    </p>
+   </header>
+   <section class="stats">
+    <div>
+     關卡
+     <strong id="level">
+      1
+     </strong>
+    </div>
+    <div>
+     本關分數
+     <strong id="score">
+      0 / 3
+     </strong>
+    </div>
+    <div>
+     累計分數
+     <strong id="total">
+      0
+     </strong>
+    </div>
+    <div>
+     剩餘原子
+     <strong id="remaining">
+      12
+     </strong>
+    </div>
+   </section>
+   <div class="progress">
+    <div id="progress">
+    </div>
+   </div>
+   <section class="game">
+    <div class="left">
+     <div class="queue">
+      <div>
+       <span class="small">
+        目前原子
+       </span>
+       <div class="atom large" id="current">
+       </div>
+      </div>
+      <div>
+       <span class="small">
+        接下來
+       </span>
+       <div class="next" id="next">
+       </div>
+      </div>
+     </div>
+     <div aria-label="六乘六原子棋盤" class="board" id="board">
+     </div>
+     <p aria-live="polite" class="message" id="message">
+      點擊空格放入原子，相鄰的原子可以合成分子！
+     </p>
+     <div class="actions">
+      <button id="restart" type="button">
+       重新開始
+      </button>
+      <button id="help" type="button">
+       玩法說明
+      </button>
+     </div>
+    </div>
+    <aside>
+     <h2>
+      本關合成表
+     </h2>
+     <div class="recipes" id="recipes">
+     </div>
+     <p class="hint">
+      分子可以橫向、直向或轉彎連接。合成後會清除原子並得分；同一步只合成分數最高的一組。
+     </p>
+     <p class="hint warning" id="danger">
+     </p>
+    </aside>
+   </section>
+   <footer>
+    慢慢好玩 · 手機／電腦皆可玩 · 不需帳號
+   </footer>
+  </main>
+  <dialog id="modal">
+   <h2 id="modalTitle">
+    玩法說明
+   </h2>
+   <div id="modalBody">
+   </div>
+   <button id="modalClose">
+    知道了
+   </button>
+  </dialog>
+  <script src="chemistry.js">
+  </script>
+  <script src="chemistry_style.js">
+  </script>
+ </body>
+</html>
+

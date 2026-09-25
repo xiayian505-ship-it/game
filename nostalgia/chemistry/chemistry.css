@@ -1,0 +1,172 @@
+:root {
+    font-family: system-ui,-apple-system,"Noto Sans TC",sans-serif;
+    color: #f0f4f7;
+    background: #111c23;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+}
+
+.board {
+    display: grid;
+    grid-template-columns: repeat(6,minmax(0,1fr));
+    gap: 5px;
+    padding: 8px;
+    border: 2px solid #527079;
+    border-radius: 15px;
+    background: #172a31;
+    aspect-ratio: 1;
+    max-width: 480px;
+    margin: auto;
+    width: 100%;
+}
+
+.cell {
+    border: 1px solid #49606a;
+    background: #253d45;
+    border-radius: 9px;
+    display: grid;
+    place-items: center;
+    min-width: 0;
+    min-height: 0;
+    padding: 0;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.cell:active {
+    transform: scale(.94);
+}
+
+.cell:focus-visible {
+    outline: 3px solid #ffce72;
+}
+
+.cell.empty:hover {
+    background: #375661;
+}
+
+.atom {
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    font-weight: 900;
+    color: white;
+    box-shadow: inset -4px -5px 0 #0002,0 3px 7px #0004;
+    border: 2px solid #ffffff65;
+    width: 78%;
+    height: 78%;
+    font-size: clamp(15px,4vw,27px);
+}
+
+.atom.N {
+    background: #43a56d;
+}
+
+.atom.T {
+    background: #428fc9;
+}
+
+.atom.S {
+    background: #d85b60;
+}
+
+.atom.F {
+    background: #e8b84f;
+    color: #3a2914;
+}
+
+.atom.K {
+    background: #9d78d5;
+}
+
+.atom.large {
+    width: 56px;
+    height: 56px;
+    font-size: 27px;
+}
+
+.atom.mini {
+    width: 31px;
+    height: 31px;
+    font-size: 15px;
+}
+
+.queue {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    justify-content: center;
+    margin: 0 0 15px;
+}
+
+.next {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    min-height: 56px;
+}
+
+.small {
+    display: block;
+    color: #acc0c9;
+    font-size: 12px;
+    margin-bottom: 7px;
+}
+
+.recipes {
+    display: grid;
+    gap: 7px;
+}
+
+.recipe {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    background: #243841;
+    padding: 9px;
+    border-radius: 9px;
+}
+
+.formula {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex-wrap: wrap;
+}
+
+.formula .atom {
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
+    flex: none;
+}
+
+.recipe strong {
+    white-space: nowrap;
+    color: #f7d18c;
+}
+
+.hint {
+    font-size: 13px;
+    line-height: 1.6;
+    color: #b9cbd0;
+}
+
+.warning {
+    color: #ffb6ad;
+}
+
+.message {
+    min-height: 47px;
+    text-align: center;
+    color: #f4d59d;
+    font-size: 14px;
+    line-height: 1.5;
+}
