@@ -2,7 +2,7 @@
 (() => {
     'use strict';
     const game = window.SBSChemistryV1;
-    const random = items => items[Math.floor(Math.random() * items.length)];
+    const random = items => items[window.SlowlyRandom.int(0, items.length - 1)];
 
     game.pool = () => game.level < 2 ? ['N']
         : game.level < 6 ? ['N', 'N', 'T']
@@ -13,7 +13,7 @@
     game.supply = () => game.level === 1 ? 12 : Math.min(14 + game.level * 2, 45);
 
     game.start = () => {
-        clearTimeout(game.nextLevelTimer);
+        if (game.nextLevelTimer) game.nextLevelTimer.stop();
         game.nextLevelTimer = null;
         game.level = 1;
         game.total = 0;

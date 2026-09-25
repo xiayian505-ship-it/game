@@ -9,9 +9,9 @@
         game.board[index] = game.queue.shift();
         game.remaining--;
 
-        const danger = game.danger
-            .filter(recipe => recipe.l <= game.level)
-            .map(recipe => ({ recipe, path: game.matches(recipe, index) }))
+        const danger = window.FictionFilter.filter(game.danger, {
+            predicate: recipe => recipe.l <= game.level
+        }).map(recipe => ({ recipe, path: game.matches(recipe, index) }))
             .find(result => result.path);
         if (danger) {
             game.over = true;
@@ -20,14 +20,17 @@
             return;
         }
 
-        let best = null;
-        for (const recipe of game.recipes.filter(item => item.l <= game.level)) {
-            const path = game.matches(recipe, index);
-            if (path && (!best || recipe.p > best.recipe.p ||
-                (recipe.p === best.recipe.p && recipe.s.length > best.recipe.s.length))) {
-                best = { recipe, path };
-            }
-        }
+        // 保留原始配方順序作為同分、同長度時的最後優先條件。
+        const candidates = window.FictionFilter.filter(game.recipes, {
+            predicate: recipe => recipe.l <= game.level
+        }).map((recipe, order) => ({
+            recipe, order, path: game.matches(recipe, index)
+        }));
+        const best = window.FictionSort.sort(
+            window.FictionFilter.filter(candidates, { predicate: item => Boolean(item.path) }),
+            { compare: (a, b) => b.recipe.p - a.recipe.p ||
+                b.recipe.s.length - a.recipe.s.length || a.order - b.order }
+        )[0] || null;
         if (best) {
             for (const position of best.path) game.board[position] = null;
             game.score += best.recipe.p;
@@ -43,20 +46,31 @@
             game.total += game.score + bonus;
             $('achievementTotal').textContent = game.total;
             game.say(`🎉 第 ${game.level} 關完成！剩餘原子獎勵 +${bonus} 分。`);
-            game.nextLevelTimer = setTimeout(() => {
-                game.nextLevelTimer = null;
-                game.level++;
-                game.begin();
-                game.say(`🎉 進入第 ${game.level} 關！新的合成表已更新。`);
-            }, 1100);
+            game.nextLevelTimer = window.PhaseCycle.create({
+                phases: [{ duration: 1100 }],
+                loop: false,
+                onComplete: () => {
+                    game.nextLevelTimer = null;
+                    game.level++;
+                    game.begin();
+                    game.say(`🎉 進入第 ${game.level} 關！新的合成表已更新。`);
+                }
+            });
+            game.nextLevelTimer.start();
         } else if (game.remaining <= 0 || game.board.every(Boolean)) {
             game.over = true;
             game.say(`🧪 原子用完或棋盤已滿，還差 ${game.target() - game.score} 分。按「重新開始」再挑戰！`);
         }
     };
 
-    $('restart').addEventListener('click', () => {
-        if (confirm('確定要從第一關重新開始嗎？')) game.start();
+    $('restart').addEventListener('click', async () => {
+        const confirmed = await window.SlowlyConfirm.show({
+            title: '重新開始',
+            message: '確定要從第一關重新開始嗎？',
+            confirmText: '重新開始',
+            cancelText: '取消'
+        });
+        if (confirmed) game.start();
     });
     game.showHelp = () => {
         $('modalTitle').textContent = '玩法說明';

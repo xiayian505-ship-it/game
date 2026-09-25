@@ -7,13 +7,15 @@
     // 與 Match3 相同的同頁分頁：只切換畫面，不重置棋盤。
     const tabs = [...document.querySelectorAll('[data-view-target]')];
     const panels = [...document.querySelectorAll('[data-view-panel]')];
+    const viewSelection = window.TreeSelection.create({ selected: ['game'] });
     function showView(view) {
+        viewSelection.replaceSelected([view]);
         tabs.forEach(tab => {
-            const selected = tab.dataset.viewTarget === view;
+            const selected = viewSelection.has(tab.dataset.viewTarget);
             tab.setAttribute('aria-selected', String(selected));
             tab.tabIndex = selected ? 0 : -1;
         });
-        panels.forEach(panel => { panel.hidden = panel.dataset.viewPanel !== view; });
+        panels.forEach(panel => { panel.hidden = !viewSelection.has(panel.dataset.viewPanel); });
     }
     tabs.forEach(tab => tab.addEventListener('click', () => showView(tab.dataset.viewTarget)));
     document.getElementById('settingsHelp').addEventListener('click', () => game.showHelp());
@@ -24,7 +26,7 @@
     recipeToggle.addEventListener('click', () => {
         const expanded = recipeTree.toggleExpanded('current-level-recipes');
         recipeToggle.setAttribute('aria-expanded', String(expanded));
-        recipeToggle.textContent = expanded ? '本關合成表 −' : '本關合成表 ＋';
+        recipeToggle.textContent = '本關合成表';
         recipeContent.hidden = !expanded;
     });
     showView('game');
@@ -66,7 +68,7 @@
 
         const recipesElement = $('recipes');
         recipesElement.replaceChildren();
-        game.recipes.filter(recipe => recipe.l <= game.level).forEach(recipe => {
+        window.FictionFilter.filter(game.recipes, { predicate: recipe => recipe.l <= game.level }).forEach(recipe => {
             const row = document.createElement('div');
             row.className = 'recipe';
             const formula = document.createElement('span');
@@ -77,8 +79,7 @@
             row.append(formula, points);
             recipesElement.append(row);
         });
-        $('danger').textContent = game.danger
-            .filter(recipe => recipe.l <= game.level)
+        $('danger').textContent = window.FictionFilter.filter(game.danger, { predicate: recipe => recipe.l <= game.level })
             .map(recipe => `⚠ ${recipe.s} 為不穩定分子，形成即失敗！`)
             .join(' ');
     };
