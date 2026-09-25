@@ -1,20 +1,526 @@
-/* 網頁外觀與分頁，不包含棋盤遊戲規則。 */
-.shell{max-width:1000px;margin:auto;padding:24px 18px 38px}
-header{text-align:center;margin:0 0 18px}h1{font-size:clamp(19px,3.2vw,25px);font-weight:650;letter-spacing:.06em;margin:0;color:#284b44}
-.page-nav-row{display:flex;justify-content:space-between;align-items:center;gap:18px;border-bottom:1px solid #cbded5;margin-bottom:22px}
-.view-tabs{display:flex;gap:22px;align-items:center}.view-tab{font:inherit;color:#68817a;background:transparent;border:0;border-bottom:2px solid transparent;padding:10px 0 9px;cursor:pointer}
-.view-tab[aria-selected="true"]{color:#285e4d;border-bottom-color:#548e76;font-weight:700}.view-tab:hover{color:#285e4d}
-.home-link{color:#4b7668;text-decoration:none;font-size:.9rem}.home-link:hover,.restart-link:hover,.recipe-toggle:hover,.panel-button:hover{text-decoration:underline}
-button{font:inherit;cursor:pointer}.view-tab:focus-visible,.home-link:focus-visible,.panel-button:focus-visible,.restart-link:focus-visible,.recipe-toggle:focus-visible{outline:2px solid #4c9a80;outline-offset:3px}
-.view-panel{min-width:0}.settings-panel,.achievements-panel{padding:12px 0;line-height:1.75}.settings-panel h2,.achievements-panel h2{font-size:1.15rem;margin:0 0 10px}.settings-panel p,.achievements-panel p{color:#607b72}
-.panel-button,.restart-link,.recipe-toggle,dialog button{background:transparent;border:0;border-radius:0;color:#376b57;padding:5px 0;font-weight:650;text-align:left}
-.achievement-stats{display:flex;gap:28px;flex-wrap:wrap;margin-top:18px}.achievement-stats>div{border-top:1px solid #d6e4dc;padding-top:12px;color:#607b72;min-width:130px}.achievement-stats strong{display:block;font-size:1.45rem;color:#285e4d;margin-top:5px}
-.game-overview{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.8fr);gap:20px;align-items:start;margin-bottom:10px}
-.recipe-tree{min-width:0;text-align:left}.recipe-toggle{font-size:.95rem}.recipe-content{padding:8px 0 4px;max-width:360px}.recipe-content[hidden]{display:none}
-.stats{display:flex;justify-content:flex-end;gap:14px;flex-wrap:wrap;text-align:right}.stats>div{font-size:.75rem;color:#688179;min-width:68px}.stats strong{display:block;color:#285348;font-size:clamp(.95rem,2vw,1.25rem);margin-top:4px}
-.progress{height:3px;background:#dbe8e1;overflow:hidden;margin-bottom:17px}.progress>div{height:100%;width:0;background:#6eae91;transition:width .2s}
-.game{max-width:720px;margin:0 auto}.left{min-width:0}.board-toolbar{max-width:510px;margin:0 auto 7px;text-align:left}.board-wrap{max-width:510px;margin:auto;padding:9px;border:1px solid #cfdfd6;background:#eef5f0}
-footer{text-align:center;color:#668479;font-size:.78rem;margin-top:30px;padding-top:15px;border-top:1px solid #dce9e2}
-dialog{background:#fff;color:#2a4339;border:1px solid #bdd4c7;border-radius:0;max-width:min(90vw,450px);line-height:1.7;padding:24px}dialog::backdrop{background:#223b4666}dialog h2{margin-top:0}
-@media(max-width:640px){.shell{padding:16px 12px 30px}.game-overview{grid-template-columns:minmax(0,1fr) minmax(0,1.65fr);gap:8px}.stats{gap:7px}.stats>div{min-width:55px;font-size:.69rem}.view-tabs{gap:16px}.board-wrap{padding:6px}}
-@media(max-width:390px){.game-overview{grid-template-columns:1fr}.stats{justify-content:space-between;text-align:right}.recipe-content{max-width:none}}
+/*網頁外觀與分頁，不包含棋盤遊戲規則。*/
+
+.shell {
+  max-width: 1000px;
+  margin: auto;
+  padding: 24px 18px 38px;
+}
+
+header {
+  text-align: center;
+  margin: 0 0 18px;
+}
+
+h1 {
+  font-size: clamp(19px,3.2vw,25px);
+  font-weight: 650;
+  letter-spacing: .06em;
+  margin: 0;
+  color: #284b44;
+}
+
+.page-nav-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  border-bottom: 1px solid #cbded5;
+  margin-bottom: 22px;
+}
+
+.view-tabs {
+  display: flex;
+  gap: 22px;
+  align-items: center;
+}
+
+.view-tab {
+  font: inherit;
+  color: #68817a;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  padding: 10px 0 9px;
+  cursor: pointer;
+}
+
+.view-tab[aria-selected="true"] {
+  color: #285e4d;
+  border-bottom-color: #548e76;
+  font-weight: 700;
+}
+
+.view-tab:hover {
+  color: #285e4d;
+}
+
+.home-link {
+  color: #4b7668;
+  text-decoration: none;
+  font-size: .9rem;
+}
+
+.home-link:hover, .restart-link:hover, .recipe-toggle:hover, .panel-button:hover {
+  text-decoration: underline;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+.view-tab:focus-visible,
+.home-link:focus-visible,
+.panel-button:focus-visible,
+.restart-link:focus-visible,
+.recipe-toggle:focus-visible {
+  outline: 2px solid #4c9a80;
+  outline-offset: 3px;
+}
+
+.view-panel {
+  min-width: 0;
+}
+
+.settings-panel, .achievements-panel {
+  padding: 12px 0;
+  line-height: 1.75;
+}
+
+.settings-panel h2, .achievements-panel h2 {
+  font-size: 1.15rem;
+  margin: 0 0 10px;
+}
+
+.settings-panel p, .achievements-panel p {
+  color: #607b72;
+}
+
+.panel-button, .restart-link, .recipe-toggle, dialog button {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  color: #376b57;
+  padding: 5px 0;
+  font-weight: 650;
+  text-align: left;
+}
+
+.achievement-stats {
+  display: flex;
+  gap: 28px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+
+.achievement-stats>div {
+  border-top: 1px solid #d6e4dc;
+  padding-top: 12px;
+  color: #607b72;
+  min-width: 130px;
+}
+
+.achievement-stats strong {
+  display: block;
+  font-size: 1.45rem;
+  color: #285e4d;
+  margin-top: 5px;
+}
+
+.game-overview {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(0,1.8fr);
+  gap: 20px;
+  align-items: start;
+  margin-bottom: 10px;
+}
+
+.recipe-tree {
+  min-width: 0;
+  text-align: left;
+}
+
+.recipe-toggle {
+  font-size: .95rem;
+}
+
+.recipe-content {
+  padding: 8px 0 4px;
+  max-width: 360px;
+}
+
+.recipe-content[hidden] {
+  display: none;
+}
+
+.stats {
+  display: flex;
+  justify-content: flex-end;
+  gap: 14px;
+  flex-wrap: wrap;
+  text-align: right;
+}
+
+.stats>div {
+  font-size: .75rem;
+  color: #688179;
+  min-width: 68px;
+}
+
+.stats strong {
+  display: block;
+  color: #285348;
+  font-size: clamp(.95rem,2vw,1.25rem);
+  margin-top: 4px;
+}
+
+.progress {
+  height: 3px;
+  background: #dbe8e1;
+  overflow: hidden;
+  margin-bottom: 17px;
+}
+
+.progress>div {
+  height: 100%;
+  width: 0;
+  background: #6eae91;
+  transition: width .2s;
+}
+
+.game {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.left {
+  min-width: 0;
+}
+
+.board-toolbar {
+  max-width: 510px;
+  margin: 0 auto 7px;
+  text-align: left;
+}
+
+.board-wrap {
+  max-width: 510px;
+  margin: auto;
+  padding: 9px;
+  border: 1px solid #cfdfd6;
+  background: #eef5f0;
+}
+
+footer {
+  text-align: center;
+  color: #668479;
+  font-size: .78rem;
+  margin-top: 30px;
+  padding-top: 15px;
+  border-top: 1px solid #dce9e2;
+}
+
+dialog {
+  background: #fff;
+  color: #2a4339;
+  border: 1px solid #bdd4c7;
+  border-radius: 0;
+  max-width: min(90vw,450px);
+  line-height: 1.7;
+  padding: 24px;
+}
+
+dialog::backdrop {
+  background: #223b4666;
+}
+
+dialog h2 {
+  margin-top: 0;
+}
+
+@media (max-width:640px) {
+  .shell {
+    padding: 16px 12px 30px;
+  }
+  .game-overview {
+    grid-template-columns: minmax(0,1fr) minmax(0,1.65fr);
+    gap: 8px;
+  }
+  .stats {
+    gap: 7px;
+  }
+  .stats>div {
+    min-width: 55px;
+    font-size: .69rem;
+  }
+  .view-tabs {
+    gap: 16px;
+  }
+  .board-wrap {
+    padding: 6px;
+  }
+}
+
+@media (max-width:390px) {
+  .game-overview {
+    grid-template-columns: 1fr;
+  }
+  .stats {
+    justify-content: space-between;
+    text-align: right;
+  }
+  .recipe-content {
+    max-width: none;
+  }
+}
+
+/*關卡模式設定與遊戲畫面操作；保留原本的簡潔淺色版型。*/
+
+.setting-mode {
+  display: grid;
+  gap: 9px;
+  max-width: 440px;
+  margin: 4px 0 18px;
+}
+
+.setting-mode label {
+  font-weight: 700;
+  color: #285e4d;
+}
+
+/*軍火庫 SlowlySelect 負責可見介面，宿主只覆寫配色與間距。*/
+
+.setting-mode .slowly-select {
+  --ss-bg: #fff;
+  --ss-text: #284b44;
+  --ss-border: #a8c6b6;
+  --ss-hover: #eef6f0;
+  --ss-selected-bg: #dceee2;
+  --ss-selected-text: #285e4d;
+  --ss-focus: #4c9a80;
+  width: 100%;
+}
+
+.setting-mode .slowly-select-trigger {
+  min-height: 42px;
+  padding: 7px 10px;
+  border-radius: 3px;
+}
+
+.setting-mode .slowly-select-option {
+  padding: 10px;
+}
+
+.setting-mode .slowly-select-menu {
+  border-radius: 3px;
+}
+
+.setting-mode p {
+  margin: 0;
+  font-size: .83rem;
+  color: #617e72;
+  line-height: 1.6;
+}
+
+.mode-indicator {
+  text-align: center;
+  color: #4d7864;
+  font-size: .82rem;
+  margin: -7px 0 12px;
+}
+
+.board-toolbar {
+  display: flex;
+  gap: 22px;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+
+.board-toolbar button {
+  min-height: 36px;
+}
+
+.board-toolbar button:disabled {
+  opacity: .5;
+  cursor: wait;
+  text-decoration: none;
+}
+
+.cell:disabled {
+  cursor: default;
+}
+
+/*本機分模式 TOP 3，採用 Match3 的 rankLine / rankStats 資料結構。*/
+
+.ranking-panel {
+  padding: 12px 0 24px;
+}
+
+.ranking-panel h2 {
+  font-size: 1.15rem;
+  margin: 0 0 8px;
+  color: #285348;
+}
+
+.ranking-panel>p {
+  font-size: .86rem;
+  color: #617e72;
+  line-height: 1.6;
+  margin: 0 0 17px;
+}
+
+.rank-mode-tabs {
+  display: flex;
+  gap: 22px;
+  border-bottom: 1px solid #cbded5;
+  margin-bottom: 13px;
+}
+
+.rank-mode-tab {
+  font: inherit;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  color: #68817a;
+  padding: 9px 0;
+  cursor: pointer;
+}
+
+.rank-mode-tab[aria-selected="true"] {
+  color: #285e4d;
+  border-bottom-color: #548e76;
+  font-weight: 700;
+}
+
+.rank-mode-tab:hover {
+  color: #285e4d;
+}
+
+.rank-mode-tab:focus-visible {
+  outline: 2px solid #4c9a80;
+  outline-offset: 2px;
+}
+
+.rankList {
+  display: grid;
+  gap: 10px;
+}
+
+.rankLine {
+  display: grid;
+  grid-template-columns: 72px minmax(0,1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 15px;
+  border: 1px solid #d2e4d7;
+  background: #f8fbf8;
+  min-width: 0;
+}
+
+.rankLine>b {
+  font-size: .88rem;
+  color: #46785d;
+  white-space: nowrap;
+}
+
+.rankStats {
+  display: grid;
+  grid-template-columns: repeat(4,minmax(0,1fr));
+  gap: 9px;
+  min-width: 0;
+}
+
+.rankStat {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.rankStatLabel {
+  color: #72887b;
+  font-size: .72rem;
+}
+
+.rankStatValue {
+  color: #285348;
+  font-size: 1rem;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+
+.rank-empty {
+  color: #617e72;
+  line-height: 1.7;
+  margin: 7px 0;
+}
+
+@media (max-width:480px) {
+  .rankLine {
+    grid-template-columns: 1fr;
+    gap: 9px;
+    padding: 12px;
+  }
+  .rankStats {
+    gap: 6px;
+  }
+  .rankStatValue {
+    font-size: .9rem;
+  }
+  .board-toolbar {
+    gap: 18px;
+  }
+}
+
+/*Match3 同款控制流程：開始／暫停／繼續／結束；不改既有原子棋盤外觀。*/
+
+.game-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 0 16px;
+}
+
+.game-control {
+  min-height: 38px;
+  padding: 7px 18px;
+  border: 1px solid #b6d0c7;
+  border-radius: 3px;
+  background: #f6fbf7;
+  color: #285e4d;
+  font-weight: 700;
+}
+
+.game-control:not(:disabled):hover {
+  background: #e4f1e8;
+}
+
+.game-control:disabled {
+  opacity: .46;
+  cursor: not-allowed;
+}
+
+.game-control:focus-visible {
+  outline: 2px solid #4c9a80;
+  outline-offset: 2px;
+}
+
+.ranking-panel {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #d6e4dc;
+}
+
+.ranking-panel h3 {
+  font-size: 1.05rem;
+  margin: 0 0 8px;
+  color: #285348;
+}
+
+.achievements-panel .ranking-panel>p {
+  margin: 0 0 15px;
+}
+
+.cell:disabled.empty:hover {
+  background: #fff;
+}

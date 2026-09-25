@@ -1,82 +1,175 @@
-// 玩家操作、合成後的回饋與說明視窗。
+// 玩家操作、關卡結算與說明；模式選擇／開始／暫停／結束比照 match3_v1。
 (() => {
-    'use strict';
-    const game = window.SBSChemistryV1;
-    const $ = game.$;
+  'use strict';
+  const game = window.SBSChemistryV1;
+  const $ = game.$;
+  const modePicker = $('chemistryMode');
+  const descriptions = Object.freeze({
+    normal: '普通模式從第 1 關開始。選好後回到遊戲頁按「開始」；進行中不能切換模式。',
+    endless: '無盡模式從第 14 關開始，但本場分數依然從 0 開始計算。選好後按「開始」。'
+  });
 
-    game.place = index => {
-        if (game.over || game.locked || game.board[index]) return;
-        game.board[index] = game.queue.shift();
-        game.remaining--;
+  function renderModeDescription(mode = game.selectedMode) {
+    $('chemistryModeNote').textContent = descriptions[mode] || descriptions.normal;
+  }
 
-        const danger = window.FictionFilter.filter(game.danger, {
-            predicate: recipe => recipe.l <= game.level
-        }).map(recipe => ({ recipe, path: game.matches(recipe, index) }))
-            .find(result => result.path);
-        if (danger) {
-            game.over = true;
-            game.render();
-            game.say(`💥 合成了不穩定分子 ${danger.recipe.s}！實驗失敗。`);
-            return;
+  async function recordOnEnd(message) {
+    game.say(`${message} 正在記錄分數…`);
+    const saved = await game.saveCurrentScore({ announce: false });
+    game.say(saved
+      ? `${message} 分數已自動記錄。`
+      : `${message} 分數儲存失敗，請按「分數紀錄」重試。`);
+  }
+
+  game.end = async (reason = 'manual') => {
+    if (game.saving || (game.state !== 'running' && game.state !== 'paused')) return false;
+    // 暫停中的時長不得算進本場時間，與 match3 的暫停計時一致。
+    game.endedAt = game.state === 'paused' ? game.pausedAt : Date.now();
+    game.state = 'ended';
+    game.over = true;
+    game.locked = true;
+    game.unsaved = true;
+    game.clearLevelTransition();
+    game.render();
+    const message = reason === 'manual' ? '本局已結束。' : reason;
+    await recordOnEnd(message);
+    return true;
+  };
+
+  game.place = index => {
+    if (game.state !== 'running' || game.over || game.locked || game.saving || game.board[index]) return;
+    game.board[index] = game.queue.shift();
+    game.remaining--;
+    game.moves++;
+
+    const danger = window.FictionFilter.filter(game.danger, {
+      predicate: recipe => recipe.l <= game.level
+    }).map(recipe => ({ recipe, path: game.matches(recipe, index) }))
+      .find(result => result.path);
+    if (danger) {
+      void game.end(`💥 合成了不穩定分子 ${danger.recipe.s}！實驗失敗。`);
+      return;
+    }
+
+    // 原本的化學合成規則不變：同分同長度時保留原配方順序。
+    const candidates = window.FictionFilter.filter(game.recipes, {
+      predicate: recipe => recipe.l <= game.level
+    }).map((recipe, order) => ({
+      recipe, order, path: game.matches(recipe, index)
+    }));
+    const best = window.FictionSort.sort(
+      window.FictionFilter.filter(candidates, { predicate: item => Boolean(item.path) }),
+      {
+        compare: (a, b) => b.recipe.p - a.recipe.p ||
+          b.recipe.s.length - a.recipe.s.length || a.order - b.order
+      }
+    )[0] || null;
+    if (best) {
+      for (const position of best.path) game.board[position] = null;
+      game.score += best.recipe.p;
+      game.say(`✨ 合成 ${best.recipe.s}，獲得 ${best.recipe.p} 分！`);
+    } else {
+      game.say('原子已放入，繼續組合！');
+    }
+    game.render();
+
+    if (game.score >= game.target()) {
+      game.locked = true;
+      const bonus = game.remaining + (game.level >= 6 && game.board.every(item => !item) ? 5 : 0);
+      game.total += game.score + bonus;
+      game.roundCommitted = true;
+      game.render();
+      game.say(`🎉 第 ${game.level} 關完成！剩餘原子獎勵 +${bonus} 分。`);
+      game.nextLevelTimer = window.PhaseCycle.create({
+        phases: [{ duration: 1100 }],
+        loop: false,
+        onComplete: () => {
+          game.nextLevelTimer = null;
+          if (game.state === 'paused') {
+            game.pendingLevelAdvance = true;
+          } else if (game.state === 'running') {
+            game.advanceLevel();
+          }
         }
+      });
+      game.nextLevelTimer.start();
+    } else if (game.remaining <= 0 || game.board.every(Boolean)) {
+      void game.end(`🧪 原子用完或棋盤已滿，還差 ${game.target() - game.score} 分。`);
+    }
+  };
 
-        // 保留原始配方順序作為同分、同長度時的最後優先條件。
-        const candidates = window.FictionFilter.filter(game.recipes, {
-            predicate: recipe => recipe.l <= game.level
-        }).map((recipe, order) => ({
-            recipe, order, path: game.matches(recipe, index)
-        }));
-        const best = window.FictionSort.sort(
-            window.FictionFilter.filter(candidates, { predicate: item => Boolean(item.path) }),
-            { compare: (a, b) => b.recipe.p - a.recipe.p ||
-                b.recipe.s.length - a.recipe.s.length || a.order - b.order }
-        )[0] || null;
-        if (best) {
-            for (const position of best.path) game.board[position] = null;
-            game.score += best.recipe.p;
-            game.say(`✨ 合成 ${best.recipe.s}，獲得 ${best.recipe.p} 分！`);
-        } else {
-            game.say('原子已放入，繼續組合！');
-        }
-        game.render();
+  $('btnStart').addEventListener('click', () => {
+    game.start(game.selectedMode);
+  });
+  $('btnPause').addEventListener('click', () => {
+    game.togglePause();
+  });
+  $('btnEnd').addEventListener('click', () => {
+    void game.end('manual');
+  });
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) game.requestAutoPause();
+  });
 
-        if (game.score >= game.target()) {
-            game.locked = true;
-            const bonus = game.remaining + (game.level >= 6 && game.board.every(item => !item) ? 5 : 0);
-            game.total += game.score + bonus;
-            $('achievementTotal').textContent = game.total;
-            game.say(`🎉 第 ${game.level} 關完成！剩餘原子獎勵 +${bonus} 分。`);
-            game.nextLevelTimer = window.PhaseCycle.create({
-                phases: [{ duration: 1100 }],
-                loop: false,
-                onComplete: () => {
-                    game.nextLevelTimer = null;
-                    game.level++;
-                    game.begin();
-                    game.say(`🎉 進入第 ${game.level} 關！新的合成表已更新。`);
-                }
-            });
-            game.nextLevelTimer.start();
-        } else if (game.remaining <= 0 || game.board.every(Boolean)) {
-            game.over = true;
-            game.say(`🧪 原子用完或棋盤已滿，還差 ${game.target() - game.score} 分。按「重新開始」再挑戰！`);
-        }
-    };
+  $('saveScore').addEventListener('click', () => {
+    void game.saveCurrentScore();
+  });
 
-    $('restart').addEventListener('click', async () => {
-        const confirmed = await window.SlowlyConfirm.show({
-            title: '重新開始',
-            message: '確定要從第一關重新開始嗎？',
-            confirmText: '重新開始',
-            cancelText: '取消'
-        });
-        if (confirmed) game.start();
+  $('restart').addEventListener('click', async () => {
+    if (!game.runId || game.saving) return;
+    const originalRunId = game.runId;
+    const confirmed = await window.SlowlyConfirm.show({
+      title: '重新開始',
+      message:
+        `確定要重新開始${game.modes[game.mode].label}嗎？本局會先記錄分數，` +
+        `再從第 ${game.modes[game.selectedMode].startLevel} 關開始。`,
+      confirmText: '記錄並重新開始',
+      cancelText: '取消'
     });
-    game.showHelp = () => {
-        $('modalTitle').textContent = '玩法說明';
-        $('modalBody').innerHTML = '<p>點擊 6×6 棋盤的空格，放入目前原子。把原子連成右側合成表的排列，即可合成並得分。原子可以橫向、直向、轉彎連接，合成後會消失。</p><p>每關原子數有限，達到目標分數就過關；剩餘原子會計入總分。第 7 關開始要小心不穩定分子！</p><p>這是參考經典玩法的自製懷舊版，關卡配置和原版不完全相同。</p>';
-        $('modal').showModal();
-    };
-    $('modalClose').addEventListener('click', () => $('modal').close());
-    game.start();
+    if (!confirmed || game.saving || game.runId !== originalRunId) return;
+    if (!await game.saveCurrentScore({ announce: false })) {
+      game.say('分數儲存失敗，已保留目前這局；請重新記錄後再試。');
+      return;
+    }
+    // 結算與重置都由主動確認的「重新開始」負責；切換模式本身不觸發。
+    game.clearLevelTransition();
+    game.state = 'ended';
+    game.start(game.selectedMode);
+  });
+
+  modePicker.addEventListener('change', () => {
+    const requested = modePicker.value;
+    if (!Object.prototype.hasOwnProperty.call(game.modes, requested) || game.saving ||
+      game.state === 'running' || game.state === 'paused') {
+      modePicker.value = game.selectedMode;
+      game.modeSelect.sync();
+      renderModeDescription();
+      if (game.state === 'running' || game.state === 'paused') {
+        game.say('請先結束本局，再選擇其他模式。');
+      }
+      return;
+    }
+    game.selectedMode = requested;
+    renderModeDescription(requested);
+    if (game.state === 'idle') game.preview(requested);
+    // match3_v1 的已結束狀態：選新模式只改下一局，按「開始」才重置。
+  });
+
+  game.showHelp = () => {
+    $('modalTitle').textContent = '玩法說明';
+    $('modalBody').innerHTML =
+      "<p>點擊 6×6 棋盤的空格，放入目前原子。把原子連成合成表中的排列，即可合成並得分。" +
+      "原子可以橫向、直向、轉彎連接，合成後會消失。</p>" +
+      "<p>每關原子數有限，達到目標分數就過關；剩餘原子會計入總分。第 7 關開始要小心不穩定分子！</p>" +
+      "<p>在設定頁選普通模式（第 1 關）或無盡模式（第 14 關），回遊戲頁按「開始」開局，" +
+      "兩種模式的分數都從 0 計算。遊戲中切換分頁會自動暫停，結束本局後才能切換模式。</p>" +
+      "<p>可隨時記錄分數；重新開始會先記錄本局成績。排行榜位於「成就」頁，兩種模式各有獨立的本機 TOP 3。" +
+      "</p>" +
+      "<p>這是參考經典玩法的自製懷舊版，關卡配置和原版不完全相同。</p>";
+    $('modal').showModal();
+  };
+  $('modalClose').addEventListener('click', () => $('modal').close());
+
+  renderModeDescription();
+  game.preview('normal');
 })();

@@ -1,2 +1,16 @@
-:root {font-family:system-ui,-apple-system,"Noto Sans TC",sans-serif;color:#28343b;background:#f7f8f5;color-scheme:light;}
- body {margin:0;background:linear-gradient(180deg,#fafbf8,#edf3f1);min-height:100vh;} [hidden] {display:none!important;}
+:root {
+  font-family: system-ui,-apple-system,"Noto Sans TC",sans-serif;
+  color: #28343b;
+  background: #f7f8f5;
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  background: linear-gradient(180deg,#fafbf8,#edf3f1);
+  min-height: 100vh;
+}
+
+[hidden] {
+  display: none !important;
+}
