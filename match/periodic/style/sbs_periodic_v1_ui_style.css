@@ -569,7 +569,7 @@ dialog h2 {
   box-shadow: none;
 }
 
-/* 成就圖鑑只列前三週期，用真正的 18 欄位置表示 H、C、N、O、S。 */
+/* 完整 118 元素週期表，18 欄等比例縮放；不使用橫向捲動。 */
 .periodic-achievement {
   margin-top: 24px;
   padding-top: 20px;
@@ -588,26 +588,25 @@ dialog h2 {
   line-height: 1.65;
 }
 
-.periodic-scroll {
-  max-width: 100%;
-  padding: 8px 3px 13px;
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-  scrollbar-width: thin;
-}
-
-.periodic-scroll:focus-visible {
-  outline: 2px solid #4c9a80;
-  outline-offset: 2px;
+.periodic-table-frame {
+  width: 100%;
+  min-width: 0;
+  padding: 8px 0 12px;
 }
 
 .periodic-grid {
+  --period-cell-height: clamp(29px, 5vw, 54px);
+  --period-series-gap: clamp(7px, 1.2vw, 12px);
+
   display: grid;
-  grid-template-columns: repeat(18, 39px);
-  grid-template-rows: repeat(3, 53px);
-  gap: 3px;
-  width: max-content;
-  min-width: 753px;
+  grid-template-columns: repeat(18, minmax(0, 1fr));
+  grid-template-rows:
+    repeat(7, var(--period-cell-height))
+    var(--period-series-gap)
+    repeat(2, var(--period-cell-height));
+  gap: clamp(1px, .25vw, 3px);
+  width: 100%;
+  min-width: 0;
 }
 
 .periodic-element {
@@ -618,7 +617,7 @@ dialog h2 {
   grid-row: var(--period-row);
   min-width: 0;
   min-height: 0;
-  padding: 4px 3px;
+  padding: clamp(1px, .3vw, 4px);
   border: 1px solid #d7e1da;
   border-radius: 3px;
   background: #eff2ef;
@@ -629,13 +628,15 @@ dialog h2 {
 
 .periodic-number {
   align-self: flex-start;
-  font-size: 9px;
+  font-size: clamp(7px, 1vw, 9px);
   font-variant-numeric: tabular-nums;
 }
 
 .periodic-symbol {
-  font-size: 16px;
+  font-size: clamp(9px, 1.8vw, 16px);
   font-weight: 800;
+  letter-spacing: -.04em;
+  white-space: nowrap;
 }
 
 .periodic-name {
@@ -643,7 +644,40 @@ dialog h2 {
 }
 
 .periodic-element--other {
-  opacity: .46;
+  opacity: .74;
+  color: #7b8d82;
+}
+
+/* 非遊戲元素只顯示原子序與元素符號，讓完整週期表保持整齊。 */
+.periodic-element--other .periodic-name {
+  display: none;
+}
+
+.periodic-element--series {
+  border-style: dashed;
+}
+
+.periodic-element--series .periodic-symbol {
+  font-size: clamp(8px, 1.3vw, 13px);
+}
+
+/* 窄螢幕保留完整 18 欄；隱藏中文名稱，確保 H 與 O 同時可見。 */
+@media (max-width: 680px) {
+  .periodic-grid {
+    --period-cell-height: clamp(29px, 6vw, 39px);
+  }
+
+  .periodic-name {
+    display: none;
+  }
+
+  .periodic-symbol {
+    font-size: clamp(9px, 2.35vw, 13px);
+  }
+
+  .periodic-number {
+    font-size: 7px;
+  }
 }
 
 .periodic-element--available[data-unlocked="false"] {

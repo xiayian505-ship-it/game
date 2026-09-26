@@ -27,13 +27,6 @@
     if (nextView !== 'game') game.requestAutoPause();
     showView(nextView);
     if (nextView === 'achievements') {
-      // 週期表在手機上需要橫向捲動；第一次開啟先顯示 C、N、O、S 所在區域。
-      const tableScroll = $('periodicScroll');
-      if (!tableScroll.dataset.initialPositioned) {
-        tableScroll.scrollLeft = tableScroll.scrollWidth - tableScroll.clientWidth;
-        tableScroll.dataset.initialPositioned = 'true';
-      }
-
       void game.renderTop3().catch(error => console.error('[Periodic] 讀取排行榜失敗：', error));
     }
   }));
@@ -49,6 +42,163 @@
     recipeContent.hidden = !expanded;
   });
   showView('game');
+
+  /*
+   * 第一至第三週期由 HTML 靜態呈現，這裡補齊第 19 至 118 號元素。
+   * 鑭系與錒系另列在下方，因此使用第 9、10 列；第 8 列是視覺間隔。
+   * 灰色元素只用於圖鑑，不會加入遊戲的元素池或合成配方。
+   */
+  const otherPeriodicElements = [
+    [19, 'K', 4, 1],
+    [20, 'Ca', 4, 2],
+    [21, 'Sc', 4, 3],
+    [22, 'Ti', 4, 4],
+    [23, 'V', 4, 5],
+    [24, 'Cr', 4, 6],
+    [25, 'Mn', 4, 7],
+    [26, 'Fe', 4, 8],
+    [27, 'Co', 4, 9],
+    [28, 'Ni', 4, 10],
+    [29, 'Cu', 4, 11],
+    [30, 'Zn', 4, 12],
+    [31, 'Ga', 4, 13],
+    [32, 'Ge', 4, 14],
+    [33, 'As', 4, 15],
+    [34, 'Se', 4, 16],
+    [35, 'Br', 4, 17],
+    [36, 'Kr', 4, 18],
+    [37, 'Rb', 5, 1],
+    [38, 'Sr', 5, 2],
+    [39, 'Y', 5, 3],
+    [40, 'Zr', 5, 4],
+    [41, 'Nb', 5, 5],
+    [42, 'Mo', 5, 6],
+    [43, 'Tc', 5, 7],
+    [44, 'Ru', 5, 8],
+    [45, 'Rh', 5, 9],
+    [46, 'Pd', 5, 10],
+    [47, 'Ag', 5, 11],
+    [48, 'Cd', 5, 12],
+    [49, 'In', 5, 13],
+    [50, 'Sn', 5, 14],
+    [51, 'Sb', 5, 15],
+    [52, 'Te', 5, 16],
+    [53, 'I', 5, 17],
+    [54, 'Xe', 5, 18],
+    [55, 'Cs', 6, 1],
+    [56, 'Ba', 6, 2],
+    [72, 'Hf', 6, 4],
+    [73, 'Ta', 6, 5],
+    [74, 'W', 6, 6],
+    [75, 'Re', 6, 7],
+    [76, 'Os', 6, 8],
+    [77, 'Ir', 6, 9],
+    [78, 'Pt', 6, 10],
+    [79, 'Au', 6, 11],
+    [80, 'Hg', 6, 12],
+    [81, 'Tl', 6, 13],
+    [82, 'Pb', 6, 14],
+    [83, 'Bi', 6, 15],
+    [84, 'Po', 6, 16],
+    [85, 'At', 6, 17],
+    [86, 'Rn', 6, 18],
+    [87, 'Fr', 7, 1],
+    [88, 'Ra', 7, 2],
+    [104, 'Rf', 7, 4],
+    [105, 'Db', 7, 5],
+    [106, 'Sg', 7, 6],
+    [107, 'Bh', 7, 7],
+    [108, 'Hs', 7, 8],
+    [109, 'Mt', 7, 9],
+    [110, 'Ds', 7, 10],
+    [111, 'Rg', 7, 11],
+    [112, 'Cn', 7, 12],
+    [113, 'Nh', 7, 13],
+    [114, 'Fl', 7, 14],
+    [115, 'Mc', 7, 15],
+    [116, 'Lv', 7, 16],
+    [117, 'Ts', 7, 17],
+    [118, 'Og', 7, 18],
+    [57, 'La', 9, 3],
+    [58, 'Ce', 9, 4],
+    [59, 'Pr', 9, 5],
+    [60, 'Nd', 9, 6],
+    [61, 'Pm', 9, 7],
+    [62, 'Sm', 9, 8],
+    [63, 'Eu', 9, 9],
+    [64, 'Gd', 9, 10],
+    [65, 'Tb', 9, 11],
+    [66, 'Dy', 9, 12],
+    [67, 'Ho', 9, 13],
+    [68, 'Er', 9, 14],
+    [69, 'Tm', 9, 15],
+    [70, 'Yb', 9, 16],
+    [71, 'Lu', 9, 17],
+    [89, 'Ac', 10, 3],
+    [90, 'Th', 10, 4],
+    [91, 'Pa', 10, 5],
+    [92, 'U', 10, 6],
+    [93, 'Np', 10, 7],
+    [94, 'Pu', 10, 8],
+    [95, 'Am', 10, 9],
+    [96, 'Cm', 10, 10],
+    [97, 'Bk', 10, 11],
+    [98, 'Cf', 10, 12],
+    [99, 'Es', 10, 13],
+    [100, 'Fm', 10, 14],
+    [101, 'Md', 10, 15],
+    [102, 'No', 10, 16],
+    [103, 'Lr', 10, 17],
+  ];
+
+  function completePeriodicTable() {
+    const grid = $('periodicGrid');
+    const fragment = document.createDocumentFragment();
+
+    for (const [number, symbol, row, column] of otherPeriodicElements) {
+      const tile = document.createElement('div');
+      tile.className = 'periodic-element periodic-element--other';
+      tile.style.setProperty('--period-row', String(row));
+      tile.style.setProperty('--period-col', String(column));
+      tile.setAttribute('aria-hidden', 'true');
+      tile.title = `${number} ${symbol}`;
+
+      const atomicNumber = document.createElement('span');
+      atomicNumber.className = 'periodic-number';
+      atomicNumber.textContent = String(number);
+
+      const elementSymbol = document.createElement('strong');
+      elementSymbol.className = 'periodic-symbol';
+      elementSymbol.textContent = symbol;
+
+      tile.append(atomicNumber, elementSymbol);
+      fragment.appendChild(tile);
+    }
+
+    for (const [row, label] of [[6, '鑭系'], [7, '錒系']]) {
+      const tile = document.createElement('div');
+      tile.className = 'periodic-element periodic-element--other periodic-element--series';
+      tile.style.setProperty('--period-row', String(row));
+      tile.style.setProperty('--period-col', '3');
+      tile.setAttribute('aria-hidden', 'true');
+      tile.title = `${label}元素排列在週期表下方`;
+
+      const symbol = document.createElement('strong');
+      symbol.className = 'periodic-symbol';
+      symbol.textContent = '↓';
+
+      const name = document.createElement('span');
+      name.className = 'periodic-name';
+      name.textContent = label;
+
+      tile.append(symbol, name);
+      fragment.appendChild(tile);
+    }
+
+    grid.appendChild(fragment);
+  }
+
+  completePeriodicTable();
 
   game.atom = (symbol, extraClass = '') => {
     const element = document.createElement('span');
