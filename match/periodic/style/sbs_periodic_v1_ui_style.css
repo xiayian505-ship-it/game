@@ -728,3 +728,294 @@ dialog h2 {
   color: #4d7864 !important;
   font-size: .82rem !important;
 }
+
+/* 分子成就：普通與無盡模式共用同一份永久收集紀錄。 */
+.molecule-achievement {
+  margin-top: 28px;
+  padding-top: 22px;
+  border-top: 1px solid #d6e4dc;
+}
+
+.molecule-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.molecule-heading h3 {
+  margin: 0;
+  color: #285348;
+  font-size: 1.05rem;
+}
+
+.molecule-heading > strong {
+  color: #357458;
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.molecule-achievement > p {
+  margin: 8px 0 12px;
+  font-size: .85rem;
+  line-height: 1.65;
+}
+
+.molecule-achievement .molecule-summary {
+  margin: 0 0 15px;
+  color: #49765d;
+}
+
+/* 分子卡正面顯示收集狀態；背面才提供解鎖關卡和合成資料。 */
+.molecule-collection {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.molecule-card {
+  display: block;
+  min-width: 0;
+  width: 100%;
+  min-height: 152px;
+  padding: 0;
+  border: 1px solid #d9e3dc;
+  border-radius: 5px;
+  background: #f4f6f4;
+  color: #86968b;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  perspective: 900px;
+}
+
+.molecule-card:disabled {
+  opacity: 1;
+  cursor: default;
+}
+
+.molecule-card[data-collected="true"] {
+  border-color: #8fbca0;
+  background: #f0f9f1;
+  color: #315b46;
+  box-shadow: inset 3px 0 0 #77af88;
+}
+
+.molecule-card:focus-visible {
+  outline: 2px solid #397e5d;
+  outline-offset: 3px;
+}
+
+.molecule-card-inner {
+  display: grid;
+  min-height: 150px;
+  transform-style: preserve-3d;
+  transition: transform .45s cubic-bezier(.2, .75, .2, 1);
+}
+
+.molecule-card[data-flipped="true"] .molecule-card-inner {
+  transform: rotateY(180deg);
+}
+
+.molecule-card-face {
+  display: flex;
+  grid-area: 1 / 1;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 7px;
+  min-width: 0;
+  min-height: 150px;
+  padding: 13px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.molecule-card-back {
+  transform: rotateY(180deg);
+  background: #edf5ee;
+  color: #315b46;
+}
+
+.molecule-formula {
+  color: inherit;
+  font-size: clamp(1.15rem, 3vw, 1.4rem);
+  white-space: nowrap;
+}
+
+.molecule-name {
+  font-size: .92rem;
+  font-weight: 650;
+}
+
+.molecule-status {
+  color: #819288;
+  font-size: .76rem;
+  white-space: nowrap;
+}
+
+.molecule-card[data-collected="true"] .molecule-status {
+  color: #3c8b60;
+  font-weight: 700;
+}
+
+.molecule-flip-hint {
+  color: #759283;
+  font-size: .68rem;
+}
+
+.molecule-back-title {
+  font-size: .9rem;
+  overflow-wrap: anywhere;
+}
+
+.molecule-unlock-level {
+  font-size: .84rem;
+  font-weight: 750;
+}
+
+.molecule-points {
+  font-size: .75rem;
+}
+
+.molecule-arrangement {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 3px;
+  min-height: 27px;
+}
+
+.molecule-arrangement .atom {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  font-size: 12px;
+  border-width: 1px;
+}
+
+.molecule-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.molecule-page-button {
+  min-height: 36px;
+  padding: 7px 12px;
+  border: 1px solid #b8d1bf;
+  border-radius: 3px;
+  background: #f5fbf6;
+  color: #285e4d;
+  font: inherit;
+  cursor: pointer;
+}
+
+.molecule-page-button:disabled {
+  opacity: .42;
+  cursor: not-allowed;
+}
+
+.molecule-page-button:focus-visible {
+  outline: 2px solid #397e5d;
+  outline-offset: 2px;
+}
+
+.molecule-page-status {
+  min-width: 76px;
+  color: #446954;
+  font-size: .84rem;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .molecule-card-inner {
+    transition: none;
+  }
+}
+
+/* 排行榜獨立為第四頁，不再佔據成就頁的版面。 */
+.ranking-view {
+  padding: 12px 0 24px;
+}
+
+.ranking-view .ranking-panel {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.ranking-view .ranking-panel h2 {
+  margin: 0 0 8px;
+  color: #285348;
+  font-size: 1.15rem;
+}
+
+@media (max-width: 380px) {
+  .molecule-collection {
+    gap: 7px;
+  }
+
+  .molecule-card-face {
+    padding: 9px;
+    gap: 6px;
+  }
+
+  .molecule-formula {
+    font-size: 1.05rem;
+  }
+
+  .molecule-status {
+    font-size: .69rem;
+  }
+}
+
+/* 第 15 關通關後的常駐提示：不切模式，不更動本局分數。 */
+.endless-notice[hidden] {
+  display: none;
+}
+
+.endless-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border: 1px solid #9dbea5;
+  border-left: 4px solid #5c9874;
+  border-radius: 3px;
+  background: #edf7ef;
+  color: #295b42;
+}
+
+.endless-notice-copy {
+  flex: 1 1 240px;
+}
+
+.endless-notice-copy p {
+  margin: 6px 0 0;
+  color: #54735d;
+  font-size: .85rem;
+  line-height: 1.6;
+}
+
+.endless-notice-dismiss {
+  min-height: 36px;
+  padding: 7px 14px;
+  border: 1px solid #8fb29a;
+  background: #f8fcf8;
+  color: #285e4d;
+  font: inherit;
+  cursor: pointer;
+}
+
+.endless-notice-dismiss:focus-visible {
+  outline: 2px solid #397e5d;
+  outline-offset: 2px;
+}

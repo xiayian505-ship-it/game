@@ -38,6 +38,7 @@
     }
 
     game.clearLevelTransition();
+    game.hideEndlessNotice?.();
     game.mode = validMode(mode);
     game.selectedMode = game.mode;
     game.level = game.modes[game.mode].startLevel;
@@ -72,6 +73,7 @@
     }
 
     game.selectedMode = chosen;
+    game.hideEndlessNotice?.();
     game.state = 'running';
     game.startedAt = Date.now();
     game.endedAt = null;
@@ -108,11 +110,11 @@
     game.state = 'running';
 
     if (game.pendingLevelAdvance) {
-      game.advanceLevel();
-    } else {
-      game.renderButtons();
+      // 待升關時不覆蓋第 16 關的重要提示文字。
+      return game.advanceLevel();
     }
 
+    game.renderButtons();
     game.say(`已繼續${game.modes[game.mode].label}第 ${game.level} 關。`);
     return true;
   };
@@ -153,6 +155,7 @@
   game.advanceLevel = () => {
     if (game.state !== 'running' || !game.locked || game.over) return false;
 
+    const enteredEndlessChallenge = game.mode === 'normal' && game.level === 15;
     game.clearLevelTransition();
     game.level++;
     game.begin();
@@ -161,7 +164,12 @@
       void game.unlockThroughLevel(game.level);
     }
 
-    game.say(`🎉 進入第 ${game.level} 關！新的分子合成表已更新。`);
+    if (enteredEndlessChallenge) {
+      game.say('🎉 基礎實驗完成！已進入第 16 關無盡挑戰；普通模式與累積分數不變。');
+      game.showEndlessNotice?.();
+    } else {
+      game.say(`🎉 進入第 ${game.level} 關！新的分子合成表已更新。`);
+    }
     return true;
   };
 

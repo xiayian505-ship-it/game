@@ -9,6 +9,24 @@
     endless: '無盡模式從第 16 關開始，直接開放全部 5 種元素與 16 種分子；本場分數仍從 0 開始。'
   });
 
+  // 只在普通模式第 15 → 16 關時提示；維持目前模式與整場分數。
+  const endlessNotice = $('endlessNotice');
+  game.showEndlessNotice = () => {
+    if (game.mode === 'normal' && game.level === 16 && game.runId) {
+      endlessNotice.hidden = false;
+      // 玩家剛在棋盤操作，可能已滑到頁面下方；將首次提示帶入視野。
+      const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+      endlessNotice.scrollIntoView({
+        behavior: reducedMotion ? 'auto' : 'smooth',
+        block: 'center'
+      });
+    }
+  };
+  game.hideEndlessNotice = () => {
+    endlessNotice.hidden = true;
+  };
+  $('endlessNoticeDismiss').addEventListener('click', game.hideEndlessNotice);
+
   function renderModeDescription(mode = game.selectedMode) {
     $('periodicModeNote').textContent = descriptions[mode] || descriptions.normal;
   }
@@ -30,6 +48,7 @@
     game.locked = true;
     game.unsaved = true;
     game.clearLevelTransition();
+    game.hideEndlessNotice();
     game.render();
     const message = reason === 'manual' ? '本局已結束。' : reason;
     await recordOnEnd(message);
@@ -65,6 +84,9 @@
 
       const earned = completed.reduce((sum, item) => sum + item.recipe.p, 0);
       game.score += earned;
+
+      // 兩種模式都收集分子；同一配方只存一次，不影響當回合計分與消除。
+      void game.recordMolecules(completed.map(item => item.recipe.formula));
 
       if (completed.length === 1) {
         const { formula, name } = completed[0].recipe;
@@ -188,12 +210,13 @@
       <p>
         普通模式從第 1 關開始；無盡模式直接從第 16 關開始，分數仍從 0 計算。
         切離遊戲頁會自動暫停；結束本局後才能切換模式。
-        成就頁的元素週期表只隨普通模式進度解鎖。
+        成就頁的元素週期表只隨普通模式進度解鎖；
+        分子圖鑑則可在普通、無盡兩種模式收集，成功合成一次就永久點亮。
       </p>
       <p>
         隨時可記錄分數，同一場紀錄會更新原本的名次；
         重新開始會先記錄本場分數。
-        成就頁也可查看兩種模式獨立的本機 TOP 3。
+        排行頁可查看兩種模式獨立的本機 TOP 3。
       </p>
     `;
     $('modal').showModal();

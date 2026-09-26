@@ -57,6 +57,17 @@
           >
             成就
           </button>
+          <button
+            aria-controls="rankingView"
+            aria-selected="false"
+            class="view-tab slowly-press"
+            data-view-target="ranking"
+            id="tab-ranking"
+            role="tab"
+            type="button"
+          >
+            排行
+          </button>
         </nav>
         <a class="home-link" href="https://game.stillnessbyslowly.com/">
           回家
@@ -110,6 +121,17 @@
             結束
           </button>
         </div>
+        <aside class="endless-notice" hidden id="endlessNotice" role="status" aria-live="polite">
+          <div class="endless-notice-copy">
+            <strong>🎉 基礎實驗完成，已進入無盡挑戰！</strong>
+            <p>
+              第 16 關起繼續挑戰；目前仍是普通模式，累積分數和排行榜都不會切換。
+            </p>
+          </div>
+          <button class="endless-notice-dismiss slowly-press" id="endlessNoticeDismiss" type="button">
+            知道了
+          </button>
+        </aside>
         <section class="game-overview">
           <section aria-label="本關合成表" class="recipe-tree">
             <button
@@ -365,10 +387,45 @@
             元素解鎖進度載入中…
           </p>
         </section>
+        <section class="molecule-achievement" aria-labelledby="moleculeTitle">
+          <div class="molecule-heading">
+            <h3 id="moleculeTitle">分子圖鑑</h3>
+            <strong id="moleculeCount" aria-live="polite">0 / 16</strong>
+          </div>
+          <p>
+            普通模式與無盡模式共用收集進度；成功合成一次就會永久點亮，
+            重新開始也不會失去紀錄。每頁顯示 8 張卡片，只有已收集的卡片能翻面查看解鎖關卡與配方。
+          </p>
+          <p class="molecule-summary" id="moleculeSummary" aria-live="polite">
+            正在載入分子成就…
+          </p>
+          <div class="molecule-collection" id="moleculeCollection" aria-label="分子收集卡，每頁顯示 8 張">
+          </div>
+          <nav class="molecule-pagination" aria-label="分子圖鑑分頁">
+            <button class="molecule-page-button slowly-press" disabled id="moleculePagePrev" type="button">
+              上一頁
+            </button>
+            <span aria-live="polite" class="molecule-page-status" id="moleculePageStatus">
+              第 1 / 2 頁
+            </span>
+            <button class="molecule-page-button slowly-press" disabled id="moleculePageNext" type="button">
+              下一頁
+            </button>
+          </nav>
+        </section>
+      </section>
+      <section
+        aria-labelledby="tab-ranking"
+        class="view-panel ranking-view"
+        data-view-panel="ranking"
+        hidden=""
+        id="rankingView"
+        role="tabpanel"
+      >
         <section aria-labelledby="rankTitle" class="ranking-panel">
-          <h3 id="rankTitle">
+          <h2 id="rankTitle">
             排行榜
-          </h3>
+          </h2>
           <p>
             普通與無盡模式各自保存本機 TOP 3；同一場多次記錄只更新同一筆成績。
           </p>

@@ -27,7 +27,14 @@
     if (nextView !== 'game') game.requestAutoPause();
     showView(nextView);
     if (nextView === 'achievements') {
-      void game.renderTop3().catch(error => console.error('[Periodic] 讀取排行榜失敗：', error));
+      game.renderPeriodicTable();
+      game.renderMoleculeCollection();
+    }
+    if (nextView === 'ranking') {
+      void game.renderTop3().catch(error => {
+        console.error('[Periodic] 讀取排行榜失敗：', error);
+        $('rankList').textContent = '暫時無法讀取排行榜。';
+      });
     }
   }));
   document.getElementById('settingsHelp').addEventListener('click', () => game.showHelp());
@@ -288,6 +295,7 @@
       highestNormalLevel = level;
       progressLoadFailed = false;
       game.renderPeriodicTable();
+      game.renderMoleculeCollection();
       await progressCollection.replace([{
         id: 'normal',
         highestLevel: highestNormalLevel
@@ -301,7 +309,199 @@
     return progressWrites;
   };
 
-  void progressReady.then(() => game.renderPeriodicTable());
+  void progressReady.then(() => {
+    game.renderPeriodicTable();
+    game.renderMoleculeCollection();
+  });
+
+  // 分子收集獨立於普通模式關卡進度：普通／無盡都能永久點亮同一份圖鑑。
+  // 舊版 normal_unlocks 與排行榜 Collection 原封不動，不需遷移既有紀錄。
+  const moleculeCollection = progressStore.collection('molecule_discoveries');
+  const knownFormulas = new Set(game.recipes.map(recipe => recipe.formula));
+  let discoveredMolecules = new Set();
+  let moleculesLoaded = false;
+  let moleculesLoadFailed = false;
+  let moleculesWriteFailed = false;
+  let moleculeWrites = Promise.resolve();
+
+  const moleculeReady = moleculeCollection.all()
+    .then(rows => {
+      const saved = rows.flatMap(row => Array.isArray(row.formulas) ? row.formulas : []);
+      discoveredMolecules = new Set(saved.filter(formula => knownFormulas.has(formula)));
+      moleculesLoaded = true;
+    })
+    .catch(error => {
+      moleculesLoaded = true;
+      moleculesLoadFailed = true;
+      console.error('[Periodic] 分子圖鑑讀取失敗：', error);
+    });
+
+  // 軍火庫分頁只處理資料範圍；前後頁按鈕、翻牌及可讀性由宿主負責。
+  const moleculePageSize = 8;
+  let moleculePage = 1;
+
+  function setMoleculeCardFlip(card, recipe, collected, flipped) {
+    const formula = game.displayFormula(recipe.formula);
+    const showBack = collected && flipped;
+    card.dataset.flipped = String(showBack);
+    if (collected) {
+      card.setAttribute('aria-pressed', String(showBack));
+    } else {
+      card.removeAttribute('aria-pressed');
+    }
+    card.setAttribute(
+      'aria-label',
+      collected
+        ? `${formula} ${recipe.name}，已收集；` +
+          (showBack ? '目前是背面，按下返回正面' : '按下翻開查看解鎖關卡與合成資料')
+        : `${formula} ${recipe.name}，尚未收集；成功合成後才能翻牌`
+    );
+    card.querySelector('.molecule-card-front').setAttribute('aria-hidden', String(showBack));
+    card.querySelector('.molecule-card-back')?.setAttribute('aria-hidden', String(!showBack));
+  }
+
+  function createMoleculeCard(recipe) {
+    const collected = discoveredMolecules.has(recipe.formula);
+    const normalUnlocked = highestNormalLevel >= recipe.l;
+    const formulaText = game.displayFormula(recipe.formula);
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'molecule-card slowly-press';
+    card.dataset.formula = recipe.formula;
+    card.dataset.collected = String(collected);
+    card.disabled = !collected;
+
+    const inner = document.createElement('span');
+    inner.className = 'molecule-card-inner';
+
+    const front = document.createElement('span');
+    front.className = 'molecule-card-face molecule-card-front';
+    const formula = document.createElement('strong');
+    formula.className = 'molecule-formula';
+    formula.textContent = formulaText;
+    const name = document.createElement('span');
+    name.className = 'molecule-name';
+    name.textContent = recipe.name;
+    const status = document.createElement('span');
+    status.className = 'molecule-status';
+    status.textContent = collected
+      ? '✓ 已收集'
+      : normalUnlocked
+        ? '尚未收集'
+        : '普通模式尚未解鎖';
+    const frontHint = document.createElement('span');
+    frontHint.className = 'molecule-flip-hint';
+    frontHint.textContent = collected ? '點擊翻牌 ↻' : '成功合成後可翻牌';
+    front.append(formula, name, status, frontHint);
+
+    inner.append(front);
+    if (collected) {
+      // 未收集時不建立背面資料；成功合成且存檔後才開放翻牌。
+      const back = document.createElement('span');
+      back.className = 'molecule-card-face molecule-card-back';
+      const backTitle = document.createElement('strong');
+      backTitle.className = 'molecule-back-title';
+      backTitle.textContent = `${formulaText} · ${recipe.name}`;
+      const level = document.createElement('span');
+      level.className = 'molecule-unlock-level';
+      level.textContent = `第 ${recipe.l} 關解鎖`;
+      const points = document.createElement('span');
+      points.className = 'molecule-points';
+      points.textContent = `合成 +${recipe.p} 分`;
+      const arrangement = document.createElement('span');
+      arrangement.className = 'molecule-arrangement';
+      arrangement.setAttribute('aria-label', `棋盤排列：${recipe.s}`);
+      for (const symbol of recipe.s) {
+        arrangement.append(game.atom(symbol));
+      }
+      back.append(backTitle, level, points, arrangement);
+      inner.append(back);
+    }
+    card.append(inner);
+
+    setMoleculeCardFlip(card, recipe, collected, false);
+    if (collected) {
+      card.addEventListener('click', () => {
+        setMoleculeCardFlip(card, recipe, collected, card.dataset.flipped !== 'true');
+      });
+    }
+    return card;
+  }
+
+  game.renderMoleculeCollection = () => {
+    if (!moleculesLoaded) return;
+
+    // 資料切頁直接引用軍火庫；配方增加後總頁數會自動成長。
+    const paged = window.FictionPaginate.paginate(game.recipes, {
+      page: moleculePage,
+      pageSize: moleculePageSize
+    });
+    moleculePage = paged.page;
+    const fragment = document.createDocumentFragment();
+    for (const recipe of paged.data) {
+      fragment.append(createMoleculeCard(recipe));
+    }
+    $('moleculeCollection').replaceChildren(fragment);
+    $('moleculePagePrev').disabled = !paged.hasPrevious;
+    $('moleculePageNext').disabled = !paged.hasNext;
+    $('moleculePageStatus').textContent = `第 ${paged.page} / ${paged.totalPages} 頁`;
+
+    $('moleculeCount').textContent = `${discoveredMolecules.size} / ${game.recipes.length}`;
+    const summary = $('moleculeSummary');
+    if (moleculesLoadFailed) {
+      summary.textContent = '無法讀取已儲存的分子圖鑑，請檢查瀏覽器儲存權限。';
+    } else if (moleculesWriteFailed) {
+      summary.textContent = '有分子紀錄尚未儲存成功，請再合成一次重試。';
+    } else if (discoveredMolecules.size === game.recipes.length) {
+      summary.textContent = `🎉 ${game.recipes.length} 種分子全部收集完成！`;
+    } else {
+      summary.textContent = `已收集 ${discoveredMolecules.size} / ${game.recipes.length} 種分子，兩種模式的合成成果共用。`;
+    }
+  };
+
+  $('moleculePagePrev').addEventListener('click', () => {
+    if (moleculePage <= 1) return;
+    moleculePage--;
+    game.renderMoleculeCollection();
+  });
+
+  $('moleculePageNext').addEventListener('click', () => {
+    moleculePage++;
+    game.renderMoleculeCollection();
+  });
+
+  game.recordMolecules = formulas => {
+    const found = [...new Set(formulas)].filter(formula => knownFormulas.has(formula));
+    if (found.length === 0) return Promise.resolve(true);
+
+    // 依序讀取／合併／寫回：連續合成不會因非同步儲存覆蓋上一筆。
+    moleculeWrites = moleculeWrites.then(async () => {
+      await moleculeReady;
+      if (moleculesLoadFailed) return false;
+
+      const next = new Set([...discoveredMolecules, ...found]);
+      if (next.size === discoveredMolecules.size) return true;
+
+      // 成功寫入後才點亮，避免儲存失敗卻顯示成永久收集。
+      await moleculeCollection.replace([{
+        id: 'molecules',
+        formulas: [...next].sort()
+      }]);
+      discoveredMolecules = next;
+      moleculesWriteFailed = false;
+      game.renderMoleculeCollection();
+      return true;
+    }).catch(error => {
+      moleculesWriteFailed = true;
+      console.error('[Periodic] 分子圖鑑儲存失敗：', error);
+      game.renderMoleculeCollection();
+      return false;
+    });
+
+    return moleculeWrites;
+  };
+
+  void moleculeReady.then(() => game.renderMoleculeCollection());
 
   const rankTabs = [...document.querySelectorAll('[data-rank-mode]')];
   let rankRenderVersion = 0;
@@ -418,7 +618,7 @@
       } catch (displayError) {
         // 分數已寫入成功；排行榜畫面更新失敗不應阻止重新開始。
         console.error('[Periodic] 排行榜畫面更新失敗：', displayError);
-        $('rankList').textContent = '分數已儲存，請重新開啟成就頁查看。';
+        $('rankList').textContent = '分數已儲存，請重新開啟排行頁查看。';
       }
 
       if (announce) {
