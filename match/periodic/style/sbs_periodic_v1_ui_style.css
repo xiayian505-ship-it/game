@@ -1019,3 +1019,212 @@ dialog h2 {
   outline: 2px solid #397e5d;
   outline-offset: 2px;
 }
+
+/* 元素週期表大圖與遊戲元素資訊；不影響小圖和棋盤的原有樣式。 */
+.periodic-achievement-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-bottom: 8px;
+}
+
+.periodic-achievement-heading h3 {
+  margin: 0;
+}
+
+.periodic-zoom-open,
+.periodic-dialog-close {
+  appearance: none;
+  padding: 7px 12px;
+  border: 1px solid #9dbdab;
+  border-radius: 6px;
+  background: #eef7f0;
+  color: #285e4d;
+  font: inherit;
+  font-size: .88rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.periodic-zoom-open:hover,
+.periodic-dialog-close:hover {
+  background: #e0f0e5;
+}
+
+.periodic-zoom-open:focus-visible,
+.periodic-dialog-close:focus-visible,
+.periodic-grid--zoom .periodic-element--interactive:focus-visible {
+  outline: 3px solid #43876b;
+  outline-offset: 3px;
+}
+
+/* 大圖使用可平移的寬版表格，保證中文不會被壓成難以閱讀的小字。 */
+dialog.periodic-zoom-dialog {
+  width: min(96vw, 1330px);
+  max-width: none;
+  max-height: 93dvh;
+  padding: clamp(10px, 2vw, 22px);
+  border-radius: 12px;
+  overflow: auto;
+}
+
+.periodic-zoom-shell {
+  min-width: 0;
+}
+
+.periodic-zoom-header,
+.periodic-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin: 0 0 8px;
+  text-align: left;
+}
+
+.periodic-zoom-header h2,
+.periodic-detail-header h2 {
+  margin: 0;
+  color: #285348;
+  font-size: clamp(1.08rem, 3.5vw, 1.35rem);
+}
+
+.periodic-zoom-dialog .periodic-dialog-close,
+.periodic-detail-dialog .periodic-dialog-close {
+  padding: 7px 12px;
+  border: 1px solid #9dbdab;
+  border-radius: 6px;
+  background: #eef7f0;
+  color: #285e4d;
+}
+
+.periodic-zoom-note {
+  margin: 0 0 10px;
+  color: #59796d;
+  font-size: .88rem;
+  line-height: 1.6;
+}
+
+.periodic-zoom-scroll {
+  width: 100%;
+  min-width: 0;
+  padding: 4px 3px 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  touch-action: pan-x pan-y;
+  border: 1px solid #d9e6dd;
+  border-radius: 8px;
+  background: #f9fcfa;
+  scrollbar-width: thin;
+}
+
+.periodic-grid--zoom {
+  --period-cell-height: 68px;
+  --period-series-gap: 16px;
+
+  width: 100%;
+  min-width: 1110px;
+  gap: 3px;
+}
+
+.periodic-grid--zoom .periodic-element {
+  padding: 4px;
+  border-radius: 5px;
+  justify-content: space-between;
+}
+
+.periodic-grid--zoom .periodic-number {
+  font-size: 10px;
+}
+
+.periodic-grid--zoom .periodic-symbol,
+.periodic-grid--zoom .periodic-element--series .periodic-symbol {
+  font-size: 20px;
+}
+
+.periodic-grid--zoom .periodic-name,
+.periodic-grid--zoom .periodic-element--other .periodic-name {
+  display: block;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.periodic-grid--zoom .periodic-element--interactive {
+  appearance: none;
+  font: inherit;
+  line-height: 1;
+  cursor: pointer;
+  transition: box-shadow .15s ease, transform .15s ease;
+}
+
+.periodic-grid--zoom .periodic-element--interactive:hover {
+  box-shadow: 0 0 0 2px #417d60;
+  transform: translateY(-1px);
+}
+
+dialog.periodic-detail-dialog {
+  width: min(90vw, 390px);
+  max-width: none;
+  max-height: 90dvh;
+  padding: 20px;
+  border-radius: 12px;
+}
+
+.periodic-detail-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 18px 8px 10px;
+  border-top: 1px solid #d9e6dd;
+}
+
+.periodic-detail-icon {
+  display: grid;
+  place-items: center;
+  width: 78px;
+  height: 78px;
+  margin-bottom: 8px;
+  border: 1px solid #cbded5;
+  border-radius: 12px;
+  background: #243b44;
+}
+
+.periodic-detail-icon .atom.large {
+  width: 56px;
+  height: 56px;
+}
+
+.periodic-detail-name {
+  color: #284b44;
+  font-size: 1.45rem;
+}
+
+.periodic-detail-number,
+.periodic-detail-status {
+  margin: 0;
+  color: #5b786b;
+  text-align: center;
+  font-size: .91rem;
+}
+
+@media (max-width: 520px) {
+  dialog.periodic-zoom-dialog {
+    width: 96vw;
+    padding: 12px;
+  }
+
+  .periodic-zoom-note {
+    font-size: .82rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .periodic-grid--zoom .periodic-element--interactive {
+    transition: none;
+  }
+}

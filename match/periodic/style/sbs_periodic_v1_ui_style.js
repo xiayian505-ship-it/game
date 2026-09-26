@@ -158,6 +158,129 @@
     [103, 'Lr', 10, 17],
   ];
 
+  // 大圖使用繁體中文元素名稱；遊戲元素與其他元素共用這份顯示資料。
+  // 少數超重元素的中文字屬擴充字，未安裝對應字型時仍保留英文符號。
+  const elementChineseNames = Object.freeze({
+    1: '氫',
+    2: '氦',
+    3: '鋰',
+    4: '鈹',
+    5: '硼',
+    6: '碳',
+    7: '氮',
+    8: '氧',
+    9: '氟',
+    10: '氖',
+    11: '鈉',
+    12: '鎂',
+    13: '鋁',
+    14: '矽',
+    15: '磷',
+    16: '硫',
+    17: '氯',
+    18: '氬',
+    19: '鉀',
+    20: '鈣',
+    21: '鈧',
+    22: '鈦',
+    23: '釩',
+    24: '鉻',
+    25: '錳',
+    26: '鐵',
+    27: '鈷',
+    28: '鎳',
+    29: '銅',
+    30: '鋅',
+    31: '鎵',
+    32: '鍺',
+    33: '砷',
+    34: '硒',
+    35: '溴',
+    36: '氪',
+    37: '銣',
+    38: '鍶',
+    39: '釔',
+    40: '鋯',
+    41: '鈮',
+    42: '鉬',
+    43: '鍀',
+    44: '釕',
+    45: '銠',
+    46: '鈀',
+    47: '銀',
+    48: '鎘',
+    49: '銦',
+    50: '錫',
+    51: '銻',
+    52: '碲',
+    53: '碘',
+    54: '氙',
+    55: '銫',
+    56: '鋇',
+    57: '鑭',
+    58: '鈰',
+    59: '鐠',
+    60: '釹',
+    61: '鉕',
+    62: '釤',
+    63: '銪',
+    64: '釓',
+    65: '鋱',
+    66: '鏑',
+    67: '鈥',
+    68: '鉺',
+    69: '銩',
+    70: '鐿',
+    71: '鎦',
+    72: '鉿',
+    73: '鉭',
+    74: '鎢',
+    75: '錸',
+    76: '鋨',
+    77: '銥',
+    78: '鉑',
+    79: '金',
+    80: '汞',
+    81: '鉈',
+    82: '鉛',
+    83: '鉍',
+    84: '釙',
+    85: '砹',
+    86: '氡',
+    87: '鈁',
+    88: '鐳',
+    89: '錒',
+    90: '釷',
+    91: '鏷',
+    92: '鈾',
+    93: '錼',
+    94: '鈽',
+    95: '鋂',
+    96: '鋦',
+    97: '錇',
+    98: '鉲',
+    99: '鑀',
+    100: '鐨',
+    101: '鍆',
+    102: '鍩',
+    103: '鐒',
+    104: '鑪',
+    105: '𨧀',
+    106: '𨭎',
+    107: '𨨏',
+    108: '鎚',
+    109: '鐽',
+    110: '𨱔',
+    111: '錀',
+    112: '鎶',
+    113: '鉨',
+    114: '𫓧',
+    115: '鏌',
+    116: '鉝',
+    117: '鿬',
+    118: '鐚',
+  });
+
   function completePeriodicTable() {
     const grid = $('periodicGrid');
     const fragment = document.createDocumentFragment();
@@ -178,7 +301,11 @@
       elementSymbol.className = 'periodic-symbol';
       elementSymbol.textContent = symbol;
 
-      tile.append(atomicNumber, elementSymbol);
+      const chineseName = document.createElement('span');
+      chineseName.className = 'periodic-name';
+      chineseName.textContent = elementChineseNames[number];
+
+      tile.append(atomicNumber, elementSymbol, chineseName);
       fragment.appendChild(tile);
     }
 
@@ -206,6 +333,92 @@
   }
 
   completePeriodicTable();
+
+  /* 成就週期表大圖：沿用既有完整週期表的格位，不建立第二份元素資料。
+     中文只在大圖完整呈現；小圖保持原本的 18 欄縮放版。 */
+  const zoomDialog = $('periodicZoomDialog');
+  const zoomGrid = $('periodicZoomGrid');
+  const zoomScroll = $('periodicZoomScroll');
+  const detailDialog = $('periodicDetailDialog');
+  let previousZoomFocus = null;
+  let previousDetailFocus = null;
+
+  function showPeriodicElementDetail(element) {
+    previousDetailFocus = document.activeElement;
+    $('periodicDetailTitle').textContent = `${element.symbol}・${element.name}`;
+    $('periodicDetailName').textContent = `${element.symbol}　${element.name}`;
+    $('periodicDetailNumber').textContent = `原子序 ${element.number}`;
+    $('periodicDetailStatus').textContent =
+      `普通模式第 ${element.unlockLevel} 關解鎖`;
+    $('periodicDetailIcon').replaceChildren(game.atom(element.symbol, 'large'));
+    detailDialog.showModal();
+  }
+
+  function buildPeriodicZoomTable() {
+    // 小圖已包含前 18 個元素和後續補齊的元素，直接複製能保證格位一致。
+    zoomGrid.replaceChildren(...Array.from($('periodicGrid').children, tile => tile.cloneNode(true)));
+
+    for (const tile of Array.from(zoomGrid.children)) {
+      const number = Number(tile.querySelector('.periodic-number')?.textContent);
+      const symbol = tile.querySelector('.periodic-symbol')?.textContent;
+      const element = game.elements.find(item => item.symbol === symbol);
+
+      if (!Number.isInteger(number)) {
+        // 鑭系與錒系的導引格不是元素；保持原本位置即可。
+        tile.removeAttribute('aria-hidden');
+        continue;
+      }
+
+      const chineseName = elementChineseNames[number];
+      let name = tile.querySelector('.periodic-name');
+      if (!name) {
+        name = document.createElement('span');
+        name.className = 'periodic-name';
+        tile.append(name);
+      }
+      name.textContent = chineseName;
+
+      if (!element) {
+        tile.removeAttribute('aria-hidden');
+        tile.setAttribute('role', 'img');
+        tile.setAttribute('aria-label', `${number} ${symbol} ${chineseName}`);
+        continue;
+      }
+
+      // 遊戲內的五個元素才轉成真正的按鈕，可鍵盤操作與點擊。
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = `${tile.className} periodic-element--interactive`;
+      button.style.cssText = tile.style.cssText;
+      button.dataset.element = element.symbol;
+      button.dataset.unlocked = tile.dataset.unlocked;
+      button.setAttribute('aria-label', `${element.name} ${element.symbol}：查看遊戲元素資訊`);
+      button.append(...Array.from(tile.childNodes));
+      tile.replaceWith(button);
+      button.addEventListener('click', () => showPeriodicElementDetail(element));
+    }
+  }
+
+  buildPeriodicZoomTable();
+  $('periodicZoomOpen').addEventListener('click', () => {
+    game.renderPeriodicTable();
+    previousZoomFocus = document.activeElement;
+    zoomDialog.showModal();
+    // 初次打開先看最左側的 H；滑動提示讓玩家知道右邊還有 O、S。
+    zoomScroll.scrollLeft = 0;
+  });
+
+  $('periodicZoomClose').addEventListener('click', () => zoomDialog.close());
+  $('periodicDetailClose').addEventListener('click', () => detailDialog.close());
+  zoomDialog.addEventListener('close', () => previousZoomFocus?.focus?.());
+  detailDialog.addEventListener('close', () => previousDetailFocus?.focus?.());
+
+  // 桌面點擊視窗外側也能關閉；點擊元素或內容區不會誤關閉。
+  for (const dialog of [zoomDialog, detailDialog]) {
+    dialog.addEventListener('click', event => {
+      if (event.target === dialog) dialog.close();
+    });
+  }
 
   game.atom = (symbol, extraClass = '') => {
     const element = document.createElement('span');
@@ -261,17 +474,19 @@
 
     let unlockedCount = 0;
     for (const element of game.elements) {
-      const tile = document.querySelector(`[data-element="${element.symbol}"]`);
-      if (!tile) continue;
+      const tiles = document.querySelectorAll(`[data-element="${element.symbol}"]`);
+      if (!tiles.length) continue;
 
       const unlocked = highestNormalLevel >= element.unlockLevel;
-      tile.dataset.unlocked = String(unlocked);
-      tile.setAttribute(
-        'aria-label',
-        unlocked
-          ? `${element.name} ${element.symbol}：已解鎖`
-          : `${element.name} ${element.symbol}：普通模式第 ${element.unlockLevel} 關解鎖`
-      );
+      for (const tile of tiles) {
+        tile.dataset.unlocked = String(unlocked);
+        tile.setAttribute(
+          'aria-label',
+          unlocked
+            ? `${element.name} ${element.symbol}：已解鎖${tile.matches('button') ? '，查看元素資訊' : ''}`
+            : `${element.name} ${element.symbol}：普通模式第 ${element.unlockLevel} 關解鎖${tile.matches('button') ? '，查看元素資訊' : ''}`
+        );
+      }
       if (unlocked) unlockedCount++;
     }
 

@@ -246,8 +246,18 @@
           </div>
         </div>
         <section class="periodic-achievement" aria-labelledby="periodicTitle">
-          <h3 id="periodicTitle">元素週期表</h3>
-          <p>完整週期表一次呈現；普通模式會點亮已解鎖的元素，灰色格子是本版未收錄的元素。</p>
+          <div class="periodic-achievement-heading">
+            <h3 id="periodicTitle">元素週期表</h3>
+            <button
+              aria-haspopup="dialog"
+              class="periodic-zoom-open slowly-press"
+              id="periodicZoomOpen"
+              type="button"
+            >
+              查看大圖 ↗
+            </button>
+          </div>
+          <p>完整週期表一次呈現；普通模式會點亮已解鎖的元素。點擊「查看大圖」可檢視中文名稱與遊戲元素。</p>
           <div class="periodic-table-frame" id="periodicTableFrame" aria-label="完整元素週期表">
             <div class="periodic-grid" id="periodicGrid">
               <div class="periodic-element periodic-element--available"
@@ -445,6 +455,63 @@
         慢 慢 | Stillness by Slowly
       </footer>
     </main>
+    <dialog
+      aria-labelledby="periodicZoomTitle"
+      class="periodic-zoom-dialog"
+      id="periodicZoomDialog"
+    >
+      <div class="periodic-zoom-shell">
+        <header class="periodic-zoom-header">
+          <h2 id="periodicZoomTitle">元素週期表・中文大圖</h2>
+          <button
+            aria-label="關閉元素週期表大圖"
+            class="periodic-dialog-close"
+            id="periodicZoomClose"
+            type="button"
+          >
+            關閉 ✕
+          </button>
+        </header>
+        <p class="periodic-zoom-note" id="periodicZoomNote">
+          左右滑動可查看整張週期表；點擊彩色的 H、C、N、O、S 可查看遊戲元素圖案。
+        </p>
+        <div
+          aria-describedby="periodicZoomNote"
+          aria-label="元素週期表大圖，可左右滑動"
+          class="periodic-zoom-scroll"
+          id="periodicZoomScroll"
+          role="region"
+          tabindex="0"
+        >
+          <div class="periodic-grid periodic-grid--zoom" id="periodicZoomGrid"></div>
+        </div>
+      </div>
+    </dialog>
+    <dialog
+      aria-labelledby="periodicDetailTitle"
+      class="periodic-detail-dialog"
+      id="periodicDetailDialog"
+    >
+      <div class="periodic-detail-shell">
+        <header class="periodic-detail-header">
+          <h2 id="periodicDetailTitle">元素資訊</h2>
+          <button
+            aria-label="關閉元素資訊"
+            class="periodic-dialog-close"
+            id="periodicDetailClose"
+            type="button"
+          >
+            返回週期表 ✕
+          </button>
+        </header>
+        <div class="periodic-detail-content">
+          <div aria-hidden="true" class="periodic-detail-icon" id="periodicDetailIcon"></div>
+          <strong class="periodic-detail-name" id="periodicDetailName"></strong>
+          <p class="periodic-detail-number" id="periodicDetailNumber"></p>
+          <p class="periodic-detail-status" id="periodicDetailStatus"></p>
+        </div>
+      </div>
+    </dialog>
     <dialog id="modal">
       <h2 id="modalTitle">
         玩法說明
