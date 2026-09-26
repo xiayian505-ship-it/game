@@ -42,7 +42,16 @@
     game.remaining--;
     game.moves++;
 
-    const danger = window.FictionFilter.filter(game.danger, {
+    const candidates = window.FictionFilter.filter(game.recipes, {
+      predicate: recipe => recipe.l <= game.level
+    }).map((recipe, order) => ({
+      recipe, order, path: game.matches(recipe, index)
+    }));
+
+    // 七顆 S 的成功配方包含四顆 S；同一次放置若湊齊七顆，應先完成合成。
+    // 沒有湊齊七顆時，四顆 S 與其他不穩定分子仍照原規則判定失敗。
+    const sevenS = candidates.find(item => item.recipe.s === 'SSSSSSS' && item.path);
+    const danger = sevenS ? null : window.FictionFilter.filter(game.danger, {
       predicate: recipe => recipe.l <= game.level
     }).map(recipe => ({ recipe, path: game.matches(recipe, index) }))
       .find(result => result.path);
@@ -51,23 +60,25 @@
       return;
     }
 
-    // 原本的化學合成規則不變：同分同長度時保留原配方順序。
-    const candidates = window.FictionFilter.filter(game.recipes, {
-      predicate: recipe => recipe.l <= game.level
-    }).map((recipe, order) => ({
-      recipe, order, path: game.matches(recipe, index)
-    }));
-    const best = window.FictionSort.sort(
-      window.FictionFilter.filter(candidates, { predicate: item => Boolean(item.path) }),
-      {
-        compare: (a, b) => b.recipe.p - a.recipe.p ||
-          b.recipe.s.length - a.recipe.s.length || a.order - b.order
+    // 先比較所有符合配方的原子路徑，再一次結算；避免第一條路徑
+    // 占走另一種配方需要的原子。只有本次放入的原子允許共用。
+    const completed = game.planSynthesis(index, candidates);
+
+    if (completed.length > 0) {
+      const consumed = new Set(completed.flatMap(item => item.path));
+      for (const position of consumed) game.board[position] = null;
+
+      const earned = completed.reduce((sum, item) => sum + item.recipe.p, 0);
+      game.score += earned;
+
+      if (completed.length === 1) {
+        game.say(`✨ 合成 ${completed[0].recipe.s}，獲得 ${earned} 分！`);
+      } else {
+        const summary = completed
+          .map(item => `${item.recipe.s}（+${item.recipe.p}）`)
+          .join('、');
+        game.say(`✨ 同時合成 ${summary}，共獲得 ${earned} 分！`);
       }
-    )[0] || null;
-    if (best) {
-      for (const position of best.path) game.board[position] = null;
-      game.score += best.recipe.p;
-      game.say(`✨ 合成 ${best.recipe.s}，獲得 ${best.recipe.p} 分！`);
     } else {
       game.say('原子已放入，繼續組合！');
     }
@@ -164,8 +175,7 @@
       "<p>在設定頁選普通模式（第 1 關）或無盡模式（第 14 關），回遊戲頁按「開始」開局，" +
       "兩種模式的分數都從 0 計算。遊戲中切換分頁會自動暫停，結束本局後才能切換模式。</p>" +
       "<p>可隨時記錄分數；重新開始會先記錄本局成績。排行榜位於「成就」頁，兩種模式各有獨立的本機 TOP 3。" +
-      "</p>" +
-      "<p>這是參考經典玩法的自製懷舊版，關卡配置和原版不完全相同。</p>";
+      "</p>";
     $('modal').showModal();
   };
   $('modalClose').addEventListener('click', () => $('modal').close());

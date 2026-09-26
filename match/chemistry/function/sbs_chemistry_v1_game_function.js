@@ -129,7 +129,9 @@
       .map(([r, c]) => r * game.size + c);
   };
 
-  game.matches = (recipe, placed) => {
+  // 可指定暫存棋盤：同一次放置若完成多種配方，先保留新放入的原子，
+  // 再用尚未被前一種合成占用的原子尋找其他配方。
+  game.matches = (recipe, placed, board = game.board) => {
     let found = null;
     const symbols = recipe.s;
     function search(path, used) {
@@ -139,7 +141,7 @@
         return;
       }
       for (const next of game.neighbors(path[path.length - 1])) {
-        if (!used.has(next) && game.board[next] === symbols[path.length]) {
+        if (!used.has(next) && board[next] === symbols[path.length]) {
           used.add(next);
           path.push(next);
           search(path, used);
@@ -149,8 +151,162 @@
       }
     }
     for (let i = 0; i < game.board.length && !found; i++) {
-      if (game.board[i] === symbols[0]) search([i], new Set([i]));
+      if (board[i] === symbols[0]) search([i], new Set([i]));
     }
     return found;
+  };
+
+  // 找出所有「包含本次放入原子」的配方路徑，而不是只取第一條。
+  // 相同的一組原子即使能從不同方向走到，也只算一條候選路徑。
+  game.matchPaths = (recipe, placed, board = game.board) => {
+    const symbols = recipe.s;
+    const placedSymbol = board[placed];
+    const paths = [];
+    const seen = new Set();
+    const placedBit = 1n << BigInt(placed);
+
+    if (!placedSymbol || !symbols.includes(placedSymbol)) return paths;
+
+    function addPath(path) {
+      let occupied = 0n;
+
+      for (const position of path) {
+        occupied |= 1n << BigInt(position);
+      }
+
+      // 新放入的原子可以作為不同配方的共用接點，其他格子不能重用。
+      const mask = occupied & ~placedBit;
+      const key = mask.toString();
+      if (seen.has(key)) return;
+
+      seen.add(key);
+      paths.push({ path: [...path], mask });
+    }
+
+    function searchForward(path, used, nextSymbolIndex) {
+      if (nextSymbolIndex === symbols.length) {
+        addPath(path);
+        return;
+      }
+
+      for (const next of game.neighbors(path[path.length - 1])) {
+        if (used.has(next) || board[next] !== symbols[nextSymbolIndex]) continue;
+
+        used.add(next);
+        path.push(next);
+        searchForward(path, used, nextSymbolIndex + 1);
+        path.pop();
+        used.delete(next);
+      }
+    }
+
+    function searchBackward(backwardPath, used, previousSymbolIndex, nextSymbolIndex) {
+      if (previousSymbolIndex < 0) {
+        searchForward([...backwardPath].reverse(), used, nextSymbolIndex);
+        return;
+      }
+
+      for (const next of game.neighbors(backwardPath[backwardPath.length - 1])) {
+        if (used.has(next) || board[next] !== symbols[previousSymbolIndex]) continue;
+
+        used.add(next);
+        backwardPath.push(next);
+        searchBackward(backwardPath, used, previousSymbolIndex - 1, nextSymbolIndex);
+        backwardPath.pop();
+        used.delete(next);
+      }
+    }
+
+    // 由新原子往配方左右兩端延伸，避免枚舉與本次放置無關的路徑。
+    for (let pivot = 0; pivot < symbols.length; pivot++) {
+      if (symbols[pivot] !== placedSymbol) continue;
+      searchBackward([placed], new Set([placed]), pivot - 1, pivot + 1);
+    }
+
+    return paths;
+  };
+
+  // 整體挑選得分最高、原子不衝突的配方組合：不能讓第一條 5T 路徑
+  // 搶走 3T 要用的原子，導致同一次放置的第二種配方被漏算。
+  game.planSynthesis = (placed, candidates) => {
+    const groups = candidates
+      .filter(item => Boolean(item.path))
+      .map(item => ({
+        ...item,
+        paths: game.matchPaths(item.recipe, placed)
+      }))
+      .filter(item => item.paths.length > 0);
+
+    if (groups.length === 0) return [];
+
+    const hasSevenS = groups.some(item => item.recipe.s === 'SSSSSSS');
+
+    // 七顆 S 一旦成立，就必須優先完成它，不能被較短的配方占走。
+    groups.sort((a, b) => {
+      const aPriority = hasSevenS && a.recipe.s === 'SSSSSSS' ? 1 : 0;
+      const bPriority = hasSevenS && b.recipe.s === 'SSSSSSS' ? 1 : 0;
+
+      return bPriority - aPriority ||
+        a.paths.length - b.paths.length ||
+        b.recipe.p - a.recipe.p ||
+        a.order - b.order;
+    });
+
+    const remainingPoints = Array(groups.length + 1).fill(0);
+    for (let i = groups.length - 1; i >= 0; i--) {
+      remainingPoints[i] = remainingPoints[i + 1] + groups[i].recipe.p;
+    }
+
+    let best = [];
+    let bestScore = -1;
+    let bestUsedCount = -1;
+    let foundMaximum = false;
+
+    function choose(groupIndex, usedMask, score, usedCount, chosen) {
+      if (foundMaximum || score + remainingPoints[groupIndex] < bestScore) return;
+
+      if (groupIndex === groups.length) {
+        if (score > bestScore || (score === bestScore && usedCount > bestUsedCount)) {
+          bestScore = score;
+          bestUsedCount = usedCount;
+          best = [...chosen];
+        }
+
+        // 所有可合成配方都已計分，沒有更高分的方案。
+        if (bestScore === remainingPoints[0]) foundMaximum = true;
+        return;
+      }
+
+      const item = groups[groupIndex];
+
+      for (const option of item.paths) {
+        if ((option.mask & usedMask) !== 0n) continue;
+
+        chosen.push({
+          recipe: item.recipe,
+          order: item.order,
+          path: option.path
+        });
+
+        choose(
+          groupIndex + 1,
+          usedMask | option.mask,
+          score + item.recipe.p,
+          usedCount + option.path.length - 1,
+          chosen
+        );
+
+        chosen.pop();
+        if (foundMaximum) return;
+      }
+
+      // 有 7S 的時候不允許略過它；其他配方可按衝突情況取捨。
+      if (!hasSevenS || item.recipe.s !== 'SSSSSSS') {
+        choose(groupIndex + 1, usedMask, score, usedCount, chosen);
+      }
+    }
+
+    choose(0, 0n, 0, 0, []);
+    return best.sort((a, b) => a.order - b.order);
   };
 })();
