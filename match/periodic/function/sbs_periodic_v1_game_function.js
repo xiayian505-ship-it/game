@@ -175,7 +175,8 @@
 
   // 只接受橫向或直向連續的相鄰格子，不允許轉彎或跳格。
   // 正向與反向代表同一配方：例如 OCO / OCO、NNO / ONN。
-  game.matchLines = (placed, board = game.board) => {
+  // placed 傳入格號時只找包含該格的配方；傳 null 時掃描整張棋盤。
+  game.matchLines = (placed = null, board = game.board) => {
     const results = [];
     const seen = new Set();
     const availableRecipes = game.recipes.filter(recipe => recipe.l <= game.level);
@@ -194,7 +195,7 @@
             const path = Array.from({ length }, (_, index) => {
               return (row + dr * index) * game.size + col + dc * index;
             });
-            if (!path.includes(placed)) continue;
+            if (placed !== null && placed !== undefined && !path.includes(placed)) continue;
 
             const symbols = path.map(position => board[position]).join('');
             if (symbols !== recipe.s && symbols !== reversed) continue;
@@ -215,14 +216,69 @@
     return results;
   };
 
-  // 先比較所有符合的直線配方，再一次選出不重用元素的最高分組合。
-  // 因為每手只放一個元素且立即合成，正常操作下通常只會完成一個分子。
-  game.planSynthesis = (placed, board = game.board) => {
-    const candidates = game.matchLines(placed, board).sort((a, b) => {
-      return b.recipe.p - a.recipe.p
-        || b.path.length - a.path.length
-        || a.recipe.l - b.recipe.l;
+  // 已完成的低分配方如果仍能延伸成「已解鎖、分數更高」的長配方，先保留不消除。
+  // 例如：第 9 關後 OO 可等 OOO；第 11 關後 NN 可等 NNO；第 12 關後 OO 可等 HOOH。
+  // 若延伸路徑被其他元素堵住，或剩餘手數不足，低分配方就恢復正常結算。
+  game.canExtendToHigherRecipe = (candidate, board = game.board) => {
+    const higherRecipes = game.recipes.filter(recipe => {
+      return recipe.l <= game.level
+        && recipe.p > candidate.recipe.p
+        && recipe.s.length > candidate.path.length;
     });
+
+    for (const recipe of higherRecipes) {
+      const variants = [...new Set([recipe.s, [...recipe.s].reverse().join('')])];
+      const length = recipe.s.length;
+
+      for (const [dr, dc] of [[0, 1], [1, 0]]) {
+        for (let row = 0; row < game.size; row++) {
+          for (let col = 0; col < game.size; col++) {
+            const endRow = row + dr * (length - 1);
+            const endCol = col + dc * (length - 1);
+            if (endRow >= game.size || endCol >= game.size) continue;
+
+            const path = Array.from({ length }, (_, index) => {
+              return (row + dr * index) * game.size + col + dc * index;
+            });
+            if (!candidate.path.every(position => path.includes(position))) continue;
+
+            for (const symbols of variants) {
+              let missing = 0;
+              let compatible = true;
+
+              for (let index = 0; index < path.length; index++) {
+                const existing = board[path[index]];
+                if (existing === null) {
+                  missing++;
+                } else if (existing !== symbols[index]) {
+                  compatible = false;
+                  break;
+                }
+              }
+
+              // missing === 0 代表高階配方已完成，交給最高分組合直接選它。
+              if (compatible && missing > 0 && missing <= game.remaining) {
+                return true;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return false;
+  };
+
+  // 每次落子後重掃整張棋盤：先排除仍值得保留的低分配方，再一次選出
+  // 不重用元素的最高分組合。這能讓先前暫緩的配方在延伸路徑被堵住後自動結算。
+  game.planSynthesis = (_placed, board = game.board) => {
+    const candidates = game.matchLines(null, board)
+      .filter(candidate => !game.canExtendToHigherRecipe(candidate, board))
+      .sort((a, b) => {
+        return b.recipe.p - a.recipe.p
+          || b.path.length - a.path.length
+          || a.recipe.l - b.recipe.l;
+      });
 
     let best = [];
     let bestScore = -1;
