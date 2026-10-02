@@ -11,9 +11,18 @@
   const solvedDealCountElement = document.getElementById("solvedDealCount");
   const noticeElement = document.getElementById("notice");
   const restartButton = document.getElementById("restartButton");
+  const currentDealIdentity = document.getElementById("currentDealIdentity");
+  const currentDealShortUid = document.getElementById("currentDealShortUid");
+  const copyDealUidButton = document.getElementById("copyDealUidButton");
 
   const randomDealButton = document.getElementById("randomDealButton");
   const solvedDealButton = document.getElementById("solvedDealButton");
+  const contributedPanel = document.getElementById("contributedPanel");
+  const contributedList = document.getElementById("contributedList");
+  const randomContributedButton = document.getElementById("randomContributedButton");
+  const contributedPrevButton = document.getElementById("contributedPrevButton");
+  const contributedNextButton = document.getElementById("contributedNextButton");
+  const contributedPageInfo = document.getElementById("contributedPageInfo");
   const uidDealButton = document.getElementById("uidDealButton");
   const uidSearchPanel = document.getElementById("uidSearchPanel");
   const uidInput = document.getElementById("uidInput");
@@ -35,6 +44,7 @@
   const messageTitle = document.getElementById("messageTitle");
   const messageText = document.getElementById("messageText");
   const messageUid = document.getElementById("messageUid");
+  const messageCopyUidButton = document.getElementById("messageCopyUidButton");
   const playAgainButton = document.getElementById("playAgainButton");
 
   const SOLVED_DEALS_STORAGE_KEY = "spider_solved_deals_v1";
@@ -57,8 +67,12 @@
   let currentDealSource = "random";
   let busy = false;
   let areaBurst = null;
-  let remoteSolvedDeals = [];
+  let remoteSolvedDealCount = 0;
   let databaseReady = false;
+  let contributedPage = 1;
+  let contributedTotalPages = 1;
+  let contributedPageRecords = [];
+  let contributedLoading = false;
 
   const VICTORY_EFFECTS = Object.freeze([
     "confetti",
@@ -159,6 +173,76 @@
     return Number.isInteger(rank) && rank >= 1 && rank <= 13;
   }
 
+  function shortUid(uid) {
+    const raw = String(uid || "")
+      .replace(/^spider-/i, "")
+      .replace(/[^a-z0-9]/gi, "")
+      .toUpperCase();
+
+    return raw ? `E-${raw.slice(0, 8)}` : "E-────────";
+  }
+
+  function findLocalDealByKey(key) {
+    if (!key) return null;
+    return readSolvedDeals().find(item => dealKeyOf(item.deal) === key) || null;
+  }
+
+  function renderDealIdentity() {
+    const hasUid = Boolean(currentDealUid);
+    currentDealIdentity.hidden = !hasUid;
+    copyDealUidButton.disabled = !hasUid;
+
+    if (hasUid) {
+      currentDealShortUid.textContent = shortUid(currentDealUid);
+    }
+  }
+
+  async function copyUid(uid, button = null) {
+    const value = String(uid || "").trim();
+    if (!value) return false;
+
+    let copied = false;
+
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(value);
+        copied = true;
+      }
+    } catch (error) {
+      console.warn("Clipboard API 複製失敗，改用備援方式。", error);
+    }
+
+    if (!copied) {
+      try {
+        const textarea = document.createElement("textarea");
+        textarea.value = value;
+        textarea.setAttribute("readonly", "");
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.select();
+        copied = document.execCommand("copy");
+        textarea.remove();
+      } catch (error) {
+        console.warn("UID 備援複製失敗。", error);
+      }
+    }
+
+    if (button) {
+      const original = button.textContent;
+      button.textContent = copied ? "已複製" : "複製失敗";
+      window.setTimeout(() => {
+        button.textContent = original;
+      }, 1200);
+    }
+
+    if (copied) {
+      setNotice(`已複製牌局 UID：${shortUid(value)}`);
+    }
+
+    return copied;
+  }
+
   function saveActiveGame() {
     if (!stockDeck || completed >= 8 || originalDeal.length !== 104) return false;
 
@@ -254,6 +338,7 @@
     message.hidden = true;
     restartConfirm.hidden = true;
     dealPicker.hidden = true;
+    contributedPanel.hidden = true;
     uidSearchPanel.hidden = true;
     uidDealButton.setAttribute("aria-expanded", "false");
 
@@ -266,6 +351,9 @@
       window.setTimeout(() => void checkWin(), 0);
     } else {
       saveActiveGame();
+      if (!currentDealUid && currentDealSource === "random") {
+        void resolveCurrentDealIdentity();
+      }
     }
 
     return true;
@@ -314,16 +402,21 @@
     message.hidden = true;
     restartConfirm.hidden = true;
     dealPicker.hidden = true;
+    contributedPanel.hidden = true;
     uidSearchPanel.hidden = true;
     uidDealButton.setAttribute("aria-expanded", "false");
     setPickerNotice("");
     setNotice(
       currentDealUid
-        ? `已載入牌局 ${currentDealUid}`
+        ? `已載入玩家貢獻牌局 ${shortUid(currentDealUid)}`
         : "點一張牌或牌串開始。"
     );
     render();
     saveActiveGame();
+
+    if (!currentDealUid && currentDealSource === "random") {
+      void resolveCurrentDealIdentity();
+    }
   }
 
   function render() {
@@ -337,14 +430,18 @@
     completedCountElement.textContent = completed;
     dealCountElement.textContent = stockCount / 10;
     moveCountElement.textContent = moveCount;
-    solvedDealCountElement.textContent = getAvailableSolvedDeals().length;
+    solvedDealCountElement.textContent = Math.max(remoteSolvedDealCount, readSolvedDeals().length);
+    renderDealIdentity();
 
     stockButton.disabled = busy || stockCount === 0;
     restartButton.disabled = busy;
     randomDealButton.disabled = busy;
-    solvedDealButton.disabled = busy;
-    uidDealButton.disabled = busy;
-    uidSearchButton.disabled = busy;
+    solvedDealButton.disabled = busy || contributedLoading;
+    randomContributedButton.disabled = busy || contributedLoading;
+    uidDealButton.disabled = busy || contributedLoading;
+    uidSearchButton.disabled = busy || contributedLoading;
+    contributedPrevButton.disabled = busy || contributedLoading || contributedPage <= 1;
+    contributedNextButton.disabled = busy || contributedLoading || contributedPage >= contributedTotalPages;
   }
 
   function renderColumns() {
@@ -762,27 +859,6 @@
     return Array.isArray(deal) ? deal.join(",") : "";
   }
 
-  function mergeSolvedDeals(...groups) {
-    const byDeal = new Map();
-
-    groups.flat().forEach(item => {
-      if (!item || !Array.isArray(item.deal) || item.deal.length !== 104) return;
-      const key = dealKeyOf(item.deal);
-      if (!key) return;
-      byDeal.set(key, {
-        uid: String(item.uid || ""),
-        deal: item.deal.slice(),
-        solvedAt: String(item.solvedAt || "")
-      });
-    });
-
-    return Array.from(byDeal.values()).filter(item => item.uid);
-  }
-
-  function getAvailableSolvedDeals() {
-    return mergeSolvedDeals(readSolvedDeals(), remoteSolvedDeals);
-  }
-
   function saveRecordLocally(record) {
     if (!record || !record.uid || !Array.isArray(record.deal)) return false;
 
@@ -796,19 +872,23 @@
     return writeSolvedDeals(solvedDeals);
   }
 
-  async function refreshRemoteSolvedDeals() {
-    if (!window.SpiderSolvedDealsDB?.list) return false;
+  function getLocalSolvedDealsSorted() {
+    return readSolvedDeals()
+      .slice()
+      .sort((a, b) => String(b.solvedAt || "").localeCompare(String(a.solvedAt || "")));
+  }
+
+  async function refreshRemoteSolvedDealCount() {
+    if (!window.SpiderSolvedDealsDB?.count) return false;
 
     try {
-      remoteSolvedDeals = await window.SpiderSolvedDealsDB.list();
+      remoteSolvedDealCount = await window.SpiderSolvedDealsDB.count();
       databaseReady = true;
-
-      remoteSolvedDeals.forEach(record => saveRecordLocally(record));
       render();
       return true;
     } catch (error) {
       databaseReady = false;
-      console.warn("讀取雲端可解牌局失敗，改用本機牌庫。", error);
+      console.warn("讀取雲端玩家貢獻牌局數量失敗，改用本機牌庫。", error);
       return false;
     }
   }
@@ -827,12 +907,39 @@
       }
     }
 
-    await refreshRemoteSolvedDeals();
+    await refreshRemoteSolvedDealCount();
   }
 
   async function initializeDatabase() {
-    const online = await refreshRemoteSolvedDeals();
+    const online = await refreshRemoteSolvedDealCount();
     if (online) await syncLocalSolvedDealsToDatabase();
+  }
+
+  async function resolveCurrentDealIdentity() {
+    if (!Array.isArray(originalDeal) || originalDeal.length !== 104) return null;
+
+    const key = dealKeyOf(originalDeal);
+    const expectedKey = key;
+    let record = findLocalDealByKey(key);
+
+    if (!record && window.SpiderSolvedDealsDB?.findByDeal) {
+      try {
+        record = await window.SpiderSolvedDealsDB.findByDeal(originalDeal);
+        if (record) saveRecordLocally(record);
+      } catch (error) {
+        console.warn("比對隨機牌局 UID 失敗。", error);
+      }
+    }
+
+    if (!record || dealKeyOf(originalDeal) !== expectedKey || currentDealUid) {
+      return record || null;
+    }
+
+    currentDealUid = record.uid;
+    saveActiveGame();
+    render();
+    setNotice(`這副隨機牌局已在玩家貢獻牌庫：${shortUid(record.uid)}`);
+    return record;
   }
 
   async function saveSolvedDeal() {
@@ -841,8 +948,7 @@
     }
 
     const key = dealKeyOf(originalDeal);
-    const available = getAvailableSolvedDeals();
-    const existing = available.find(item => dealKeyOf(item.deal) === key);
+    const existing = findLocalDealByKey(key);
     const localWasNew = !existing;
 
     const record = existing || {
@@ -863,7 +969,7 @@
       const canonical = result?.record || record;
       saveRecordLocally(canonical);
       currentDealUid = canonical.uid;
-      await refreshRemoteSolvedDeals();
+      await refreshRemoteSolvedDealCount();
 
       return {
         uid: canonical.uid,
@@ -1104,62 +1210,174 @@
       messageText.textContent = `完成！共用了 ${moveCount} 步。這副牌原本就在玩家可解牌庫。`;
     }
 
-    messageUid.textContent = saved.uid || "UID 建立失敗";
+    messageUid.textContent = saved.uid ? shortUid(saved.uid) : "UID 建立失敗";
+    messageCopyUidButton.hidden = !saved.uid;
+    messageCopyUidButton.dataset.uid = saved.uid || "";
     message.hidden = false;
     return true;
   }
 
-  async function loadRandomSolvedDeal() {
-    if (busy) return;
+  function renderContributedPage(records, totalCount, page, totalPages) {
+    contributedPageRecords = Array.isArray(records) ? records.slice() : [];
+    contributedPage = Math.max(1, Number(page) || 1);
+    contributedTotalPages = Math.max(1, Number(totalPages) || 1);
+    remoteSolvedDealCount = Math.max(remoteSolvedDealCount, Number(totalCount) || 0);
 
-    if (!databaseReady) await refreshRemoteSolvedDeals();
-    const solvedDeals = getAvailableSolvedDeals();
+    contributedList.innerHTML = "";
 
-    if (solvedDeals.length === 0) {
-      setPickerNotice("目前還沒有玩家已解牌局。先去貢獻第一副吧。");
-      return;
+    if (contributedPageRecords.length === 0) {
+      const empty = document.createElement("p");
+      empty.className = "contributed-empty";
+      empty.textContent = "目前還沒有玩家貢獻牌局。";
+      contributedList.appendChild(empty);
+    } else {
+      contributedPageRecords.forEach(record => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "contributed-deal-row";
+        button.dataset.uid = record.uid;
+
+        const code = document.createElement("span");
+        code.className = "contributed-code";
+        code.textContent = shortUid(record.uid);
+        button.appendChild(code);
+
+        button.addEventListener("click", () => {
+          if (busy || contributedLoading) return;
+          startGame({
+            deal: record.deal,
+            uid: record.uid,
+            source: "contributed"
+          });
+        });
+
+        contributedList.appendChild(button);
+      });
     }
 
-    const index = Math.floor(Math.random() * solvedDeals.length);
-    const record = solvedDeals[index];
-
-    startGame({
-      deal: record.deal,
-      uid: record.uid,
-      source: "solved"
-    });
+    contributedPageInfo.textContent = `${contributedPage} / ${contributedTotalPages}`;
+    render();
   }
 
-  function findDealByUid(keyword) {
-    const solvedDeals = getAvailableSolvedDeals();
-    const q = String(keyword || "").trim();
-    if (!q) return null;
+  async function loadContributedPage(page = 1) {
+    if (contributedLoading) return;
 
-    let matches = solvedDeals;
+    contributedLoading = true;
+    render();
+    setPickerNotice("正在讀取玩家貢獻牌局…");
 
-    if (window.FictionSearch?.search) {
-      matches = window.FictionSearch.search(solvedDeals, q, ["uid"]);
-    } else {
-      matches = solvedDeals.filter(item =>
-        String(item.uid || "").toLowerCase().includes(q.toLowerCase())
-      );
+    try {
+      if (window.SpiderSolvedDealsDB?.listPage) {
+        const result = await window.SpiderSolvedDealsDB.listPage(page, 10);
+        databaseReady = true;
+        remoteSolvedDealCount = Number(result.totalCount || 0);
+        renderContributedPage(
+          result.records || [],
+          result.totalCount || 0,
+          result.page || page,
+          result.totalPages || 1
+        );
+        setPickerNotice(result.totalCount > 0 ? `共有 ${result.totalCount} 副玩家貢獻牌局。` : "目前還沒有玩家貢獻牌局。");
+        return;
+      }
+
+      throw new Error("雲端分頁功能尚未載入。");
+    } catch (error) {
+      console.warn("讀取玩家貢獻牌局分頁失敗，改用本機牌庫。", error);
+
+      const localDeals = getLocalSolvedDealsSorted();
+      const totalCount = localDeals.length;
+      const totalPages = Math.max(1, Math.ceil(totalCount / 10));
+      const safePage = Math.min(Math.max(1, Number(page) || 1), totalPages);
+      const start = (safePage - 1) * 10;
+      const records = localDeals.slice(start, start + 10);
+
+      renderContributedPage(records, totalCount, safePage, totalPages);
+      setPickerNotice(totalCount > 0 ? "目前使用這台裝置上的玩家貢獻牌局。" : "目前還沒有玩家貢獻牌局。");
+    } finally {
+      contributedLoading = false;
+      render();
     }
+  }
 
-    const exact = matches.find(item =>
-      String(item.uid).toLowerCase() === q.toLowerCase()
-    );
+  async function openContributedPanel() {
+    if (busy) return;
 
-    return exact || (matches.length === 1 ? matches[0] : null);
+    contributedPanel.hidden = false;
+    uidSearchPanel.hidden = true;
+    uidDealButton.setAttribute("aria-expanded", "false");
+    uidInput.value = "";
+    await loadContributedPage(1);
+  }
+
+  async function loadRandomSolvedDeal() {
+    if (busy || contributedLoading) return;
+
+    contributedLoading = true;
+    render();
+    setPickerNotice("正在從玩家貢獻牌局隨機抽一副…");
+
+    try {
+      let record = null;
+
+      if (window.SpiderSolvedDealsDB?.random) {
+        record = await window.SpiderSolvedDealsDB.random();
+        databaseReady = true;
+      }
+
+      if (!record) {
+        const localDeals = getLocalSolvedDealsSorted();
+        if (localDeals.length > 0) {
+          record = localDeals[Math.floor(Math.random() * localDeals.length)];
+        }
+      }
+
+      if (!record) {
+        setPickerNotice("目前還沒有玩家貢獻牌局。先去貢獻第一副吧。");
+        return;
+      }
+
+      startGame({
+        deal: record.deal,
+        uid: record.uid,
+        source: "contributed-random"
+      });
+    } catch (error) {
+      console.warn("隨機讀取玩家貢獻牌局失敗。", error);
+      setPickerNotice("玩家貢獻牌局目前讀取失敗，請稍後再試。");
+    } finally {
+      contributedLoading = false;
+      render();
+    }
   }
 
   async function loadDealByUid() {
-    if (busy) return;
+    if (busy || contributedLoading) return;
 
-    if (!databaseReady) await refreshRemoteSolvedDeals();
-    const record = findDealByUid(uidInput.value);
+    const q = String(uidInput.value || "").trim();
+    if (!q) {
+      setPickerNotice("貼上完整 UID 後再載入。");
+      return;
+    }
+
+    let record = readSolvedDeals().find(item =>
+      String(item.uid || "").toLowerCase() === q.toLowerCase()
+    ) || null;
+
+    if (!record && window.SpiderSolvedDealsDB?.findByUid) {
+      try {
+        record = await window.SpiderSolvedDealsDB.findByUid(q);
+        if (record) {
+          databaseReady = true;
+          saveRecordLocally(record);
+        }
+      } catch (error) {
+        console.warn("UID 查詢失敗。", error);
+      }
+    }
 
     if (!record) {
-      setPickerNotice("找不到這個 UID，或搜尋結果不只一副。請輸入完整 UID。");
+      setPickerNotice("找不到這個完整 UID。");
       return;
     }
 
@@ -1197,15 +1415,22 @@
     restartConfirm.hidden = true;
     message.hidden = true;
     dealPickerBackButton.hidden = !canReturn;
+    contributedPanel.hidden = true;
     uidSearchPanel.hidden = true;
     uidDealButton.setAttribute("aria-expanded", "false");
     uidInput.value = "";
+    contributedList.innerHTML = "";
+    contributedPage = 1;
+    contributedTotalPages = 1;
+    contributedPageRecords = [];
+    contributedPageInfo.textContent = "1 / 1";
     setPickerNotice("");
     dealPicker.hidden = false;
   }
 
   function hideDealPicker() {
     dealPicker.hidden = true;
+    contributedPanel.hidden = true;
     uidSearchPanel.hidden = true;
     uidDealButton.setAttribute("aria-expanded", "false");
     setPickerNotice("");
@@ -1230,11 +1455,22 @@
   randomDealButton.addEventListener("click", () => {
     if (!busy) startGame({ source: "random" });
   });
-  solvedDealButton.addEventListener("click", () => void loadRandomSolvedDeal());
+  solvedDealButton.addEventListener("click", () => void openContributedPanel());
+  randomContributedButton.addEventListener("click", () => void loadRandomSolvedDeal());
+  contributedPrevButton.addEventListener("click", () => {
+    if (contributedPage > 1) void loadContributedPage(contributedPage - 1);
+  });
+  contributedNextButton.addEventListener("click", () => {
+    if (contributedPage < contributedTotalPages) void loadContributedPage(contributedPage + 1);
+  });
   uidDealButton.addEventListener("click", toggleUidSearch);
   uidSearchButton.addEventListener("click", () => void loadDealByUid());
   uidInput.addEventListener("keydown", event => {
     if (event.key === "Enter") void loadDealByUid();
+  });
+  copyDealUidButton.addEventListener("click", () => void copyUid(currentDealUid, copyDealUidButton));
+  messageCopyUidButton.addEventListener("click", () => {
+    void copyUid(messageCopyUidButton.dataset.uid, messageCopyUidButton);
   });
   playAgainButton.addEventListener("click", () => showDealPicker({ canReturn: false }));
 

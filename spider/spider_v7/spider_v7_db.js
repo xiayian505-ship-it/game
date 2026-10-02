@@ -46,6 +46,64 @@
     return (data || []).map(normalizeRecord).filter(Boolean);
   }
 
+  async function count() {
+    if (!client) throw new Error("Supabase client 尚未載入。");
+
+    const { count: total, error } = await client
+      .from(TABLE)
+      .select("uid", { count: "exact", head: true });
+
+    if (error) throw error;
+    return Number(total || 0);
+  }
+
+  async function listPage(page = 1, pageSize = 10) {
+    if (!client) throw new Error("Supabase client 尚未載入。");
+
+    const size = Math.min(50, Math.max(1, Math.trunc(Number(pageSize)) || 10));
+    const requestedPage = Math.max(1, Math.trunc(Number(page)) || 1);
+    const from = (requestedPage - 1) * size;
+    const to = from + size - 1;
+
+    const { data, error, count: total } = await client
+      .from(TABLE)
+      .select("uid,deal,client_solved_at,solved_at", { count: "exact" })
+      .order("solved_at", { ascending: false })
+      .order("uid", { ascending: true })
+      .range(from, to);
+
+    if (error) throw error;
+
+    const totalCount = Number(total || 0);
+    const totalPages = Math.max(1, Math.ceil(totalCount / size));
+
+    return {
+      records: (data || []).map(normalizeRecord).filter(Boolean),
+      page: Math.min(requestedPage, totalPages),
+      pageSize: size,
+      totalCount,
+      totalPages
+    };
+  }
+
+  async function random() {
+    if (!client) throw new Error("Supabase client 尚未載入。");
+
+    const total = await count();
+    if (total <= 0) return null;
+
+    const offset = Math.floor(Math.random() * total);
+    const { data, error } = await client
+      .from(TABLE)
+      .select("uid,deal,client_solved_at,solved_at")
+      .order("solved_at", { ascending: false })
+      .order("uid", { ascending: true })
+      .range(offset, offset);
+
+    if (error) throw error;
+    return normalizeRecord((data || [])[0]);
+  }
+
   async function findByUid(uid) {
     if (!client) throw new Error("Supabase client 尚未載入。");
 
@@ -111,6 +169,9 @@
 
   window.SpiderSolvedDealsDB = Object.freeze({
     list,
+    count,
+    listPage,
+    random,
     findByUid,
     findByDeal,
     save,

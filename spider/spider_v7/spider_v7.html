@@ -38,6 +38,11 @@
 
     <p id="notice" class="notice">選擇一副牌局開始。</p>
 
+    <div id="currentDealIdentity" class="deal-identity" hidden>
+      <span>牌局 <strong id="currentDealShortUid">E-────────</strong></span>
+      <button id="copyDealUidButton" type="button">複製 UID</button>
+    </div>
+
     <section id="tableau" class="tableau" aria-label="十欄牌區"></section>
 
     <p class="hint">
@@ -72,18 +77,31 @@
       <p id="dealPickerTitle" class="dialog-title">選擇牌局</p>
       <p class="dialog-text">要玩哪一種？</p>
 
-      <section class="deal-tools" aria-label="牌局選擇">
+      <section class="deal-tools deal-tools-main" aria-label="牌局選擇">
         <button id="randomDealButton" class="deal-button" type="button">隨機牌局</button>
-        <button id="solvedDealButton" class="deal-button" type="button">玩家已解牌局</button>
-        <button id="uidDealButton" class="deal-button" type="button" aria-expanded="false">UID 搜尋</button>
+        <button id="solvedDealButton" class="deal-button" type="button">玩家貢獻牌局</button>
       </section>
 
-      <section id="uidSearchPanel" class="uid-search" hidden>
-        <label class="uid-search-label" for="uidInput">牌局 UID</label>
-        <div class="uid-search-row">
-          <input id="uidInput" type="search" autocomplete="off" spellcheck="false" placeholder="spider-...">
-          <button id="uidSearchButton" type="button">載入</button>
+      <section id="contributedPanel" class="contributed-panel" hidden aria-label="玩家貢獻牌局">
+        <button id="randomContributedButton" class="contributed-random" type="button">從貢獻牌局隨機抽一局</button>
+
+        <div id="contributedList" class="contributed-list" aria-live="polite"></div>
+
+        <div class="contributed-pager">
+          <button id="contributedPrevButton" type="button">上一頁</button>
+          <span id="contributedPageInfo">1 / 1</span>
+          <button id="contributedNextButton" type="button">下一頁</button>
         </div>
+
+        <button id="uidDealButton" class="uid-paste-toggle" type="button" aria-expanded="false">有完整 UID？貼上載入</button>
+
+        <section id="uidSearchPanel" class="uid-search" hidden>
+          <label class="uid-search-label" for="uidInput">完整牌局 UID</label>
+          <div class="uid-search-row">
+            <input id="uidInput" type="search" autocomplete="off" spellcheck="false" placeholder="貼上 spider-...">
+            <button id="uidSearchButton" type="button">載入</button>
+          </div>
+        </section>
       </section>
 
       <p id="dealPickerNotice" class="picker-notice" aria-live="polite"></p>
@@ -95,7 +113,10 @@
     <div class="message-card">
       <p id="messageTitle" class="message-title"></p>
       <p id="messageText" class="message-text"></p>
-      <code id="messageUid" class="message-uid"></code>
+      <div class="message-uid-row">
+        <code id="messageUid" class="message-uid"></code>
+        <button id="messageCopyUidButton" type="button">複製 UID</button>
+      </div>
       <button id="playAgainButton" type="button">選擇下一局</button>
     </div>
   </div>
