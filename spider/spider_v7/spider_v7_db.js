@@ -76,10 +76,10 @@
     return Number(total || 0);
   }
 
-  async function listPage(page = 1, pageSize = 10) {
+  async function listPage(page = 1, pageSize = 5) {
     if (!client) throw new Error("Supabase client 尚未載入。");
 
-    const size = Math.min(50, Math.max(1, Math.trunc(Number(pageSize)) || 10));
+    const size = Math.min(50, Math.max(1, Math.trunc(Number(pageSize)) || 5));
     const requestedPage = Math.max(1, Math.trunc(Number(page)) || 1);
     const from = (requestedPage - 1) * size;
     const to = from + size - 1;

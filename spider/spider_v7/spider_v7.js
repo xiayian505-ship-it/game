@@ -1495,7 +1495,7 @@
 
     try {
       if (window.SpiderSolvedDealsDB?.listPage) {
-        const result = await window.SpiderSolvedDealsDB.listPage(page, 10);
+        const result = await window.SpiderSolvedDealsDB.listPage(page, 5);
         databaseReady = true;
         remoteSolvedDealCount = Number(result.totalCount || 0);
         renderContributedPage(
@@ -1514,10 +1514,10 @@
 
       const localDeals = getLocalSolvedDealsSorted();
       const totalCount = localDeals.length;
-      const totalPages = Math.max(1, Math.ceil(totalCount / 10));
+      const totalPages = Math.max(1, Math.ceil(totalCount / 5));
       const safePage = Math.min(Math.max(1, Number(page) || 1), totalPages);
-      const start = (safePage - 1) * 10;
-      const records = localDeals.slice(start, start + 10);
+      const start = (safePage - 1) * 5;
+      const records = localDeals.slice(start, start + 5);
 
       renderContributedPage(records, totalCount, safePage, totalPages);
       setPickerNotice(totalCount > 0 ? "目前使用這台裝置上的玩家貢獻牌局。" : "目前還沒有玩家貢獻牌局。");
