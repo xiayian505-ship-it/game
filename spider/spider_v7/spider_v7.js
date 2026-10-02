@@ -885,6 +885,12 @@
     render();
     await playBOM();
 
+    // 勝利流程結束後解除操作鎖。
+    // 否則「選擇下一局」雖然能打開牌局選擇視窗，
+    // 但三個牌局來源按鈕仍會因 busy=true 而維持 disabled。
+    busy = false;
+    render();
+
     if (saved.isNew) {
       messageTitle.textContent = "恭喜玩家貢獻可解牌局";
       messageText.textContent = saved.cloudSaved
