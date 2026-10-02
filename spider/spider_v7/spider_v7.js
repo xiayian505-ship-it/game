@@ -60,6 +60,19 @@
   let remoteSolvedDeals = [];
   let databaseReady = false;
 
+  const VICTORY_EFFECTS = Object.freeze([
+    "confetti",
+    "gold-rain",
+    "stars",
+    "shockwave",
+    "flash-shake",
+    "jackpot-pop",
+    "card-rain",
+    "victory-beam"
+  ]);
+
+  let lastVictoryEffectSignature = "";
+
   function sleep(ms) {
     return new Promise(resolve => window.setTimeout(resolve, Math.max(0, ms)));
   }
@@ -865,34 +878,166 @@
 
   function clearVictoryParticles() {
     if (victoryParticles) victoryParticles.innerHTML = "";
+    gameShell.classList.remove("victory-shake");
+    VICTORY_EFFECTS.forEach(effectName => {
+      bombOverlay.classList.remove(`fx-${effectName}`);
+    });
   }
 
-  function spawnVictoryParticles() {
-    if (!victoryParticles || prefersReducedMotion()) return;
+  function randomBetween(min, max) {
+    return min + Math.random() * (max - min);
+  }
 
+  function pickVictoryEffects() {
+    if (prefersReducedMotion()) return ["jackpot-pop"];
+
+    const pool = VICTORY_EFFECTS.slice();
+    for (let i = pool.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+
+    // 每局抽 4～6 種，所有特效都在池裡輪流出現。
+    const count = 4 + Math.floor(Math.random() * 3);
+    let selected = pool.slice(0, count);
+    let signature = selected.slice().sort().join("|");
+
+    // 盡量不要連續兩場抽到完全相同的組合。
+    if (signature === lastVictoryEffectSignature) {
+      const replacement = pool.find(name => !selected.includes(name));
+      if (replacement) {
+        selected[selected.length - 1] = replacement;
+        signature = selected.slice().sort().join("|");
+      }
+    }
+
+    lastVictoryEffectSignature = signature;
+    return selected;
+  }
+
+  function addVictoryNode(className, text = "") {
+    if (!victoryParticles) return null;
+
+    const node = document.createElement("span");
+    node.className = className;
+    node.textContent = text;
+    victoryParticles.appendChild(node);
+    return node;
+  }
+
+  function spawnConfettiBurst() {
+    const count = 30;
+
+    for (let i = 0; i < count; i += 1) {
+      const node = addVictoryNode("vfx-confetti");
+      if (!node) continue;
+
+      const angle = randomBetween(-Math.PI * 0.94, -Math.PI * 0.06);
+      const distance = randomBetween(150, 440);
+      const x = Math.cos(angle) * distance;
+      const y = Math.sin(angle) * distance + randomBetween(-10, 95);
+
+      node.dataset.tone = String(i % 5);
+      node.style.setProperty("--vfx-x", `${x.toFixed(1)}px`);
+      node.style.setProperty("--vfx-y", `${y.toFixed(1)}px`);
+      node.style.setProperty("--vfx-rot", `${Math.round(randomBetween(220, 920))}deg`);
+      node.style.setProperty("--vfx-size", `${randomBetween(6, 13).toFixed(1)}px`);
+      node.style.setProperty("--vfx-delay", `${Math.round(randomBetween(0, 160))}ms`);
+      node.style.setProperty("--vfx-duration", `${Math.round(randomBetween(900, 1450))}ms`);
+    }
+  }
+
+  function spawnGoldRain() {
+    const count = 26;
+
+    for (let i = 0; i < count; i += 1) {
+      const node = addVictoryNode("vfx-gold-drop");
+      if (!node) continue;
+
+      node.style.left = `${randomBetween(2, 98).toFixed(1)}%`;
+      node.style.setProperty("--vfx-drift", `${randomBetween(-70, 70).toFixed(1)}px`);
+      node.style.setProperty("--vfx-size", `${randomBetween(3.5, 8.5).toFixed(1)}px`);
+      node.style.setProperty("--vfx-delay", `${Math.round(randomBetween(0, 420))}ms`);
+      node.style.setProperty("--vfx-duration", `${Math.round(randomBetween(900, 1550))}ms`);
+    }
+  }
+
+  function spawnStarExplosion() {
+    const glyphs = ["★", "✦", "✧", "✶"];
+    const count = 20;
+
+    for (let i = 0; i < count; i += 1) {
+      const node = addVictoryNode("vfx-star", glyphs[i % glyphs.length]);
+      if (!node) continue;
+
+      const angle = (Math.PI * 2 * i) / count + randomBetween(-0.2, 0.2);
+      const distance = randomBetween(125, 360);
+
+      node.style.setProperty("--vfx-x", `${(Math.cos(angle) * distance).toFixed(1)}px`);
+      node.style.setProperty("--vfx-y", `${(Math.sin(angle) * distance).toFixed(1)}px`);
+      node.style.setProperty("--vfx-size", `${randomBetween(12, 27).toFixed(1)}px`);
+      node.style.setProperty("--vfx-delay", `${Math.round(randomBetween(0, 130))}ms`);
+      node.style.setProperty("--vfx-duration", `${Math.round(randomBetween(800, 1280))}ms`);
+    }
+  }
+
+  function spawnShockwaves() {
+    for (let i = 0; i < 3; i += 1) {
+      const node = addVictoryNode("vfx-shockwave");
+      if (!node) continue;
+      node.style.setProperty("--vfx-delay", `${i * 135}ms`);
+    }
+  }
+
+  function spawnScreenFlash() {
+    addVictoryNode("vfx-screen-flash");
+    gameShell.classList.remove("victory-shake");
+    void gameShell.offsetWidth;
+    gameShell.classList.add("victory-shake");
+  }
+
+  function spawnCardRain() {
+    const cardFaces = ["♠", "A♠", "K♠", "Q♠", "J♠", "10♠"];
+    const count = 18;
+
+    for (let i = 0; i < count; i += 1) {
+      const node = addVictoryNode("vfx-card", cardFaces[i % cardFaces.length]);
+      if (!node) continue;
+
+      node.style.left = `${randomBetween(2, 96).toFixed(1)}%`;
+      node.style.setProperty("--vfx-drift", `${randomBetween(-90, 90).toFixed(1)}px`);
+      node.style.setProperty("--vfx-rot", `${Math.round(randomBetween(-260, 260))}deg`);
+      node.style.setProperty("--vfx-delay", `${Math.round(randomBetween(0, 520))}ms`);
+      node.style.setProperty("--vfx-duration", `${Math.round(randomBetween(1150, 1850))}ms`);
+    }
+  }
+
+  function spawnVictoryBeams() {
+    const count = 7;
+
+    for (let i = 0; i < count; i += 1) {
+      const node = addVictoryNode("vfx-beam");
+      if (!node) continue;
+
+      node.style.setProperty("--vfx-angle", `${-62 + i * 21 + randomBetween(-5, 5)}deg`);
+      node.style.setProperty("--vfx-delay", `${Math.round(i * 42 + randomBetween(0, 70))}ms`);
+    }
+  }
+
+  function activateVictoryEffects(selectedEffects) {
     clearVictoryParticles();
 
-    const particleCount = 34;
-    for (let i = 0; i < particleCount; i += 1) {
-      const particle = document.createElement("span");
-      const isStar = i % 3 === 0;
-      const angle = (Math.PI * 2 * i) / particleCount + Math.random() * 0.25;
-      const distance = 110 + Math.random() * 260;
-      const x = Math.cos(angle) * distance;
-      const y = Math.sin(angle) * distance - 30 - Math.random() * 70;
-      const size = isStar ? 12 + Math.random() * 14 : 5 + Math.random() * 7;
+    selectedEffects.forEach(effectName => {
+      bombOverlay.classList.add(`fx-${effectName}`);
+    });
 
-      particle.className = `victory-particle ${isStar ? "is-star" : "is-confetti"}`;
-      if (isStar) particle.textContent = i % 2 === 0 ? "★" : "✦";
-
-      particle.style.setProperty("--vp-x", `${x.toFixed(1)}px`);
-      particle.style.setProperty("--vp-y", `${y.toFixed(1)}px`);
-      particle.style.setProperty("--vp-size", `${size.toFixed(1)}px`);
-      particle.style.setProperty("--vp-rotate", `${Math.round(140 + Math.random() * 520)}deg`);
-      particle.style.setProperty("--vp-duration", `${Math.round(760 + Math.random() * 620)}ms`);
-      particle.style.setProperty("--vp-delay", `${Math.round(Math.random() * 140)}ms`);
-      victoryParticles.appendChild(particle);
-    }
+    if (selectedEffects.includes("confetti")) spawnConfettiBurst();
+    if (selectedEffects.includes("gold-rain")) spawnGoldRain();
+    if (selectedEffects.includes("stars")) spawnStarExplosion();
+    if (selectedEffects.includes("shockwave")) spawnShockwaves();
+    if (selectedEffects.includes("flash-shake")) spawnScreenFlash();
+    if (selectedEffects.includes("card-rain")) spawnCardRain();
+    if (selectedEffects.includes("victory-beam")) spawnVictoryBeams();
   }
 
   function flashCompletedArea() {
@@ -904,6 +1049,7 @@
   async function playBOM(options = {}) {
     const reduced = prefersReducedMotion();
     const isNew = options.isNew !== false;
+    const selectedEffects = pickVictoryEffects();
 
     bombText.textContent = isNew
       ? "恭喜玩家貢獻可解牌局"
@@ -918,15 +1064,17 @@
     bombText.classList.add("slowly-shine-text");
 
     flashCompletedArea();
-    spawnVictoryParticles();
+    activateVictoryEffects(selectedEffects);
 
     bombOverlay.setAttribute("aria-hidden", "false");
     bombOverlay.classList.add("is-active");
 
-    await sleep(reduced ? 180 : 1450);
+    console.info("Spider victory FX:", selectedEffects.join(", "));
+
+    await sleep(reduced ? 220 : 1780);
 
     bombOverlay.classList.remove("is-active");
-    await sleep(reduced ? 50 : 360);
+    await sleep(reduced ? 60 : 380);
     bombOverlay.setAttribute("aria-hidden", "true");
     completedArea.classList.remove("victory-flash");
     clearVictoryParticles();
