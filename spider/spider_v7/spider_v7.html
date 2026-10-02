@@ -16,25 +16,13 @@
         <h1>連環新接龍</h1>
         <p class="subtitle">單一花色 Spider Solitaire</p>
       </div>
+
+      <button id="restartButton" class="restart-button" type="button">重新開始</button>
     </header>
-
-    <section class="deal-tools" aria-label="牌局選擇">
-      <button id="randomDealButton" class="deal-button" type="button">隨機牌局</button>
-      <button id="solvedDealButton" class="deal-button" type="button">玩家已解牌局</button>
-      <button id="uidDealButton" class="deal-button" type="button" aria-expanded="false">UID 搜尋</button>
-    </section>
-
-    <section id="uidSearchPanel" class="uid-search" hidden>
-      <label class="uid-search-label" for="uidInput">牌局 UID</label>
-      <div class="uid-search-row">
-        <input id="uidInput" type="search" autocomplete="off" spellcheck="false" placeholder="spider-...">
-        <button id="uidSearchButton" type="button">載入</button>
-      </div>
-    </section>
 
     <section class="status-row" aria-live="polite">
       <span>完成：<strong id="completedCount">0</strong>/8</span>
-      <span>補牌：<strong id="dealCount">5</strong> 次</span>
+      <span>補牌：<strong id="dealCount">0</strong> 次</span>
       <span>步數：<strong id="moveCount">0</strong></span>
       <span>可解牌局：<strong id="solvedDealCount">0</strong></span>
     </section>
@@ -48,7 +36,7 @@
       <div id="completedArea" class="completed-area" aria-label="已完成牌組"></div>
     </section>
 
-    <p id="notice" class="notice">點一張牌或牌串開始。</p>
+    <p id="notice" class="notice">選擇一副牌局開始。</p>
 
     <section id="tableau" class="tableau" aria-label="十欄牌區"></section>
 
@@ -61,12 +49,47 @@
     <div id="bombText" class="bom-text slowly-shine-text">BOM！</div>
   </div>
 
+  <div id="restartConfirm" class="dialog-overlay" hidden>
+    <div class="dialog-card" role="dialog" aria-modal="true" aria-labelledby="restartConfirmTitle">
+      <p id="restartConfirmTitle" class="dialog-title">確定要重新開始嗎？</p>
+      <p class="dialog-text">選擇新牌局後，目前進度會被清除。</p>
+      <div class="dialog-actions">
+        <button id="restartCancelButton" type="button">取消</button>
+        <button id="restartConfirmButton" type="button">確定</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="dealPicker" class="dialog-overlay" hidden>
+    <div class="dialog-card deal-picker-card" role="dialog" aria-modal="true" aria-labelledby="dealPickerTitle">
+      <p id="dealPickerTitle" class="dialog-title">選擇牌局</p>
+      <p class="dialog-text">要玩哪一種？</p>
+
+      <section class="deal-tools" aria-label="牌局選擇">
+        <button id="randomDealButton" class="deal-button" type="button">隨機牌局</button>
+        <button id="solvedDealButton" class="deal-button" type="button">玩家已解牌局</button>
+        <button id="uidDealButton" class="deal-button" type="button" aria-expanded="false">UID 搜尋</button>
+      </section>
+
+      <section id="uidSearchPanel" class="uid-search" hidden>
+        <label class="uid-search-label" for="uidInput">牌局 UID</label>
+        <div class="uid-search-row">
+          <input id="uidInput" type="search" autocomplete="off" spellcheck="false" placeholder="spider-...">
+          <button id="uidSearchButton" type="button">載入</button>
+        </div>
+      </section>
+
+      <p id="dealPickerNotice" class="picker-notice" aria-live="polite"></p>
+      <button id="dealPickerBackButton" class="dialog-back" type="button">返回遊戲</button>
+    </div>
+  </div>
+
   <div id="message" class="message" hidden>
     <div class="message-card">
       <p id="messageTitle" class="message-title"></p>
       <p id="messageText" class="message-text"></p>
       <code id="messageUid" class="message-uid"></code>
-      <button id="playAgainButton" type="button">再玩一局</button>
+      <button id="playAgainButton" type="button">選擇下一局</button>
     </div>
   </div>
 

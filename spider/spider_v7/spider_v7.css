@@ -59,6 +59,27 @@ h1 {
   font-size: 1.55rem;
 }
 
+.restart-button,
+.dialog-actions button,
+.dialog-back {
+  min-height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.restart-button {
+  flex: 0 0 auto;
+  padding: 0 14px;
+}
+
+.restart-button:disabled {
+  opacity: .45;
+  cursor: default;
+}
+
 .subtitle,
 .hint,
 .notice {
@@ -284,6 +305,83 @@ h1 {
   line-height: 1.5;
 }
 
+
+.dialog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(40,36,31,.58);
+}
+
+.dialog-overlay[hidden] {
+  display: none;
+}
+
+.dialog-card {
+  width: min(100%, 420px);
+  padding: 24px 20px;
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: 0 22px 60px rgba(0,0,0,.24);
+}
+
+.dialog-title,
+.dialog-text,
+.picker-notice {
+  margin: 0;
+}
+
+.dialog-title {
+  text-align: center;
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.dialog-text {
+  margin-top: 8px;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.55;
+}
+
+.dialog-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.dialog-actions button,
+.dialog-back {
+  padding: 8px 12px;
+}
+
+.deal-picker-card .deal-tools {
+  margin-top: 18px;
+}
+
+.picker-notice {
+  min-height: 1.35em;
+  margin-top: 8px;
+  color: var(--muted);
+  text-align: center;
+  font-size: .82rem;
+  line-height: 1.45;
+}
+
+.dialog-back {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.dialog-back[hidden] {
+  display: none;
+}
+
 .bom-overlay {
   position: fixed;
   inset: 0;
@@ -393,6 +491,12 @@ h1 {
 
   .subtitle {
     font-size: 0.78rem;
+  }
+
+  .restart-button {
+    min-height: 36px;
+    padding-inline: 10px;
+    font-size: .8rem;
   }
 
   .deal-tools {

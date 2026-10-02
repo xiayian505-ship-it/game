@@ -10,6 +10,7 @@
   const moveCountElement = document.getElementById("moveCount");
   const solvedDealCountElement = document.getElementById("solvedDealCount");
   const noticeElement = document.getElementById("notice");
+  const restartButton = document.getElementById("restartButton");
 
   const randomDealButton = document.getElementById("randomDealButton");
   const solvedDealButton = document.getElementById("solvedDealButton");
@@ -17,6 +18,13 @@
   const uidSearchPanel = document.getElementById("uidSearchPanel");
   const uidInput = document.getElementById("uidInput");
   const uidSearchButton = document.getElementById("uidSearchButton");
+  const dealPicker = document.getElementById("dealPicker");
+  const dealPickerNotice = document.getElementById("dealPickerNotice");
+  const dealPickerBackButton = document.getElementById("dealPickerBackButton");
+
+  const restartConfirm = document.getElementById("restartConfirm");
+  const restartCancelButton = document.getElementById("restartCancelButton");
+  const restartConfirmButton = document.getElementById("restartConfirmButton");
 
   const bombOverlay = document.getElementById("bombOverlay");
   const bombText = document.getElementById("bombText");
@@ -27,6 +35,7 @@
   const playAgainButton = document.getElementById("playAgainButton");
 
   const SOLVED_DEALS_STORAGE_KEY = "spider_solved_deals_v1";
+  const ACTIVE_GAME_STORAGE_KEY = "spider_active_game_v1";
 
   const RANK_LABELS = {
     1: "A",
@@ -121,6 +130,131 @@
     }
   }
 
+
+  function serializeCard(card) {
+    return {
+      rank: Number(card?.rank),
+      faceUp: Boolean(card?.faceUp)
+    };
+  }
+
+  function isValidRank(value) {
+    const rank = Number(value);
+    return Number.isInteger(rank) && rank >= 1 && rank <= 13;
+  }
+
+  function saveActiveGame() {
+    if (!stockDeck || completed >= 8 || originalDeal.length !== 104) return false;
+
+    try {
+      const state = {
+        version: 1,
+        savedAt: window.Timestamp?.create ? window.Timestamp.create() : String(Date.now()),
+        columns: columns.map(column => column.map(serializeCard)),
+        stock: stockDeck.snapshot().drawPile.map(card => Number(card.rank)),
+        completed,
+        moveCount,
+        originalDeal: originalDeal.slice(),
+        currentDealUid,
+        currentDealSource
+      };
+
+      localStorage.setItem(ACTIVE_GAME_STORAGE_KEY, JSON.stringify(state));
+      return true;
+    } catch (error) {
+      console.warn("儲存進行中牌局失敗。", error);
+      return false;
+    }
+  }
+
+  function clearActiveGame() {
+    try {
+      localStorage.removeItem(ACTIVE_GAME_STORAGE_KEY);
+    } catch (error) {
+      console.warn("清除進行中牌局失敗。", error);
+    }
+  }
+
+  function readActiveGame() {
+    try {
+      const raw = localStorage.getItem(ACTIVE_GAME_STORAGE_KEY);
+      if (!raw) return null;
+
+      const state = JSON.parse(raw);
+      if (!state || typeof state !== "object") return null;
+      if (!Array.isArray(state.columns) || state.columns.length !== 10) return null;
+      if (!Array.isArray(state.stock) || state.stock.length > 50 || state.stock.length % 10 !== 0) return null;
+      if (!Array.isArray(state.originalDeal) || state.originalDeal.length !== 104) return null;
+      if (!state.originalDeal.every(isValidRank) || !state.stock.every(isValidRank)) return null;
+
+      const validColumns = state.columns.every(column =>
+        Array.isArray(column) && column.every(card => card && isValidRank(card.rank))
+      );
+      if (!validColumns) return null;
+
+      const nextCompleted = Number(state.completed);
+      const nextMoveCount = Number(state.moveCount);
+      if (!Number.isInteger(nextCompleted) || nextCompleted < 0 || nextCompleted > 8) return null;
+      if (!Number.isInteger(nextMoveCount) || nextMoveCount < 0) return null;
+
+      return state;
+    } catch (error) {
+      console.warn("讀取進行中牌局失敗。", error);
+      return null;
+    }
+  }
+
+  function restoreActiveGame() {
+    const state = readActiveGame();
+    if (!state) return false;
+
+    assertDependencies();
+
+    stockDeck = window.Deck.create({
+      items: createDeckCardsFromRanks(state.stock),
+      recycleDiscard: false,
+      shuffleOnReset: false,
+      shuffleOnRecycle: false
+    });
+
+    columns = state.columns.map((column, columnIndex) =>
+      column.map((card, cardIndex) => ({
+        id: `R-${columnIndex}-${cardIndex}-${card.rank}`,
+        rank: Number(card.rank),
+        faceUp: Boolean(card.faceUp)
+      }))
+    );
+
+    completed = Number(state.completed);
+    moveCount = Number(state.moveCount);
+    originalDeal = state.originalDeal.map(Number);
+    currentDealUid = state.currentDealUid || null;
+    currentDealSource = state.currentDealSource || "random";
+    selection = null;
+    busy = false;
+
+    clearCompletedRunsInstant();
+
+    message.hidden = true;
+    restartConfirm.hidden = true;
+    dealPicker.hidden = true;
+    uidSearchPanel.hidden = true;
+    uidDealButton.setAttribute("aria-expanded", "false");
+
+    setNotice("已恢復上次牌局。");
+    render();
+
+    if (completed >= 8) {
+      busy = true;
+      render();
+      window.setTimeout(() => void checkWin(), 0);
+    } else {
+      saveActiveGame();
+    }
+
+    return true;
+  }
+
   function startGame(options = {}) {
     assertDependencies();
 
@@ -162,12 +296,18 @@
     }
 
     message.hidden = true;
+    restartConfirm.hidden = true;
+    dealPicker.hidden = true;
+    uidSearchPanel.hidden = true;
+    uidDealButton.setAttribute("aria-expanded", "false");
+    setPickerNotice("");
     setNotice(
       currentDealUid
         ? `已載入牌局 ${currentDealUid}`
         : "點一張牌或牌串開始。"
     );
     render();
+    saveActiveGame();
   }
 
   function render() {
@@ -184,6 +324,7 @@
     solvedDealCountElement.textContent = getAvailableSolvedDeals().length;
 
     stockButton.disabled = busy || stockCount === 0;
+    restartButton.disabled = busy;
     randomDealButton.disabled = busy;
     solvedDealButton.disabled = busy;
     uidDealButton.disabled = busy;
@@ -390,6 +531,18 @@
     return null;
   }
 
+
+  function clearCompletedRunsInstant() {
+    let found = findCompletedRun();
+
+    while (found) {
+      columns[found.columnIndex].splice(found.start, 13);
+      completed += 1;
+      flipTopCard(found.columnIndex);
+      found = findCompletedRun();
+    }
+  }
+
   async function animateCollectRun(columnIndex, start) {
     if (prefersReducedMotion()) return;
 
@@ -465,6 +618,7 @@
       completed += 1;
       flipTopCard(found.columnIndex);
       render();
+      saveActiveGame();
       await burstCompletedSlot(completed - 1);
 
       found = findCompletedRun();
@@ -478,10 +632,12 @@
     selection = null;
     moveCount += 1;
     render();
+    saveActiveGame();
 
     await clearCompletedRunsAnimated();
     setNotice("移動完成。");
     render();
+    saveActiveGame();
     await checkWin();
 
     if (completed !== 8) {
@@ -510,10 +666,12 @@
 
     moveCount += 1;
     render();
+    saveActiveGame();
 
     await clearCompletedRunsAnimated();
     setNotice("已補一排牌。");
     render();
+    saveActiveGame();
     await checkWin();
 
     if (completed !== 8) {
@@ -723,6 +881,7 @@
     if (completed !== 8) return false;
 
     const saved = await saveSolvedDeal();
+    clearActiveGame();
     render();
     await playBOM();
 
@@ -748,7 +907,7 @@
     const solvedDeals = getAvailableSolvedDeals();
 
     if (solvedDeals.length === 0) {
-      setNotice("目前還沒有玩家已解牌局。先去貢獻第一副吧。");
+      setPickerNotice("目前還沒有玩家已解牌局。先去貢獻第一副吧。");
       return;
     }
 
@@ -791,7 +950,7 @@
     const record = findDealByUid(uidInput.value);
 
     if (!record) {
-      setNotice("找不到這個 UID，或搜尋結果不只一副。請輸入完整 UID。");
+      setPickerNotice("找不到這個 UID，或搜尋結果不只一副。請輸入完整 UID。");
       return;
     }
 
@@ -820,7 +979,45 @@
     noticeElement.textContent = text;
   }
 
+  function setPickerNotice(text) {
+    dealPickerNotice.textContent = String(text || "");
+  }
+
+  function showDealPicker(options = {}) {
+    const canReturn = options.canReturn !== false;
+    restartConfirm.hidden = true;
+    message.hidden = true;
+    dealPickerBackButton.hidden = !canReturn;
+    uidSearchPanel.hidden = true;
+    uidDealButton.setAttribute("aria-expanded", "false");
+    uidInput.value = "";
+    setPickerNotice("");
+    dealPicker.hidden = false;
+  }
+
+  function hideDealPicker() {
+    dealPicker.hidden = true;
+    uidSearchPanel.hidden = true;
+    uidDealButton.setAttribute("aria-expanded", "false");
+    setPickerNotice("");
+  }
+
+  function openRestartConfirm() {
+    if (busy) return;
+    restartConfirm.hidden = false;
+  }
+
   stockButton.addEventListener("click", () => void dealFromStock());
+  restartButton.addEventListener("click", openRestartConfirm);
+  restartCancelButton.addEventListener("click", () => {
+    restartConfirm.hidden = true;
+  });
+  restartConfirmButton.addEventListener("click", () => {
+    restartConfirm.hidden = true;
+    showDealPicker({ canReturn: true });
+  });
+  dealPickerBackButton.addEventListener("click", hideDealPicker);
+
   randomDealButton.addEventListener("click", () => {
     if (!busy) startGame({ source: "random" });
   });
@@ -830,9 +1027,18 @@
   uidInput.addEventListener("keydown", event => {
     if (event.key === "Enter") void loadDealByUid();
   });
-  playAgainButton.addEventListener("click", () => startGame({ source: "random" }));
+  playAgainButton.addEventListener("click", () => showDealPicker({ canReturn: false }));
+
+  window.addEventListener("pagehide", () => {
+    if (completed < 8) saveActiveGame();
+  });
 
   initializeEffects();
-  startGame({ source: "random" });
+  render();
+
+  if (!restoreActiveGame()) {
+    showDealPicker({ canReturn: false });
+  }
+
   void initializeDatabase();
 })();
