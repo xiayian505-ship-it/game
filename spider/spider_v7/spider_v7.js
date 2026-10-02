@@ -28,6 +28,9 @@
 
   const bombOverlay = document.getElementById("bombOverlay");
   const bombText = document.getElementById("bombText");
+  const bombPlus = document.getElementById("bombPlus");
+  const bombSubtext = document.getElementById("bombSubtext");
+  const victoryParticles = document.getElementById("victoryParticles");
   const message = document.getElementById("message");
   const messageTitle = document.getElementById("messageTitle");
   const messageText = document.getElementById("messageText");
@@ -860,21 +863,73 @@
     }
   }
 
-  async function playBOM() {
+  function clearVictoryParticles() {
+    if (victoryParticles) victoryParticles.innerHTML = "";
+  }
+
+  function spawnVictoryParticles() {
+    if (!victoryParticles || prefersReducedMotion()) return;
+
+    clearVictoryParticles();
+
+    const particleCount = 34;
+    for (let i = 0; i < particleCount; i += 1) {
+      const particle = document.createElement("span");
+      const isStar = i % 3 === 0;
+      const angle = (Math.PI * 2 * i) / particleCount + Math.random() * 0.25;
+      const distance = 110 + Math.random() * 260;
+      const x = Math.cos(angle) * distance;
+      const y = Math.sin(angle) * distance - 30 - Math.random() * 70;
+      const size = isStar ? 12 + Math.random() * 14 : 5 + Math.random() * 7;
+
+      particle.className = `victory-particle ${isStar ? "is-star" : "is-confetti"}`;
+      if (isStar) particle.textContent = i % 2 === 0 ? "★" : "✦";
+
+      particle.style.setProperty("--vp-x", `${x.toFixed(1)}px`);
+      particle.style.setProperty("--vp-y", `${y.toFixed(1)}px`);
+      particle.style.setProperty("--vp-size", `${size.toFixed(1)}px`);
+      particle.style.setProperty("--vp-rotate", `${Math.round(140 + Math.random() * 520)}deg`);
+      particle.style.setProperty("--vp-duration", `${Math.round(760 + Math.random() * 620)}ms`);
+      particle.style.setProperty("--vp-delay", `${Math.round(Math.random() * 140)}ms`);
+      victoryParticles.appendChild(particle);
+    }
+  }
+
+  function flashCompletedArea() {
+    completedArea.classList.remove("victory-flash");
+    void completedArea.offsetWidth;
+    completedArea.classList.add("victory-flash");
+  }
+
+  async function playBOM(options = {}) {
     const reduced = prefersReducedMotion();
+    const isNew = options.isNew !== false;
+
+    bombText.textContent = isNew
+      ? "恭喜玩家貢獻可解牌局"
+      : "牌局完成";
+    bombPlus.textContent = isNew ? "+1" : "CLEAR";
+    bombSubtext.textContent = isNew
+      ? "這副牌已加入玩家可解牌庫"
+      : "這副牌原本就在玩家可解牌庫";
 
     bombText.classList.remove("slowly-shine-text");
     void bombText.offsetWidth;
     bombText.classList.add("slowly-shine-text");
 
+    flashCompletedArea();
+    spawnVictoryParticles();
+
     bombOverlay.setAttribute("aria-hidden", "false");
     bombOverlay.classList.add("is-active");
 
-    await sleep(reduced ? 80 : 820);
+    await sleep(reduced ? 180 : 1450);
 
     bombOverlay.classList.remove("is-active");
-    await sleep(reduced ? 20 : 330);
+    await sleep(reduced ? 50 : 360);
     bombOverlay.setAttribute("aria-hidden", "true");
+    completedArea.classList.remove("victory-flash");
+    clearVictoryParticles();
   }
 
   async function checkWin() {
@@ -883,7 +938,7 @@
     const saved = await saveSolvedDeal();
     clearActiveGame();
     render();
-    await playBOM();
+    await playBOM({ isNew: saved.isNew });
 
     // 勝利流程結束後解除操作鎖。
     // 否則「選擇下一局」雖然能打開牌局選擇視窗，

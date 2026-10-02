@@ -46,7 +46,14 @@
   </main>
 
   <div id="bombOverlay" class="bom-overlay" aria-hidden="true">
-    <div id="bombText" class="bom-text slowly-shine-text">BOM！</div>
+    <div id="victoryParticles" class="victory-particles" aria-hidden="true"></div>
+    <div class="victory-burst" aria-hidden="true"></div>
+    <div class="victory-burst victory-burst-secondary" aria-hidden="true"></div>
+    <div class="bom-card">
+      <div id="bombText" class="bom-text slowly-shine-text">恭喜玩家貢獻可解牌局</div>
+      <div id="bombPlus" class="bom-plus">+1</div>
+      <p id="bombSubtext" class="bom-subtext">這副牌已加入玩家可解牌庫</p>
+    </div>
   </div>
 
   <div id="restartConfirm" class="dialog-overlay" hidden>

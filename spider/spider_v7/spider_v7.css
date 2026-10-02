@@ -420,6 +420,116 @@ h1 {
   opacity: 1;
 }
 
+
+.bom-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(circle at center, rgba(255,250,233,.18), rgba(80,45,10,.28));
+  transition: opacity .22s ease;
+}
+
+.bom-overlay.is-active {
+  opacity: 1;
+}
+
+.bom-card {
+  position: relative;
+  min-width: min(92vw, 420px);
+  max-width: min(92vw, 520px);
+  padding: 28px 22px 24px;
+  border: 1px solid rgba(255,248,221,.8);
+  border-radius: 24px;
+  text-align: center;
+  color: #fffaf0;
+  background: linear-gradient(180deg, rgba(83,52,20,.88), rgba(35,22,9,.92));
+  box-shadow: 0 14px 44px rgba(0,0,0,.28), 0 0 0 1px rgba(255,234,188,.15) inset;
+  overflow: hidden;
+}
+
+.bom-card::before,
+.bom-card::after {
+  content: "";
+  position: absolute;
+  inset: auto;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  filter: blur(20px);
+  opacity: .28;
+}
+
+.bom-card::before {
+  top: -60px;
+  left: -40px;
+  background: rgba(255,228,154,.72);
+}
+
+.bom-card::after {
+  right: -50px;
+  bottom: -80px;
+  background: rgba(255,255,255,.28);
+}
+
+.victory-burst {
+  position: absolute;
+  width: min(88vw, 520px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: repeating-conic-gradient(from 0deg, rgba(255,238,174,.95) 0deg 9deg, rgba(255,255,255,0) 9deg 18deg);
+  filter: blur(1px);
+  opacity: .88;
+  transform: scale(.25) rotate(0deg);
+}
+
+.bom-overlay.is-active .victory-burst {
+  animation: victory-burst-spin .95s cubic-bezier(.18,.7,.15,1) forwards;
+}
+
+.victory-burst-secondary {
+  width: min(96vw, 620px);
+  opacity: .55;
+  background: repeating-conic-gradient(from 8deg, rgba(255,255,255,.92) 0deg 5deg, rgba(255,255,255,0) 5deg 14deg);
+}
+
+.bom-text {
+  position: relative;
+  z-index: 1;
+  font-size: clamp(1.4rem, 5vw, 2rem);
+  font-weight: 800;
+  line-height: 1.35;
+  letter-spacing: .04em;
+}
+
+.bom-plus {
+  position: relative;
+  z-index: 1;
+  margin-top: 10px;
+  font-size: clamp(2rem, 8vw, 3.25rem);
+  font-weight: 900;
+  color: #ffe38b;
+  text-shadow: 0 0 18px rgba(255,223,112,.65), 0 4px 18px rgba(0,0,0,.22);
+}
+
+.bom-subtext {
+  position: relative;
+  z-index: 1;
+  margin-top: 10px;
+  color: rgba(255,247,225,.92);
+  font-size: .96rem;
+}
+
+@keyframes victory-burst-spin {
+  0% { transform: scale(.15) rotate(-18deg); opacity: 0; }
+  45% { opacity: .95; }
+  100% { transform: scale(1.15) rotate(22deg); opacity: 0; }
+}
+
 .message {
   position: fixed;
   inset: 0;
@@ -579,5 +689,105 @@ h1 {
   .card-suit {
     margin-top: 1px;
     font-size: clamp(0.76rem, 3.5vw, 0.94rem);
+  }
+}
+
+
+.victory-particles {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.victory-particle {
+  position: absolute;
+  left: 50%;
+  top: 48%;
+  width: var(--vp-size, 8px);
+  height: var(--vp-size, 8px);
+  opacity: 0;
+  transform: translate(-50%, -50%) rotate(0deg) scale(.35);
+  animation: victory-particle-fly var(--vp-duration, 1000ms) cubic-bezier(.18,.72,.18,1) forwards;
+  animation-delay: var(--vp-delay, 0ms);
+  will-change: transform, opacity;
+}
+
+.victory-particle.is-star {
+  width: auto;
+  height: auto;
+  color: #ffe9a6;
+  font-size: var(--vp-size, 14px);
+  line-height: 1;
+  text-shadow: 0 0 10px rgba(255,224,126,.9);
+}
+
+.victory-particle.is-confetti {
+  border-radius: 2px;
+  background: linear-gradient(180deg, #fff1ae, #d6a13a);
+  box-shadow: 0 0 8px rgba(255,221,118,.5);
+}
+
+.completed-area.victory-flash {
+  animation: completed-area-victory .85s ease-out 1;
+}
+
+.bom-overlay.is-active .bom-plus {
+  animation: victory-plus-pop .72s cubic-bezier(.18,.9,.2,1.2) .16s both;
+}
+
+@keyframes victory-particle-fly {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(0deg) scale(.35);
+  }
+  12% { opacity: 1; }
+  70% { opacity: 1; }
+  100% {
+    opacity: 0;
+    transform:
+      translate(
+        calc(-50% + var(--vp-x, 0px)),
+        calc(-50% + var(--vp-y, 0px))
+      )
+      rotate(var(--vp-rotate, 180deg))
+      scale(1);
+  }
+}
+
+@keyframes victory-plus-pop {
+  0% { opacity: 0; transform: scale(.35) translateY(10px); }
+  55% { opacity: 1; transform: scale(1.32) translateY(-3px); }
+  78% { transform: scale(.92) translateY(0); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes completed-area-victory {
+  0% {
+    filter: brightness(1);
+    transform: scale(1);
+  }
+  30% {
+    filter: brightness(1.75) drop-shadow(0 0 12px rgba(255,221,125,.95));
+    transform: scale(1.055);
+  }
+  62% {
+    filter: brightness(1.28) drop-shadow(0 0 8px rgba(255,221,125,.58));
+    transform: scale(1.02);
+  }
+  100% {
+    filter: brightness(1);
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .victory-particle {
+    display: none;
+  }
+
+  .bom-overlay.is-active .bom-plus,
+  .completed-area.victory-flash {
+    animation-duration: 120ms !important;
   }
 }
