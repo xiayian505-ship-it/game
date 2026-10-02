@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>連環新接龍 v7</title>
+
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/light/area_burst.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/typography/shine_text.css">
+  <link rel="stylesheet" href="spider_v7.css">
+</head>
+<body>
+  <main id="gameShell" class="game-shell">
+    <header class="game-header">
+      <div>
+        <h1>連環新接龍</h1>
+        <p class="subtitle">單一花色 Spider Solitaire</p>
+      </div>
+    </header>
+
+    <section class="deal-tools" aria-label="牌局選擇">
+      <button id="randomDealButton" class="deal-button" type="button">隨機牌局</button>
+      <button id="solvedDealButton" class="deal-button" type="button">玩家已解牌局</button>
+      <button id="uidDealButton" class="deal-button" type="button" aria-expanded="false">UID 搜尋</button>
+    </section>
+
+    <section id="uidSearchPanel" class="uid-search" hidden>
+      <label class="uid-search-label" for="uidInput">牌局 UID</label>
+      <div class="uid-search-row">
+        <input id="uidInput" type="search" autocomplete="off" spellcheck="false" placeholder="spider-...">
+        <button id="uidSearchButton" type="button">載入</button>
+      </div>
+    </section>
+
+    <section class="status-row" aria-live="polite">
+      <span>完成：<strong id="completedCount">0</strong>/8</span>
+      <span>補牌：<strong id="dealCount">5</strong> 次</span>
+      <span>步數：<strong id="moveCount">0</strong></span>
+      <span>可解牌局：<strong id="solvedDealCount">0</strong></span>
+    </section>
+
+    <section class="top-row">
+      <button id="stockButton" class="stock-button" type="button" aria-label="補牌">
+        <span class="stock-icon">🂠</span>
+        <span>補牌</span>
+      </button>
+
+      <div id="completedArea" class="completed-area" aria-label="已完成牌組"></div>
+    </section>
+
+    <p id="notice" class="notice">點一張牌或牌串開始。</p>
+
+    <section id="tableau" class="tableau" aria-label="十欄牌區"></section>
+
+    <p class="hint">
+      由大到小疊牌；只有完整連續牌串能一起移動。湊成 K → A 會自動收掉。
+    </p>
+  </main>
+
+  <div id="bombOverlay" class="bom-overlay" aria-hidden="true">
+    <div id="bombText" class="bom-text slowly-shine-text">BOM！</div>
+  </div>
+
+  <div id="message" class="message" hidden>
+    <div class="message-card">
+      <p id="messageTitle" class="message-title"></p>
+      <p id="messageText" class="message-text"></p>
+      <code id="messageUid" class="message-uid"></code>
+      <button id="playAgainButton" type="button">再玩一局</button>
+    </div>
+  </div>
+
+  <script src="https://lib.stillnessbyslowly.com/game/card/deck.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/date/timestamp.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/data/random/random_id.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/fiction/Fiction_search.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/effects/light/area_burst.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.min.js"></script>
+  <script src="spider_v7_db.js"></script>
+  <script src="spider_v7.js"></script>
+</body>
+</html>
