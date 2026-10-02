@@ -37,6 +37,7 @@
 
   const restartConfirm = document.getElementById("restartConfirm");
   const restartCancelButton = document.getElementById("restartCancelButton");
+  const restartCurrentButton = document.getElementById("restartCurrentButton");
   const restartConfirmButton = document.getElementById("restartConfirmButton");
 
   const bombOverlay = document.getElementById("bombOverlay");
@@ -1671,11 +1672,26 @@
     restartConfirm.hidden = false;
   }
 
+  function restartCurrentDeal() {
+    if (busy || !Array.isArray(originalDeal) || originalDeal.length !== 104) return;
+
+    const deal = originalDeal.slice();
+    const uid = currentDealUid;
+    const source = currentDealSource;
+    const bestSteps = currentDealBestValue;
+    const clearCount = currentDealClearValue;
+
+    restartConfirm.hidden = true;
+    startGame({ deal, uid, source, bestSteps, clearCount });
+    setNotice(uid ? `已重新開始牌局 ${shortUid(uid)}。` : "已重新開始此局。");
+  }
+
   stockButton.addEventListener("click", () => void dealFromStock());
   restartButton.addEventListener("click", openRestartConfirm);
   restartCancelButton.addEventListener("click", () => {
     restartConfirm.hidden = true;
   });
+  restartCurrentButton.addEventListener("click", restartCurrentDeal);
   restartConfirmButton.addEventListener("click", () => {
     restartConfirm.hidden = true;
     showDealPicker({ canReturn: true });

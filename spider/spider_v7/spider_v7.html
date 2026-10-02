@@ -65,12 +65,13 @@
 
   <div id="restartConfirm" class="dialog-overlay" hidden>
     <div class="dialog-card" role="dialog" aria-modal="true" aria-labelledby="restartConfirmTitle">
-      <p id="restartConfirmTitle" class="dialog-title">確定要重新開始嗎？</p>
-      <p class="dialog-text">選擇新牌局後，目前進度會被清除。</p>
+      <p id="restartConfirmTitle" class="dialog-title">要怎麼重新開始？</p>
+      <p class="dialog-text">可以重開目前這副牌，也可以改選其他牌局。</p>
       <div class="dialog-actions">
         <button id="restartCancelButton" type="button">取消</button>
-        <button id="restartConfirmButton" type="button">確定</button>
+        <button id="restartCurrentButton" type="button">重新開始此局</button>
       </div>
+      <button id="restartConfirmButton" class="dialog-back" type="button">選擇其他牌局</button>
     </div>
   </div>
 
