@@ -16,6 +16,8 @@
   const copyDealUidButton = document.getElementById("copyDealUidButton");
   const currentDealBest = document.getElementById("currentDealBest");
   const currentDealBestSteps = document.getElementById("currentDealBestSteps");
+  const currentDealClears = document.getElementById("currentDealClears");
+  const currentDealClearCount = document.getElementById("currentDealClearCount");
 
   const randomDealButton = document.getElementById("randomDealButton");
   const solvedDealButton = document.getElementById("solvedDealButton");
@@ -46,6 +48,7 @@
   const messageTitle = document.getElementById("messageTitle");
   const messageText = document.getElementById("messageText");
   const messageBest = document.getElementById("messageBest");
+  const messageClears = document.getElementById("messageClears");
   const messageUid = document.getElementById("messageUid");
   const messageCopyUidButton = document.getElementById("messageCopyUidButton");
   const playAgainButton = document.getElementById("playAgainButton");
@@ -71,6 +74,7 @@
   let currentDealUid = null;
   let currentDealSource = "random";
   let currentDealBestValue = null;
+  let currentDealClearValue = 0;
   let busy = false;
   let areaBurst = null;
   let remoteSolvedDealCount = 0;
@@ -244,6 +248,38 @@
     return local;
   }
 
+  function clearCountForRecord(record) {
+    const value = Number(record?.clearCount);
+    return Number.isInteger(value) && value >= 0 ? value : 0;
+  }
+
+  async function recordClear(uid) {
+    const q = String(uid || "").trim();
+    if (!q) return { clearCount: 0, cloudSaved: false };
+
+    if (window.SpiderSolvedDealsDB?.incrementClearCount) {
+      try {
+        const result = await window.SpiderSolvedDealsDB.incrementClearCount(q);
+        const value = Number(result?.clearCount);
+        if (Number.isInteger(value) && value >= 0) {
+          currentDealClearValue = value;
+
+          const localRecord = readSolvedDeals().find(item => String(item.uid || "") === q);
+          if (localRecord) saveRecordLocally({ ...localRecord, clearCount: value });
+
+          return { clearCount: value, cloudSaved: true };
+        }
+      } catch (error) {
+        console.warn("雲端破關次數更新失敗。", error);
+      }
+    }
+
+    currentDealClearValue = Math.max(0, Number(currentDealClearValue) || 0) + 1;
+    const localRecord = readSolvedDeals().find(item => String(item.uid || "") === q);
+    if (localRecord) saveRecordLocally({ ...localRecord, clearCount: currentDealClearValue });
+    return { clearCount: currentDealClearValue, cloudSaved: false };
+  }
+
   async function recordBestSteps(uid, steps) {
     const localResult = saveLocalBestSteps(uid, steps);
     let cloudBest = null;
@@ -283,9 +319,13 @@
         : (currentDealBestValue || localBest);
       currentDealBest.hidden = !best;
       currentDealBestSteps.textContent = best || "—";
+      currentDealClears.hidden = !(currentDealClearValue > 0);
+      currentDealClearCount.textContent = currentDealClearValue > 0 ? currentDealClearValue : "—";
     } else {
       currentDealBest.hidden = true;
       currentDealBestSteps.textContent = "—";
+      currentDealClears.hidden = true;
+      currentDealClearCount.textContent = "—";
     }
   }
 
@@ -348,7 +388,8 @@
         moveCount,
         originalDeal: originalDeal.slice(),
         currentDealUid,
-        currentDealSource
+        currentDealSource,
+        currentDealClearValue
       };
 
       localStorage.setItem(ACTIVE_GAME_STORAGE_KEY, JSON.stringify(state));
@@ -423,6 +464,7 @@
     currentDealUid = state.currentDealUid || null;
     currentDealSource = state.currentDealSource || "random";
     currentDealBestValue = currentDealUid ? localBestSteps(currentDealUid) : null;
+    currentDealClearValue = Math.max(0, Number(state.currentDealClearValue) || 0);
     selection = null;
     busy = false;
 
@@ -431,6 +473,8 @@
     message.hidden = true;
     messageBest.hidden = true;
     messageBest.textContent = "";
+    messageClears.hidden = true;
+    messageClears.textContent = "";
     restartConfirm.hidden = true;
     dealPicker.hidden = true;
     contributedPanel.hidden = true;
@@ -477,6 +521,7 @@
     currentDealUid = options.uid || null;
     currentDealSource = options.source || (knownDeal ? "solved" : "random");
     currentDealBestValue = Number(options.bestSteps) > 0 ? Number(options.bestSteps) : (currentDealUid ? localBestSteps(currentDealUid) : null);
+    currentDealClearValue = Math.max(0, Number(options.clearCount) || 0);
 
     columns = Array.from({ length: 10 }, () => []);
     completed = 0;
@@ -498,6 +543,8 @@
     message.hidden = true;
     messageBest.hidden = true;
     messageBest.textContent = "";
+    messageClears.hidden = true;
+    messageClears.textContent = "";
     restartConfirm.hidden = true;
     dealPicker.hidden = true;
     contributedPanel.hidden = true;
@@ -961,11 +1008,17 @@
     if (!record || !record.uid || !Array.isArray(record.deal)) return false;
 
     const key = dealKeyOf(record.deal);
-    const solvedDeals = readSolvedDeals().filter(item => dealKeyOf(item.deal) !== key);
+    const current = readSolvedDeals();
+    const previous = current.find(item => dealKeyOf(item.deal) === key) || null;
+    const solvedDeals = current.filter(item => dealKeyOf(item.deal) !== key);
+    const recordClear = clearCountForRecord(record);
+    const previousClear = clearCountForRecord(previous);
     solvedDeals.push({
       uid: record.uid,
       deal: record.deal.slice(),
-      solvedAt: record.solvedAt || ""
+      solvedAt: record.solvedAt || previous?.solvedAt || "",
+      bestSteps: bestStepsForRecord(record) || bestStepsForRecord(previous) || null,
+      clearCount: Math.max(recordClear, previousClear)
     });
     return writeSolvedDeals(solvedDeals);
   }
@@ -1035,6 +1088,7 @@
 
     currentDealUid = record.uid;
     currentDealBestValue = bestStepsForRecord(record);
+    currentDealClearValue = clearCountForRecord(record);
     saveActiveGame();
     render();
     setNotice(`這副隨機牌局已在玩家貢獻牌庫：${shortUid(record.uid)}`);
@@ -1060,7 +1114,7 @@
     currentDealUid = record.uid;
 
     if (!window.SpiderSolvedDealsDB?.save) {
-      return { uid: record.uid, isNew: localWasNew, cloudSaved: false, bestSteps: bestStepsForRecord(record) };
+      return { uid: record.uid, isNew: localWasNew, cloudSaved: false, bestSteps: bestStepsForRecord(record), clearCount: clearCountForRecord(record) };
     }
 
     try {
@@ -1074,11 +1128,12 @@
         uid: canonical.uid,
         isNew: Boolean(result?.isNew),
         cloudSaved: true,
-        bestSteps: bestStepsForRecord(canonical)
+        bestSteps: bestStepsForRecord(canonical),
+        clearCount: clearCountForRecord(canonical)
       };
     } catch (error) {
       console.warn("可解牌局寫入雲端失敗，已保留本機紀錄。", error);
-      return { uid: record.uid, isNew: localWasNew, cloudSaved: false, bestSteps: bestStepsForRecord(record) };
+      return { uid: record.uid, isNew: localWasNew, cloudSaved: false, bestSteps: bestStepsForRecord(record), clearCount: clearCountForRecord(record) };
     }
   }
 
@@ -1323,7 +1378,11 @@
     const score = saved.uid
       ? await recordBestSteps(saved.uid, moveCount)
       : { bestSteps: moveCount, isRecord: false, previousBest: null, cloudSaved: false };
+    const clears = saved.uid
+      ? await recordClear(saved.uid)
+      : { clearCount: 0, cloudSaved: false };
     currentDealBestValue = score.bestSteps || saved.bestSteps || null;
+    currentDealClearValue = clears.clearCount || saved.clearCount || 0;
     clearActiveGame();
     render();
     await playBOM({ isNew: saved.isNew });
@@ -1356,6 +1415,14 @@
     } else {
       messageBest.hidden = true;
       messageBest.textContent = "";
+    }
+
+    if (saved.uid && currentDealClearValue > 0) {
+      messageClears.textContent = `這副牌已成功破關 ${currentDealClearValue} 次`;
+      messageClears.hidden = false;
+    } else {
+      messageClears.hidden = true;
+      messageClears.textContent = "";
     }
 
     messageUid.textContent = saved.uid ? shortUid(saved.uid) : "UID 建立失敗";
@@ -1393,7 +1460,10 @@
         const best = bestStepsForRecord(record);
         const bestText = document.createElement("span");
         bestText.className = "contributed-best";
-        bestText.textContent = best ? `最佳 ${best} 步` : "尚無步數紀錄";
+        const clearCount = clearCountForRecord(record);
+        bestText.textContent = best
+          ? `最佳 ${best} 步｜破關 ${clearCount} 次`
+          : `尚無步數紀錄｜破關 ${clearCount} 次`;
         button.appendChild(bestText);
 
         button.addEventListener("click", () => {
@@ -1402,7 +1472,8 @@
             deal: record.deal,
             uid: record.uid,
             source: "contributed",
-            bestSteps: bestStepsForRecord(record)
+            bestSteps: bestStepsForRecord(record),
+            clearCount: clearCountForRecord(record)
           });
         });
 
@@ -1496,7 +1567,8 @@
         deal: record.deal,
         uid: record.uid,
         source: "contributed-random",
-        bestSteps: bestStepsForRecord(record)
+        bestSteps: bestStepsForRecord(record),
+        clearCount: clearCountForRecord(record)
       });
     } catch (error) {
       console.warn("隨機讀取玩家貢獻牌局失敗。", error);
@@ -1541,7 +1613,8 @@
       deal: record.deal,
       uid: record.uid,
       source: "uid",
-      bestSteps: bestStepsForRecord(record)
+      bestSteps: bestStepsForRecord(record),
+      clearCount: clearCountForRecord(record)
     });
   }
 

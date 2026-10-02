@@ -16,7 +16,10 @@
       solvedAt: row.client_solved_at || row.solved_at || "",
       bestSteps: Number.isInteger(Number(row.best_steps)) && Number(row.best_steps) > 0
         ? Number(row.best_steps)
-        : null
+        : null,
+      clearCount: Number.isInteger(Number(row.clear_count)) && Number(row.clear_count) >= 0
+        ? Number(row.clear_count)
+        : 0
     };
   }
 
@@ -38,14 +41,14 @@
   const client = createClient();
 
   const SELECT_BASE = "uid,deal,client_solved_at,solved_at";
-  const SELECT_WITH_BEST = `${SELECT_BASE},best_steps`;
+  const SELECT_WITH_BEST = `${SELECT_BASE},best_steps,clear_count`;
 
   async function runWithBestFallback(makeQuery) {
     let result = await makeQuery(SELECT_WITH_BEST);
     if (!result.error) return result;
 
     const message = String(result.error?.message || "").toLowerCase();
-    const missingBest = message.includes("best_steps") || result.error?.code === "42703" || result.error?.code === "PGRST204";
+    const missingBest = message.includes("best_steps") || message.includes("clear_count") || result.error?.code === "42703" || result.error?.code === "PGRST204";
     if (!missingBest) return result;
 
     return makeQuery(SELECT_BASE);
@@ -171,7 +174,7 @@
     const { data, error } = await client
       .from(TABLE)
       .insert(payload)
-      .select("uid,deal,client_solved_at,solved_at")
+      .select(SELECT_WITH_BEST)
       .single();
 
     if (error) {
@@ -222,6 +225,23 @@
     return normalizeRecord(data);
   }
 
+
+  async function incrementClearCount(uid) {
+    if (!client) throw new Error("Supabase client 尚未載入。");
+
+    const q = String(uid || "").trim();
+    if (!q) throw new TypeError("UID 格式錯誤。");
+
+    const { data, error } = await client.rpc("increment_spider_clear_count", { p_uid: q });
+    if (error) throw error;
+
+    const value = Number(data);
+    return {
+      uid: q,
+      clearCount: Number.isInteger(value) && value >= 0 ? value : 0
+    };
+  }
+
   window.SpiderSolvedDealsDB = Object.freeze({
     list,
     count,
@@ -231,6 +251,7 @@
     findByDeal,
     save,
     updateBestSteps,
+    incrementClearCount,
     dealKey
   });
 })();
