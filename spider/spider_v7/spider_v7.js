@@ -909,7 +909,7 @@
     if (!stockDeck || stockDeck.snapshot().drawPile.length < 10) return;
 
     if (columns.some(column => column.length === 0)) {
-      setNotice("還有空白欄位，先放一張牌進去才能補牌。");
+      setNotice("還有空白欄位，先放一張牌進去才能發牌。");
       return;
     }
 
