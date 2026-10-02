@@ -1159,3 +1159,21 @@ h1 {
     animation-duration: 120ms !important;
   }
 }
+
+
+.deal-best {
+  color: var(--muted);
+  font-size: .82rem;
+}
+
+.contributed-best {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: .82rem;
+  white-space: nowrap;
+}
+
+.message-best {
+  margin: 8px 0 0;
+  font-weight: 700;
+}

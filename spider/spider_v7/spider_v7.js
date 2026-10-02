@@ -14,6 +14,8 @@
   const currentDealIdentity = document.getElementById("currentDealIdentity");
   const currentDealShortUid = document.getElementById("currentDealShortUid");
   const copyDealUidButton = document.getElementById("copyDealUidButton");
+  const currentDealBest = document.getElementById("currentDealBest");
+  const currentDealBestSteps = document.getElementById("currentDealBestSteps");
 
   const randomDealButton = document.getElementById("randomDealButton");
   const solvedDealButton = document.getElementById("solvedDealButton");
@@ -43,12 +45,15 @@
   const message = document.getElementById("message");
   const messageTitle = document.getElementById("messageTitle");
   const messageText = document.getElementById("messageText");
+  const messageBest = document.getElementById("messageBest");
   const messageUid = document.getElementById("messageUid");
   const messageCopyUidButton = document.getElementById("messageCopyUidButton");
   const playAgainButton = document.getElementById("playAgainButton");
 
   const SOLVED_DEALS_STORAGE_KEY = "spider_solved_deals_v1";
   const ACTIVE_GAME_STORAGE_KEY = "spider_active_game_v1";
+  const BEST_STEPS_STORAGE_KEY = "spider_best_steps_v1";
+  const LAST_VICTORY_EFFECTS_STORAGE_KEY = "spider_last_victory_effects_v1";
 
   const RANK_LABELS = {
     1: "A",
@@ -65,6 +70,7 @@
   let originalDeal = [];
   let currentDealUid = null;
   let currentDealSource = "random";
+  let currentDealBestValue = null;
   let busy = false;
   let areaBurst = null;
   let remoteSolvedDealCount = 0;
@@ -86,6 +92,14 @@
   ]);
 
   let lastVictoryEffectSignature = "";
+  let lastVictoryEffects = (() => {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(LAST_VICTORY_EFFECTS_STORAGE_KEY) || "[]");
+      return Array.isArray(parsed) ? parsed.filter(name => VICTORY_EFFECTS.includes(name)) : [];
+    } catch {
+      return [];
+    }
+  })();
 
   function sleep(ms) {
     return new Promise(resolve => window.setTimeout(resolve, Math.max(0, ms)));
@@ -182,6 +196,75 @@
     return raw ? `E-${raw.slice(0, 8)}` : "E-────────";
   }
 
+
+  function readBestStepsMap() {
+    try {
+      const raw = localStorage.getItem(BEST_STEPS_STORAGE_KEY);
+      const parsed = raw ? JSON.parse(raw) : {};
+      return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+    } catch (error) {
+      console.warn("讀取最佳步數失敗。", error);
+      return {};
+    }
+  }
+
+  function localBestSteps(uid) {
+    const value = Number(readBestStepsMap()[String(uid || "")]);
+    return Number.isInteger(value) && value > 0 ? value : null;
+  }
+
+  function saveLocalBestSteps(uid, steps) {
+    const key = String(uid || "");
+    const value = Number(steps);
+    if (!key || !Number.isInteger(value) || value <= 0) return { bestSteps: null, isRecord: false, previousBest: null };
+
+    const map = readBestStepsMap();
+    const previous = Number(map[key]);
+    const previousBest = Number.isInteger(previous) && previous > 0 ? previous : null;
+    const isRecord = previousBest === null || value < previousBest;
+    const bestSteps = isRecord ? value : previousBest;
+
+    if (isRecord) {
+      map[key] = value;
+      try {
+        localStorage.setItem(BEST_STEPS_STORAGE_KEY, JSON.stringify(map));
+      } catch (error) {
+        console.warn("儲存最佳步數失敗。", error);
+      }
+    }
+
+    return { bestSteps, isRecord, previousBest };
+  }
+
+  function bestStepsForRecord(record) {
+    const remote = Number(record?.bestSteps);
+    const local = localBestSteps(record?.uid);
+    if (Number.isInteger(remote) && remote > 0 && Number.isInteger(local) && local > 0) return Math.min(remote, local);
+    if (Number.isInteger(remote) && remote > 0) return remote;
+    return local;
+  }
+
+  async function recordBestSteps(uid, steps) {
+    const localResult = saveLocalBestSteps(uid, steps);
+    let cloudBest = null;
+
+    if (window.SpiderSolvedDealsDB?.updateBestSteps) {
+      try {
+        const result = await window.SpiderSolvedDealsDB.updateBestSteps(uid, steps);
+        const value = Number(result?.bestSteps);
+        if (Number.isInteger(value) && value > 0) cloudBest = value;
+      } catch (error) {
+        console.warn("雲端最佳步數更新失敗，保留本機紀錄。", error);
+      }
+    }
+
+    const bestSteps = cloudBest && localResult.bestSteps
+      ? Math.min(cloudBest, localResult.bestSteps)
+      : (cloudBest || localResult.bestSteps || Number(steps));
+
+    return { ...localResult, bestSteps, cloudSaved: Boolean(cloudBest) };
+  }
+
   function findLocalDealByKey(key) {
     if (!key) return null;
     return readSolvedDeals().find(item => dealKeyOf(item.deal) === key) || null;
@@ -194,6 +277,15 @@
 
     if (hasUid) {
       currentDealShortUid.textContent = shortUid(currentDealUid);
+      const localBest = localBestSteps(currentDealUid);
+      const best = currentDealBestValue && localBest
+        ? Math.min(currentDealBestValue, localBest)
+        : (currentDealBestValue || localBest);
+      currentDealBest.hidden = !best;
+      currentDealBestSteps.textContent = best || "—";
+    } else {
+      currentDealBest.hidden = true;
+      currentDealBestSteps.textContent = "—";
     }
   }
 
@@ -330,12 +422,15 @@
     originalDeal = state.originalDeal.map(Number);
     currentDealUid = state.currentDealUid || null;
     currentDealSource = state.currentDealSource || "random";
+    currentDealBestValue = currentDealUid ? localBestSteps(currentDealUid) : null;
     selection = null;
     busy = false;
 
     clearCompletedRunsInstant();
 
     message.hidden = true;
+    messageBest.hidden = true;
+    messageBest.textContent = "";
     restartConfirm.hidden = true;
     dealPicker.hidden = true;
     contributedPanel.hidden = true;
@@ -381,6 +476,7 @@
 
     currentDealUid = options.uid || null;
     currentDealSource = options.source || (knownDeal ? "solved" : "random");
+    currentDealBestValue = Number(options.bestSteps) > 0 ? Number(options.bestSteps) : (currentDealUid ? localBestSteps(currentDealUid) : null);
 
     columns = Array.from({ length: 10 }, () => []);
     completed = 0;
@@ -400,6 +496,8 @@
     }
 
     message.hidden = true;
+    messageBest.hidden = true;
+    messageBest.textContent = "";
     restartConfirm.hidden = true;
     dealPicker.hidden = true;
     contributedPanel.hidden = true;
@@ -936,6 +1034,7 @@
     }
 
     currentDealUid = record.uid;
+    currentDealBestValue = bestStepsForRecord(record);
     saveActiveGame();
     render();
     setNotice(`這副隨機牌局已在玩家貢獻牌庫：${shortUid(record.uid)}`);
@@ -961,7 +1060,7 @@
     currentDealUid = record.uid;
 
     if (!window.SpiderSolvedDealsDB?.save) {
-      return { uid: record.uid, isNew: localWasNew, cloudSaved: false };
+      return { uid: record.uid, isNew: localWasNew, cloudSaved: false, bestSteps: bestStepsForRecord(record) };
     }
 
     try {
@@ -974,11 +1073,12 @@
       return {
         uid: canonical.uid,
         isNew: Boolean(result?.isNew),
-        cloudSaved: true
+        cloudSaved: true,
+        bestSteps: bestStepsForRecord(canonical)
       };
     } catch (error) {
       console.warn("可解牌局寫入雲端失敗，已保留本機紀錄。", error);
-      return { uid: record.uid, isNew: localWasNew, cloudSaved: false };
+      return { uid: record.uid, isNew: localWasNew, cloudSaved: false, bestSteps: bestStepsForRecord(record) };
     }
   }
 
@@ -997,27 +1097,57 @@
   function pickVictoryEffects() {
     if (prefersReducedMotion()) return ["jackpot-pop"];
 
-    const pool = VICTORY_EFFECTS.slice();
-    for (let i = pool.length - 1; i > 0; i -= 1) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [pool[i], pool[j]] = [pool[j], pool[i]];
+    function shuffledPool() {
+      const pool = VICTORY_EFFECTS.slice();
+      for (let i = pool.length - 1; i > 0; i -= 1) {
+        const k = Math.floor(Math.random() * (i + 1));
+        [pool[i], pool[k]] = [pool[k], pool[i]];
+      }
+      return pool;
     }
 
-    // 每局抽 4～6 種，所有特效都在池裡輪流出現。
-    const count = 4 + Math.floor(Math.random() * 3);
-    let selected = pool.slice(0, count);
-    let signature = selected.slice().sort().join("|");
+    function visualDifference(a, b) {
+      const left = new Set(a);
+      const right = new Set(b);
+      let changed = 0;
+      VICTORY_EFFECTS.forEach(name => {
+        if (left.has(name) !== right.has(name)) changed += 1;
+      });
+      return changed;
+    }
 
-    // 盡量不要連續兩場抽到完全相同的組合。
-    if (signature === lastVictoryEffectSignature) {
-      const replacement = pool.find(name => !selected.includes(name));
-      if (replacement) {
-        selected[selected.length - 1] = replacement;
-        signature = selected.slice().sort().join("|");
+    let selected = [];
+    let signature = "";
+
+    // 重抽到「肉眼真的不同」：至少有 4 個開關狀態改變。
+    // 上一局也存 localStorage，所以重新整理後仍不會立刻撞同一套。
+    for (let attempt = 0; attempt < 40; attempt += 1) {
+      const pool = shuffledPool();
+      const count = 4 + Math.floor(Math.random() * 3);
+      const candidate = pool.slice(0, count);
+      const candidateSignature = candidate.slice().sort().join("|");
+
+      if (
+        candidateSignature !== lastVictoryEffectSignature &&
+        (lastVictoryEffects.length === 0 || visualDifference(candidate, lastVictoryEffects) >= 4)
+      ) {
+        selected = candidate;
+        signature = candidateSignature;
+        break;
       }
     }
 
+    if (selected.length === 0) {
+      selected = shuffledPool().slice(0, 4);
+      signature = selected.slice().sort().join("|");
+    }
+
     lastVictoryEffectSignature = signature;
+    lastVictoryEffects = selected.slice();
+    try {
+      localStorage.setItem(LAST_VICTORY_EFFECTS_STORAGE_KEY, JSON.stringify(lastVictoryEffects));
+    } catch {}
+
     return selected;
   }
 
@@ -1190,6 +1320,10 @@
     if (completed !== 8) return false;
 
     const saved = await saveSolvedDeal();
+    const score = saved.uid
+      ? await recordBestSteps(saved.uid, moveCount)
+      : { bestSteps: moveCount, isRecord: false, previousBest: null, cloudSaved: false };
+    currentDealBestValue = score.bestSteps || saved.bestSteps || null;
     clearActiveGame();
     render();
     await playBOM({ isNew: saved.isNew });
@@ -1208,6 +1342,20 @@
     } else {
       messageTitle.textContent = "牌局完成";
       messageText.textContent = `完成！共用了 ${moveCount} 步。這副牌原本就在玩家可解牌庫。`;
+    }
+
+    if (saved.uid && score.bestSteps) {
+      if (score.isRecord && score.previousBest) {
+        messageBest.textContent = `新紀錄！原最佳 ${score.previousBest} 步 → ${score.bestSteps} 步`;
+      } else if (score.isRecord) {
+        messageBest.textContent = `最佳紀錄：${score.bestSteps} 步`;
+      } else {
+        messageBest.textContent = `本局 ${moveCount} 步｜最佳紀錄 ${score.bestSteps} 步`;
+      }
+      messageBest.hidden = false;
+    } else {
+      messageBest.hidden = true;
+      messageBest.textContent = "";
     }
 
     messageUid.textContent = saved.uid ? shortUid(saved.uid) : "UID 建立失敗";
@@ -1242,12 +1390,19 @@
         code.textContent = shortUid(record.uid);
         button.appendChild(code);
 
+        const best = bestStepsForRecord(record);
+        const bestText = document.createElement("span");
+        bestText.className = "contributed-best";
+        bestText.textContent = best ? `最佳 ${best} 步` : "尚無步數紀錄";
+        button.appendChild(bestText);
+
         button.addEventListener("click", () => {
           if (busy || contributedLoading) return;
           startGame({
             deal: record.deal,
             uid: record.uid,
-            source: "contributed"
+            source: "contributed",
+            bestSteps: bestStepsForRecord(record)
           });
         });
 
@@ -1340,7 +1495,8 @@
       startGame({
         deal: record.deal,
         uid: record.uid,
-        source: "contributed-random"
+        source: "contributed-random",
+        bestSteps: bestStepsForRecord(record)
       });
     } catch (error) {
       console.warn("隨機讀取玩家貢獻牌局失敗。", error);
@@ -1384,7 +1540,8 @@
     startGame({
       deal: record.deal,
       uid: record.uid,
-      source: "uid"
+      source: "uid",
+      bestSteps: bestStepsForRecord(record)
     });
   }
 

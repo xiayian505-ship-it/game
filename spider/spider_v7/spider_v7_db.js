@@ -13,7 +13,10 @@
     return {
       uid: row.uid,
       deal: row.deal.map(Number),
-      solvedAt: row.client_solved_at || row.solved_at || ""
+      solvedAt: row.client_solved_at || row.solved_at || "",
+      bestSteps: Number.isInteger(Number(row.best_steps)) && Number(row.best_steps) > 0
+        ? Number(row.best_steps)
+        : null
     };
   }
 
@@ -34,13 +37,26 @@
 
   const client = createClient();
 
+  const SELECT_BASE = "uid,deal,client_solved_at,solved_at";
+  const SELECT_WITH_BEST = `${SELECT_BASE},best_steps`;
+
+  async function runWithBestFallback(makeQuery) {
+    let result = await makeQuery(SELECT_WITH_BEST);
+    if (!result.error) return result;
+
+    const message = String(result.error?.message || "").toLowerCase();
+    const missingBest = message.includes("best_steps") || result.error?.code === "42703" || result.error?.code === "PGRST204";
+    if (!missingBest) return result;
+
+    return makeQuery(SELECT_BASE);
+  }
+
   async function list() {
     if (!client) throw new Error("Supabase client 尚未載入。");
 
-    const { data, error } = await client
-      .from(TABLE)
-      .select("uid,deal,client_solved_at,solved_at")
-      .order("solved_at", { ascending: false });
+    const { data, error } = await runWithBestFallback(fields =>
+      client.from(TABLE).select(fields).order("solved_at", { ascending: false })
+    );
 
     if (error) throw error;
     return (data || []).map(normalizeRecord).filter(Boolean);
@@ -65,12 +81,14 @@
     const from = (requestedPage - 1) * size;
     const to = from + size - 1;
 
-    const { data, error, count: total } = await client
-      .from(TABLE)
-      .select("uid,deal,client_solved_at,solved_at", { count: "exact" })
-      .order("solved_at", { ascending: false })
-      .order("uid", { ascending: true })
-      .range(from, to);
+    const { data, error, count: total } = await runWithBestFallback(fields =>
+      client
+        .from(TABLE)
+        .select(fields, { count: "exact" })
+        .order("solved_at", { ascending: false })
+        .order("uid", { ascending: true })
+        .range(from, to)
+    );
 
     if (error) throw error;
 
@@ -93,12 +111,14 @@
     if (total <= 0) return null;
 
     const offset = Math.floor(Math.random() * total);
-    const { data, error } = await client
-      .from(TABLE)
-      .select("uid,deal,client_solved_at,solved_at")
-      .order("solved_at", { ascending: false })
-      .order("uid", { ascending: true })
-      .range(offset, offset);
+    const { data, error } = await runWithBestFallback(fields =>
+      client
+        .from(TABLE)
+        .select(fields)
+        .order("solved_at", { ascending: false })
+        .order("uid", { ascending: true })
+        .range(offset, offset)
+    );
 
     if (error) throw error;
     return normalizeRecord((data || [])[0]);
@@ -110,11 +130,9 @@
     const q = String(uid || "").trim();
     if (!q) return null;
 
-    const { data, error } = await client
-      .from(TABLE)
-      .select("uid,deal,client_solved_at,solved_at")
-      .eq("uid", q)
-      .maybeSingle();
+    const { data, error } = await runWithBestFallback(fields =>
+      client.from(TABLE).select(fields).eq("uid", q).maybeSingle()
+    );
 
     if (error) throw error;
     return normalizeRecord(data);
@@ -126,11 +144,9 @@
     const key = dealKey(deal);
     if (!key) return null;
 
-    const { data, error } = await client
-      .from(TABLE)
-      .select("uid,deal,client_solved_at,solved_at")
-      .eq("deal_key", key)
-      .maybeSingle();
+    const { data, error } = await runWithBestFallback(fields =>
+      client.from(TABLE).select(fields).eq("deal_key", key).maybeSingle()
+    );
 
     if (error) throw error;
     return normalizeRecord(data);
@@ -167,6 +183,45 @@
     return { record: normalizeRecord(data), isNew: true };
   }
 
+  async function updateBestSteps(uid, steps) {
+    if (!client) throw new Error("Supabase client 尚未載入。");
+
+    const q = String(uid || "").trim();
+    const value = Math.trunc(Number(steps));
+    if (!q || !Number.isInteger(value) || value <= 0) {
+      throw new TypeError("UID 與步數格式錯誤。");
+    }
+
+    const current = await findByUid(q);
+    if (!current) return null;
+
+    const oldBest = Number(current.bestSteps);
+    if (Number.isInteger(oldBest) && oldBest > 0 && oldBest <= value) {
+      return current;
+    }
+
+    const { data, error } = await client
+      .from(TABLE)
+      .update({ best_steps: value })
+      .eq("uid", q)
+      .select(SELECT_WITH_BEST)
+      .single();
+
+    if (error) {
+      const message = String(error?.message || "").toLowerCase();
+      const unavailable =
+        message.includes("best_steps") ||
+        message.includes("permission denied") ||
+        error?.code === "42703" ||
+        error?.code === "42501" ||
+        error?.code === "PGRST204";
+
+      if (unavailable) return null;
+      throw error;
+    }
+    return normalizeRecord(data);
+  }
+
   window.SpiderSolvedDealsDB = Object.freeze({
     list,
     count,
@@ -175,6 +230,7 @@
     findByUid,
     findByDeal,
     save,
+    updateBestSteps,
     dealKey
   });
 })();
