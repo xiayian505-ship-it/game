@@ -554,7 +554,7 @@
     setPickerNotice("");
     setNotice(
       currentDealUid
-        ? `已載入玩家貢獻牌局 ${shortUid(currentDealUid)}`
+        ? `已載入玩家已解牌局 ${shortUid(currentDealUid)}`
         : "點一張牌或牌串開始。"
     );
     render();
@@ -1040,7 +1040,7 @@
       return true;
     } catch (error) {
       databaseReady = false;
-      console.warn("讀取雲端玩家貢獻牌局數量失敗，改用本機牌庫。", error);
+      console.warn("讀取雲端玩家已解牌局數量失敗，改用本機牌庫。", error);
       return false;
     }
   }
@@ -1092,7 +1092,7 @@
     currentDealClearValue = clearCountForRecord(record);
     saveActiveGame();
     render();
-    setNotice(`這副隨機牌局已在玩家貢獻牌庫：${shortUid(record.uid)}`);
+    setNotice(`這副隨機牌局已在玩家已解牌庫：${shortUid(record.uid)}`);
     return record;
   }
 
@@ -1344,7 +1344,7 @@
     const selectedEffects = pickVictoryEffects();
 
     bombText.textContent = isNew
-      ? "恭喜玩家貢獻可解牌局"
+      ? "恭喜解出此牌局"
       : "牌局完成";
     bombPlus.textContent = isNew ? "+1" : "CLEAR";
     bombSubtext.textContent = isNew
@@ -1395,7 +1395,7 @@
     render();
 
     if (saved.isNew) {
-      messageTitle.textContent = "恭喜玩家貢獻可解牌局";
+      messageTitle.textContent = "恭喜解出此牌局";
       messageText.textContent = saved.cloudSaved
         ? `完成！共用了 ${moveCount} 步。這副牌已加入玩家可解牌庫。`
         : `完成！共用了 ${moveCount} 步。牌局已先保存在這台裝置，雲端目前未同步。`;
@@ -1444,7 +1444,7 @@
     if (contributedPageRecords.length === 0) {
       const empty = document.createElement("p");
       empty.className = "contributed-empty";
-      empty.textContent = "目前還沒有玩家貢獻牌局。";
+      empty.textContent = "目前還沒有玩家已解牌局。";
       contributedList.appendChild(empty);
     } else {
       contributedPageRecords.forEach(record => {
@@ -1491,7 +1491,7 @@
 
     contributedLoading = true;
     render();
-    setPickerNotice("正在讀取玩家貢獻牌局…");
+    setPickerNotice("正在讀取玩家已解牌局…");
 
     try {
       if (window.SpiderSolvedDealsDB?.listPage) {
@@ -1504,13 +1504,13 @@
           result.page || page,
           result.totalPages || 1
         );
-        setPickerNotice(result.totalCount > 0 ? `共有 ${result.totalCount} 副玩家貢獻牌局。` : "目前還沒有玩家貢獻牌局。");
+        setPickerNotice(result.totalCount > 0 ? `共有 ${result.totalCount} 副玩家已解牌局。` : "目前還沒有玩家已解牌局。");
         return;
       }
 
       throw new Error("雲端分頁功能尚未載入。");
     } catch (error) {
-      console.warn("讀取玩家貢獻牌局分頁失敗，改用本機牌庫。", error);
+      console.warn("讀取玩家已解牌局分頁失敗，改用本機牌庫。", error);
 
       const localDeals = getLocalSolvedDealsSorted();
       const totalCount = localDeals.length;
@@ -1520,7 +1520,7 @@
       const records = localDeals.slice(start, start + 5);
 
       renderContributedPage(records, totalCount, safePage, totalPages);
-      setPickerNotice(totalCount > 0 ? "目前使用這台裝置上的玩家貢獻牌局。" : "目前還沒有玩家貢獻牌局。");
+      setPickerNotice(totalCount > 0 ? "目前使用這台裝置上的玩家已解牌局。" : "目前還沒有玩家已解牌局。");
     } finally {
       contributedLoading = false;
       render();
@@ -1542,7 +1542,7 @@
 
     contributedLoading = true;
     render();
-    setPickerNotice("正在從玩家貢獻牌局隨機抽一副…");
+    setPickerNotice("正在從玩家已解牌局隨機抽一副…");
 
     try {
       let record = null;
@@ -1560,7 +1560,7 @@
       }
 
       if (!record) {
-        setPickerNotice("目前還沒有玩家貢獻牌局。先去貢獻第一副吧。");
+        setPickerNotice("目前還沒有玩家已解牌局。先解出第一副吧。");
         return;
       }
 
@@ -1572,8 +1572,8 @@
         clearCount: clearCountForRecord(record)
       });
     } catch (error) {
-      console.warn("隨機讀取玩家貢獻牌局失敗。", error);
-      setPickerNotice("玩家貢獻牌局目前讀取失敗，請稍後再試。");
+      console.warn("隨機讀取玩家已解牌局失敗。", error);
+      setPickerNotice("玩家已解牌局目前讀取失敗，請稍後再試。");
     } finally {
       contributedLoading = false;
       render();

@@ -24,7 +24,7 @@
       <span>完成：<strong id="completedCount">0</strong>/8</span>
       <span>發牌：<strong id="dealCount">0</strong> 次</span>
       <span>步數：<strong id="moveCount">0</strong></span>
-      <span>玩家貢獻牌局：<strong id="solvedDealCount">0</strong></span>
+      <span>玩家已解牌局：<strong id="solvedDealCount">0</strong></span>
     </section>
 
     <section class="top-row">
@@ -57,7 +57,7 @@
     <div class="victory-burst" aria-hidden="true"></div>
     <div class="victory-burst victory-burst-secondary" aria-hidden="true"></div>
     <div class="bom-card">
-      <div id="bombText" class="bom-text slowly-shine-text">恭喜玩家貢獻可解牌局</div>
+      <div id="bombText" class="bom-text slowly-shine-text">恭喜解出此牌局</div>
       <div id="bombPlus" class="bom-plus">+1</div>
       <p id="bombSubtext" class="bom-subtext">這副牌已加入玩家可解牌庫</p>
     </div>
@@ -82,11 +82,11 @@
 
       <section class="deal-tools deal-tools-main" aria-label="牌局選擇">
         <button id="randomDealButton" class="deal-button" type="button">隨機牌局</button>
-        <button id="solvedDealButton" class="deal-button" type="button">玩家貢獻牌局</button>
+        <button id="solvedDealButton" class="deal-button" type="button">玩家已解牌局</button>
       </section>
 
-      <section id="contributedPanel" class="contributed-panel" hidden aria-label="玩家貢獻牌局">
-        <button id="randomContributedButton" class="contributed-random" type="button">從貢獻牌局隨機抽一局</button>
+      <section id="contributedPanel" class="contributed-panel" hidden aria-label="玩家已解牌局">
+        <button id="randomContributedButton" class="contributed-random" type="button">從已解牌局隨機抽一局</button>
 
         <div id="contributedList" class="contributed-list" aria-live="polite"></div>
 
