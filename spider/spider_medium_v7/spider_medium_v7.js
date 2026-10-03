@@ -100,7 +100,8 @@
     "flash-shake",
     "jackpot-pop",
     "card-rain",
-    "victory-beam"
+    "victory-beam",
+    "classic-fireworks"
   ]);
 
   let lastVictoryEffectSignature = "";
@@ -122,6 +123,185 @@
       window.matchMedia &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches
     );
+  }
+
+  /* ===============================
+     音效｜沿用消消樂既有音色
+     - 點牌：Match3 sfxSwap
+     - 無效：Match3 sfxBad
+     - 移動：Match3 sfxShuffle
+     - 發牌：Match3 Combo 鋼琴音階，逐張飛牌逐音上行
+     - 收牌：同一套音色，K → A 逐張飛回完成區並一路下行
+  =============================== */
+  const PIANO_ATTACK_SECONDS = 0.02;
+  const PIANO_RELEASE_SECONDS = 0.10;
+
+  function playTone({
+    freq = 440,
+    dur = 0.08,
+    type = "sine",
+    gain = 0.12,
+    slide = 0
+  } = {}) {
+    if (!globalThis.SlowlyAudioTone?.play) return;
+
+    globalThis.SlowlyAudioTone.play({
+      frequency: freq,
+      duration: dur,
+      type,
+      gain,
+      slide
+    }).catch(error => {
+      console.warn("[Spider] 音效播放失敗：", error);
+    });
+  }
+
+  async function playPianoNotes(noteIds, {
+    gain = 0.12,
+    hold = 0.055,
+    release = PIANO_RELEASE_SECONDS,
+    spacing = 0,
+    type = "sine"
+  } = {}) {
+    if (
+      !globalThis.SlowlyAudioContext?.resume ||
+      !globalThis.SlowlyAudioContext?.get ||
+      !globalThis.SlowlyAudioNoteFrequency?.toFrequency ||
+      !globalThis.SlowlyAudioOscillator?.create ||
+      !globalThis.SlowlyAudioGain?.create ||
+      !globalThis.SlowlyAudioEnvelope
+    ) {
+      return;
+    }
+
+    const notes = Array.isArray(noteIds) ? noteIds : [noteIds];
+    if (!notes.length) return;
+
+    try {
+      await globalThis.SlowlyAudioContext.resume();
+      const context = globalThis.SlowlyAudioContext.get();
+      if (!context || context.state !== "running") return;
+
+      const baseStart = context.currentTime + 0.005;
+
+      notes.forEach((noteId, index) => {
+        const frequency = globalThis.SlowlyAudioNoteFrequency.toFrequency(noteId);
+        const oscillator = globalThis.SlowlyAudioOscillator.create(context, {
+          type,
+          frequency
+        });
+
+        const gainNode = globalThis.SlowlyAudioGain.create(
+          context,
+          globalThis.SlowlyAudioEnvelope.floor
+        );
+
+        globalThis.SlowlyAudioOscillator.connect(oscillator, gainNode);
+        globalThis.SlowlyAudioGain.connect(gainNode, context.destination);
+
+        const startAt = baseStart + Math.max(0, spacing) * index;
+        const releaseAt = startAt + PIANO_ATTACK_SECONDS + Math.max(0, hold);
+        const peak = Math.max(
+          globalThis.SlowlyAudioEnvelope.floor,
+          gain * (index === 0 ? 1 : 0.88)
+        );
+
+        globalThis.SlowlyAudioEnvelope.attack(gainNode.gain, {
+          startAt,
+          duration: PIANO_ATTACK_SECONDS,
+          from: globalThis.SlowlyAudioEnvelope.floor,
+          to: peak,
+          curve: "linear"
+        });
+
+        globalThis.SlowlyAudioEnvelope.release(gainNode.gain, {
+          startAt: releaseAt,
+          duration: Math.max(0.04, release),
+          from: peak,
+          to: globalThis.SlowlyAudioEnvelope.floor,
+          curve: "linear"
+        });
+
+        globalThis.SlowlyAudioOscillator.start(oscillator, startAt);
+        globalThis.SlowlyAudioOscillator.stop(
+          oscillator,
+          releaseAt + Math.max(0.04, release) + 0.02
+        );
+      });
+    } catch (error) {
+      console.warn("[Spider] 鋼琴音效播放失敗：", error);
+    }
+  }
+
+  function sfxCardSelect() {
+    // Match3 sfxSwap
+    playTone({ freq: 520, dur: 0.06, type: "triangle", gain: 0.10, slide: 0.8 });
+  }
+
+  function sfxBad() {
+    // Match3 sfxBad
+    playTone({ freq: 180, dur: 0.10, type: "sine", gain: 0.05, slide: 0 });
+  }
+
+  function sfxMove() {
+    // Match3 sfxShuffle
+    void playPianoNotes(["D4", "A4"], {
+      gain: 0.09,
+      hold: 0.04,
+      release: 0.11,
+      spacing: 0.055,
+      type: "sine"
+    });
+  }
+
+  const DEAL_COMBO_NOTES = Object.freeze([
+    "C4", "D4", "E4", "F4", "G4",
+    "A4", "B4", "C5", "B4", "A4"
+  ]);
+
+  const COLLECT_COMBO_NOTES = Object.freeze([
+    "C5", "B4", "A4", "G4", "F4", "E4", "D4",
+    "C4", "B3", "A3", "G3", "F3", "E3"
+  ]);
+
+  function playCardFlightNote(noteId, gain = 0.10) {
+    void playPianoNotes([noteId], {
+      gain,
+      hold: 0.035,
+      release: 0.095,
+      spacing: 0,
+      type: "sine"
+    });
+  }
+
+  function sfxDealStep(index) {
+    const note = DEAL_COMBO_NOTES[index % DEAL_COMBO_NOTES.length];
+    if (note) playCardFlightNote(note, 0.10);
+  }
+
+  function sfxCollectStep(index) {
+    const note = COLLECT_COMBO_NOTES[index % COLLECT_COMBO_NOTES.length];
+    if (note) playCardFlightNote(note, 0.098);
+  }
+
+  function sfxDealReducedMotion() {
+    void playPianoNotes(DEAL_COMBO_NOTES, {
+      gain: 0.10,
+      hold: 0.04,
+      release: 0.10,
+      spacing: 0.06,
+      type: "sine"
+    });
+  }
+
+  function sfxCollectReducedMotion() {
+    void playPianoNotes(COLLECT_COMBO_NOTES, {
+      gain: 0.098,
+      hold: 0.035,
+      release: 0.095,
+      spacing: 0.055,
+      type: "sine"
+    });
   }
 
   function initializeEffects() {
@@ -662,6 +842,7 @@
         if (moveSelectionToColumn(columnIndex)) {
           void completeMove();
         } else {
+          sfxBad();
           setNotice("這裡不能放。");
         }
       });
@@ -731,6 +912,7 @@
         selection.index === cardIndex
       ) {
         selection = null;
+        sfxCardSelect();
         setNotice("已取消選取。");
         render();
         return;
@@ -746,6 +928,7 @@
 
     if (!isMovableRun(columns[columnIndex], cardIndex)) {
       selection = null;
+      sfxBad();
       setNotice("只有同花色、連續由大到小的牌串能一起移動。");
       render();
       return;
@@ -755,6 +938,7 @@
       column: columnIndex,
       index: cardIndex
     };
+    sfxCardSelect();
 
     const length = columns[columnIndex].length - cardIndex;
     setNotice(length > 1 ? `已選取 ${length} 張牌。` : "已選取 1 張牌。");
@@ -786,6 +970,7 @@
     destination.push(...moving);
 
     flipTopCard(selection.column);
+    sfxMove();
     return true;
   }
 
@@ -856,9 +1041,111 @@
     }
   }
 
-  async function animateCollectRun(columnIndex, start) {
-    if (prefersReducedMotion()) return;
+  function centerOfRect(rect) {
+    return {
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2
+    };
+  }
 
+  async function animateExistingCardToTarget(cardElement, targetElement, options = {}) {
+    if (!cardElement || !targetElement || !cardElement.animate) return;
+
+    const sourceRect = cardElement.getBoundingClientRect();
+    const targetRect = targetElement.getBoundingClientRect();
+    const source = centerOfRect(sourceRect);
+    const target = centerOfRect(targetRect);
+    const dx = target.x - source.x;
+    const dy = target.y - source.y;
+    const arc = Number.isFinite(options.arc) ? options.arc : 26;
+    const duration = Number.isFinite(options.duration) ? options.duration : 105;
+
+    cardElement.classList.add("is-flying-card");
+
+    const animation = cardElement.animate(
+      [
+        { transform: "translate3d(0,0,0) scale(1) rotate(0deg)", opacity: 1 },
+        {
+          transform: `translate3d(${(dx * 0.55).toFixed(1)}px, ${(dy * 0.48 - arc).toFixed(1)}px, 0) scale(.76) rotate(-2deg)`,
+          opacity: 1
+        },
+        {
+          transform: `translate3d(${dx.toFixed(1)}px, ${dy.toFixed(1)}px, 0) scale(.32) rotate(2deg)`,
+          opacity: 0.16
+        }
+      ],
+      {
+        duration,
+        easing: "cubic-bezier(.2,.74,.24,1)",
+        fill: "forwards"
+      }
+    );
+
+    await animation.finished.catch(() => undefined);
+  }
+
+  async function animateDealCardToTarget(targetElement, noteIndex) {
+    const sourceElement = stockButton.querySelector(".stock-icon") || stockButton;
+    if (!sourceElement || !targetElement) {
+      sfxDealStep(noteIndex);
+      return;
+    }
+
+    const sourceRect = sourceElement.getBoundingClientRect();
+    const targetRect = targetElement.getBoundingClientRect();
+    const source = centerOfRect(sourceRect);
+    const target = centerOfRect(targetRect);
+    const width = Math.max(18, targetRect.width);
+    const height = Math.max(26, targetRect.height);
+
+    const ghost = document.createElement("div");
+    ghost.className = "spider-flying-card spider-flying-card--back";
+    ghost.setAttribute("aria-hidden", "true");
+    ghost.style.width = `${width}px`;
+    ghost.style.height = `${height}px`;
+    ghost.style.left = `${source.x - width / 2}px`;
+    ghost.style.top = `${source.y - height / 2}px`;
+    document.body.appendChild(ghost);
+
+    targetElement.classList.add("deal-card-pending");
+
+    const dx = target.x - source.x;
+    const dy = target.y - source.y;
+    const arc = 24 + Math.min(34, Math.abs(dx) * 0.035);
+
+    try {
+      if (ghost.animate) {
+        const animation = ghost.animate(
+          [
+            { transform: "translate3d(0,0,0) scale(.82) rotate(-3deg)", opacity: 0.96 },
+            {
+              transform: `translate3d(${(dx * 0.52).toFixed(1)}px, ${(dy * 0.46 - arc).toFixed(1)}px, 0) scale(.94) rotate(2deg)`,
+              opacity: 1
+            },
+            {
+              transform: `translate3d(${dx.toFixed(1)}px, ${dy.toFixed(1)}px, 0) scale(1) rotate(0deg)`,
+              opacity: 1
+            }
+          ],
+          {
+            duration: 118,
+            easing: "cubic-bezier(.18,.72,.22,1)",
+            fill: "forwards"
+          }
+        );
+        await animation.finished.catch(() => undefined);
+      }
+    } finally {
+      ghost.remove();
+      targetElement.classList.remove("deal-card-pending");
+      targetElement.classList.add("deal-card-arrived");
+      sfxDealStep(noteIndex);
+    }
+
+    await sleep(18);
+  }
+
+  async function animateCollectRun(columnIndex, start) {
     const columnElement = tableauElement.querySelector(
       `.column[data-column-index="${columnIndex}"]`
     );
@@ -873,34 +1160,19 @@
 
     if (cards.length !== 13) return;
 
-    const targetRect = target.getBoundingClientRect();
-    const targetX = targetRect.left + targetRect.width / 2;
-    const targetY = targetRect.top + targetRect.height / 2;
+    if (prefersReducedMotion()) {
+      sfxCollectReducedMotion();
+      return;
+    }
 
-    const animations = cards.map((card, index) => {
-      const rect = card.getBoundingClientRect();
-      const cardX = rect.left + rect.width / 2;
-      const cardY = rect.top + rect.height / 2;
-      const dx = targetX - cardX;
-      const dy = targetY - cardY;
-
-      const animation = card.animate(
-        [
-          { transform: "translate(0, 0) scale(1)", opacity: 1 },
-          { transform: `translate(${dx}px, ${dy}px) scale(.34)`, opacity: 0.15 }
-        ],
-        {
-          duration: 330,
-          delay: index * 18,
-          easing: "cubic-bezier(.2,.75,.25,1)",
-          fill: "forwards"
-        }
-      );
-
-      return animation.finished.catch(() => undefined);
-    });
-
-    await Promise.all(animations);
+    for (let index = 0; index < cards.length; index += 1) {
+      await animateExistingCardToTarget(cards[index], target, {
+        duration: 92,
+        arc: 20 + index * 0.7
+      });
+      sfxCollectStep(index);
+      await sleep(12);
+    }
   }
 
   async function burstCompletedSlot(index) {
@@ -965,25 +1237,60 @@
     if (!stockDeck || stockDeck.snapshot().drawPile.length < 10) return;
 
     if (columns.some(column => column.length === 0)) {
+      sfxBad();
       setNotice("還有空白欄位，先放一張牌進去才能發牌。");
       return;
     }
 
     busy = true;
     selection = null;
+    render();
 
     const dealtCards = stockDeck.draw(10);
-    dealtCards.forEach((card, columnIndex) => {
+    dealtCards.forEach(card => {
       card.faceUp = true;
-      columns[columnIndex].push(card);
     });
+
+    if (prefersReducedMotion()) {
+      dealtCards.forEach((card, columnIndex) => {
+        columns[columnIndex].push(card);
+      });
+      render();
+      sfxDealReducedMotion();
+    } else {
+      try {
+        for (let columnIndex = 0; columnIndex < dealtCards.length; columnIndex += 1) {
+          const card = dealtCards[columnIndex];
+          columns[columnIndex].push(card);
+          render();
+
+          const columnElement = tableauElement.querySelector(
+            `.column[data-column-index="${columnIndex}"]`
+          );
+          const cards = columnElement
+            ? Array.from(columnElement.querySelectorAll(".card"))
+            : [];
+          const target = cards[cards.length - 1] || null;
+
+          await animateDealCardToTarget(target, columnIndex);
+        }
+      } catch (error) {
+        console.warn("[Spider] 發牌動畫中斷，已直接補齊剩餘牌。", error);
+        dealtCards.forEach((card, columnIndex) => {
+          if (!columns[columnIndex].includes(card)) {
+            columns[columnIndex].push(card);
+          }
+        });
+        render();
+      }
+    }
 
     moveCount += 1;
     render();
     saveActiveGame();
 
     await clearCompletedRunsAnimated();
-    setNotice("已發一排牌。");
+    setNotice("已補一排牌。");
     render();
     saveActiveGame();
     await checkWin();
@@ -1374,6 +1681,57 @@
     }
   }
 
+  function spawnClassicFireworks() {
+    const palettes = [
+      ["#ff5f5f", "#ffd96b", "#fff4c6"],
+      ["#6fd7ff", "#8ea7ff", "#f1f5ff"],
+      ["#ff8bd1", "#d9a6ff", "#fff2fb"],
+      ["#7de78f", "#e8ff8a", "#f7ffe9"]
+    ];
+
+    const bursts = 3;
+    for (let burstIndex = 0; burstIndex < bursts; burstIndex += 1) {
+      const centerX = randomBetween(20, 80);
+      const centerY = randomBetween(20, 49);
+      const delay = 300 + burstIndex * 300 + randomBetween(0, 45);
+      const palette = palettes[Math.floor(randomBetween(0, palettes.length))];
+
+      const rocket = addVictoryNode("vfx-classic-rocket");
+      if (rocket) {
+        rocket.style.left = `${centerX.toFixed(1)}%`;
+        rocket.style.setProperty("--vfx-rocket-y", `${(-(72 - centerY)).toFixed(1)}vh`);
+        rocket.style.setProperty("--vfx-delay", `${Math.max(0, Math.round(delay - 280))}ms`);
+      }
+
+      const particleCount = 34;
+      for (let i = 0; i < particleCount; i += 1) {
+        const node = addVictoryNode("vfx-classic-firework");
+        if (!node) continue;
+
+        const angle = (Math.PI * 2 * i) / particleCount + randomBetween(-0.075, 0.075);
+        const distance = randomBetween(72, 178);
+        const dx = Math.cos(angle) * distance;
+        const dy = Math.sin(angle) * distance;
+        const gravity = randomBetween(48, 92);
+        const midX = dx * 0.68;
+        const midY = dy * 0.58 + gravity * 0.12;
+        const endY = dy + gravity;
+        const color = palette[i % palette.length];
+
+        node.style.left = `${centerX.toFixed(1)}%`;
+        node.style.top = `${centerY.toFixed(1)}%`;
+        node.style.setProperty("--vfx-x-mid", `${midX.toFixed(1)}px`);
+        node.style.setProperty("--vfx-y-mid", `${midY.toFixed(1)}px`);
+        node.style.setProperty("--vfx-x", `${dx.toFixed(1)}px`);
+        node.style.setProperty("--vfx-y", `${endY.toFixed(1)}px`);
+        node.style.setProperty("--vfx-color", color);
+        node.style.setProperty("--vfx-size", `${randomBetween(2.2, 4.3).toFixed(1)}px`);
+        node.style.setProperty("--vfx-delay", `${Math.round(delay + randomBetween(-24, 32))}ms`);
+        node.style.setProperty("--vfx-duration", `${Math.round(randomBetween(620, 820))}ms`);
+      }
+    }
+  }
+
   function activateVictoryEffects(selectedEffects) {
     clearVictoryParticles();
 
@@ -1388,6 +1746,7 @@
     if (selectedEffects.includes("flash-shake")) spawnScreenFlash();
     if (selectedEffects.includes("card-rain")) spawnCardRain();
     if (selectedEffects.includes("victory-beam")) spawnVictoryBeams();
+    if (selectedEffects.includes("classic-fireworks")) spawnClassicFireworks();
   }
 
   function flashCompletedArea() {

@@ -855,6 +855,51 @@ h1 {
 
 
 
+/* 發牌飛牌：牌背從發牌按鈕飛到各欄，落地後翻成正面。 */
+.spider-flying-card {
+  position: fixed;
+  z-index: 2200;
+  pointer-events: none;
+  border: 1px solid #625b53;
+  border-radius: 6px;
+  box-shadow: 0 7px 18px rgba(0,0,0,.22);
+  transform-origin: center center;
+  will-change: transform, opacity;
+}
+
+.spider-flying-card--back {
+  background:
+    repeating-linear-gradient(
+      45deg,
+      #6f6962 0,
+      #6f6962 6px,
+      #817a72 6px,
+      #817a72 12px
+    );
+}
+
+.card.deal-card-pending {
+  opacity: 0;
+}
+
+.card.deal-card-arrived {
+  transform-origin: center center;
+  animation: spider-deal-card-arrive 150ms cubic-bezier(.2,.72,.22,1) both;
+}
+
+.card.is-flying-card {
+  z-index: 50;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+@keyframes spider-deal-card-arrive {
+  0% { opacity: 0; transform: rotateY(82deg) scale(.92); }
+  62% { opacity: 1; transform: rotateY(-7deg) scale(1.03); }
+  100% { opacity: 1; transform: rotateY(0deg) scale(1); }
+}
+
+
 /* Spider v7 local victory FX pool.
    之後可再拆回慢慢軍火庫；目前先留在遊戲本體。 */
 .victory-particles {
@@ -905,7 +950,9 @@ h1 {
 .vfx-screen-flash,
 .vfx-card,
 .vfx-beam,
-.vfx-gold-drop {
+.vfx-gold-drop,
+.vfx-classic-rocket,
+.vfx-classic-firework {
   position: absolute;
   display: block;
   pointer-events: none;
@@ -1011,6 +1058,50 @@ h1 {
   filter: blur(1.5px);
   animation: vfx-victory-beam 1120ms ease-out var(--vfx-delay, 0ms) forwards;
   transform: translate(-50%, -100%) rotate(var(--vfx-angle, 0deg)) scaleY(.2);
+}
+
+/* Classic Windows-style Fireworks：只參考老派煙火節奏，粒子本體為本專案重寫。 */
+.vfx-classic-rocket {
+  bottom: 7%;
+  width: 3px;
+  height: 11px;
+  border-radius: 50% 50% 30% 30%;
+  opacity: 0;
+  background: #fff6c8;
+  box-shadow: 0 0 7px #fff0a0, 0 10px 12px rgba(255,218,106,.58);
+  animation: vfx-classic-rocket 430ms cubic-bezier(.28,.62,.2,1) var(--vfx-delay, 0ms) forwards;
+}
+
+.vfx-classic-firework {
+  width: var(--vfx-size, 3px);
+  height: var(--vfx-size, 3px);
+  margin-left: calc(var(--vfx-size, 3px) * -.5);
+  margin-top: calc(var(--vfx-size, 3px) * -.5);
+  border-radius: 50%;
+  opacity: 0;
+  background: var(--vfx-color, #fff);
+  box-shadow: 0 0 7px var(--vfx-color, #fff);
+  animation: vfx-classic-firework var(--vfx-duration, 1060ms) cubic-bezier(.12,.52,.32,1) var(--vfx-delay, 0ms) forwards;
+}
+
+@keyframes vfx-classic-rocket {
+  0% { opacity: 0; transform: translate3d(0,0,0) scale(.72); }
+  10% { opacity: 1; }
+  78% { opacity: .96; }
+  100% { opacity: 0; transform: translate3d(0, var(--vfx-rocket-y, -48vh), 0) scale(.88); }
+}
+
+@keyframes vfx-classic-firework {
+  0% { opacity: 0; transform: translate3d(0,0,0) scale(.3); }
+  7% { opacity: 1; }
+  52% {
+    opacity: 1;
+    transform: translate3d(var(--vfx-x-mid, 0px), var(--vfx-y-mid, 0px), 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--vfx-x, 0px), var(--vfx-y, 80px), 0) scale(.42);
+  }
 }
 
 @keyframes vfx-confetti-burst {
@@ -1146,8 +1237,15 @@ h1 {
   .vfx-shockwave,
   .vfx-screen-flash,
   .vfx-card,
-  .vfx-beam {
+  .vfx-beam,
+  .vfx-classic-rocket,
+  .vfx-classic-firework,
+  .spider-flying-card {
     display: none;
+  }
+
+  .card.deal-card-arrived {
+    animation: none !important;
   }
 
   .game-shell.victory-shake {
