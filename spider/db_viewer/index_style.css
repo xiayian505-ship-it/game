@@ -1,0 +1,26 @@
+/*
+  Spider DB Viewer｜宿主視覺
+  延續目前連環新接龍的低彩度米灰色系。
+*/
+
+@media (hover: hover) and (pointer: fine) {
+  .refresh-button:hover,
+  .more-button:hover {
+    background: #fffdf8;
+  }
+
+  .db-tabs [data-view-target]:hover {
+    color: var(--ink);
+  }
+
+  .record-row:hover {
+    background: #faf7f0;
+  }
+}
+
+.refresh-button:focus-visible,
+.more-button:focus-visible,
+.db-tabs [data-view-target]:focus-visible {
+  outline: 2px solid #a99a7e;
+  outline-offset: 3px;
+}

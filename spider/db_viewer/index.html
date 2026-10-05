@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>慢 慢 | Spider DB</title>
+
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/ui/tabs/tabs.css">
+  <link rel="stylesheet" href="index.css">
+  <link rel="stylesheet" href="index_style.css">
+</head>
+<body>
+  <main class="db-shell">
+    <header class="db-header">
+      <h1>慢 慢 | Spider DB</h1>
+      <button id="refreshButton" class="refresh-button" type="button">重新整理</button>
+    </header>
+
+    <div id="dbTabs" class="db-tabs-shell" data-slowly-tabs>
+      <nav class="db-tabs" role="tablist" aria-label="難度">
+        <button type="button" role="tab" data-view-target="easy" aria-selected="true">初階</button>
+        <button type="button" role="tab" data-view-target="medium" aria-selected="false">中階</button>
+        <button type="button" role="tab" data-view-target="hard" aria-selected="false">高階</button>
+      </nav>
+
+      <section class="db-panel" data-view-panel="easy">
+        <div class="panel-meta">
+          <span>共 <strong id="easyCount">—</strong> 局</span>
+          <span id="easyStatus" class="status-text" aria-live="polite"></span>
+        </div>
+        <div id="easyList" class="record-list"></div>
+        <button id="easyMore" class="more-button" type="button" hidden>載入更多</button>
+      </section>
+
+      <section class="db-panel" data-view-panel="medium" hidden>
+        <div class="panel-meta">
+          <span>共 <strong id="mediumCount">—</strong> 局</span>
+          <span id="mediumStatus" class="status-text" aria-live="polite"></span>
+        </div>
+        <div id="mediumList" class="record-list"></div>
+        <button id="mediumMore" class="more-button" type="button" hidden>載入更多</button>
+      </section>
+
+      <section class="db-panel" data-view-panel="hard" hidden>
+        <div class="panel-meta">
+          <span>共 <strong id="hardCount">—</strong> 局</span>
+          <span id="hardStatus" class="status-text" aria-live="polite"></span>
+        </div>
+        <div id="hardList" class="record-list"></div>
+        <button id="hardMore" class="more-button" type="button" hidden>載入更多</button>
+      </section>
+    </div>
+
+    <footer class="hint">慢 慢 | Stillness by Slowly.com</footer>
+  </main>
+
+  <script src="https://lib.stillnessbyslowly.com/ui/tabs/tabs.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.min.js"></script>
+  <script src="index.js"></script>
+  <script src="index_style.js"></script>
+</body>
+</html>
