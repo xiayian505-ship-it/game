@@ -1446,16 +1446,30 @@
     }
   }
 
-  function clearVictoryParticles() {
-    if (victoryParticles) victoryParticles.innerHTML = "";
-    gameShell.classList.remove("victory-shake");
-    VICTORY_EFFECTS.forEach(effectName => {
-      bombOverlay.classList.remove(`fx-${effectName}`);
-    });
+  const VICTORY_CARD_RAIN_ITEMS = Object.freeze(["♠", "A♠", "K♠", "Q♠", "J♠", "10♠"]);
+
+  function clearVictoryEffect(api, target) {
+    if (!api?.clear || !target) return;
+    try {
+      api.clear(target);
+    } catch (error) {
+      console.warn("[Spider] 勝利特效清理失敗：", error);
+    }
   }
 
-  function randomBetween(min, max) {
-    return min + Math.random() * (max - min);
+  function clearVictoryParticles() {
+    clearVictoryEffect(window.SlowlyConfettiBurst, victoryParticles);
+    clearVictoryEffect(window.SlowlyGoldRain, victoryParticles);
+    clearVictoryEffect(window.SlowlyStarExplosion, victoryParticles);
+    clearVictoryEffect(window.SlowlyShockwave, victoryParticles);
+    clearVictoryEffect(window.SlowlyFlashShake, victoryParticles);
+    clearVictoryEffect(window.SlowlyJackpotPop, bombPlus);
+    clearVictoryEffect(window.SlowlyCardRain, victoryParticles);
+    clearVictoryEffect(window.SlowlyVictoryBeam, victoryParticles);
+    clearVictoryEffect(window.SlowlyClassicFireworks, victoryParticles);
+
+    // 軍火庫未載入或播放途中被中止時，仍確保勝利層乾淨。
+    if (victoryParticles) victoryParticles.innerHTML = "";
   }
 
   function pickVictoryEffects() {
@@ -1515,181 +1529,44 @@
     return selected;
   }
 
-  function addVictoryNode(className, text = "") {
-    if (!victoryParticles) return null;
+  function playVictoryEffect(api, target, options) {
+    if (!api?.play || !target) return;
 
-    const node = document.createElement("span");
-    node.className = className;
-    node.textContent = text;
-    victoryParticles.appendChild(node);
-    return node;
-  }
-
-  function spawnConfettiBurst() {
-    const count = 30;
-
-    for (let i = 0; i < count; i += 1) {
-      const node = addVictoryNode("vfx-confetti");
-      if (!node) continue;
-
-      const angle = randomBetween(-Math.PI * 0.94, -Math.PI * 0.06);
-      const distance = randomBetween(150, 440);
-      const x = Math.cos(angle) * distance;
-      const y = Math.sin(angle) * distance + randomBetween(-10, 95);
-
-      node.dataset.tone = String(i % 5);
-      node.style.setProperty("--vfx-x", `${x.toFixed(1)}px`);
-      node.style.setProperty("--vfx-y", `${y.toFixed(1)}px`);
-      node.style.setProperty("--vfx-rot", `${Math.round(randomBetween(220, 920))}deg`);
-      node.style.setProperty("--vfx-size", `${randomBetween(6, 13).toFixed(1)}px`);
-      node.style.setProperty("--vfx-delay", `${Math.round(randomBetween(0, 160))}ms`);
-      node.style.setProperty("--vfx-duration", `${Math.round(randomBetween(900, 1450))}ms`);
-    }
-  }
-
-  function spawnGoldRain() {
-    const count = 26;
-
-    for (let i = 0; i < count; i += 1) {
-      const node = addVictoryNode("vfx-gold-drop");
-      if (!node) continue;
-
-      node.style.left = `${randomBetween(2, 98).toFixed(1)}%`;
-      node.style.setProperty("--vfx-drift", `${randomBetween(-70, 70).toFixed(1)}px`);
-      node.style.setProperty("--vfx-size", `${randomBetween(3.5, 8.5).toFixed(1)}px`);
-      node.style.setProperty("--vfx-delay", `${Math.round(randomBetween(0, 420))}ms`);
-      node.style.setProperty("--vfx-duration", `${Math.round(randomBetween(900, 1550))}ms`);
-    }
-  }
-
-  function spawnStarExplosion() {
-    const glyphs = ["★", "✦", "✧", "✶"];
-    const count = 20;
-
-    for (let i = 0; i < count; i += 1) {
-      const node = addVictoryNode("vfx-star", glyphs[i % glyphs.length]);
-      if (!node) continue;
-
-      const angle = (Math.PI * 2 * i) / count + randomBetween(-0.2, 0.2);
-      const distance = randomBetween(125, 360);
-
-      node.style.setProperty("--vfx-x", `${(Math.cos(angle) * distance).toFixed(1)}px`);
-      node.style.setProperty("--vfx-y", `${(Math.sin(angle) * distance).toFixed(1)}px`);
-      node.style.setProperty("--vfx-size", `${randomBetween(12, 27).toFixed(1)}px`);
-      node.style.setProperty("--vfx-delay", `${Math.round(randomBetween(0, 130))}ms`);
-      node.style.setProperty("--vfx-duration", `${Math.round(randomBetween(800, 1280))}ms`);
-    }
-  }
-
-  function spawnShockwaves() {
-    for (let i = 0; i < 3; i += 1) {
-      const node = addVictoryNode("vfx-shockwave");
-      if (!node) continue;
-      node.style.setProperty("--vfx-delay", `${i * 135}ms`);
-    }
-  }
-
-  function spawnScreenFlash() {
-    addVictoryNode("vfx-screen-flash");
-    gameShell.classList.remove("victory-shake");
-    void gameShell.offsetWidth;
-    gameShell.classList.add("victory-shake");
-  }
-
-  function spawnCardRain() {
-    const cardFaces = ["♠", "A♠", "K♠", "Q♠", "J♠", "10♠"];
-    const count = 18;
-
-    for (let i = 0; i < count; i += 1) {
-      const node = addVictoryNode("vfx-card", cardFaces[i % cardFaces.length]);
-      if (!node) continue;
-
-      node.style.left = `${randomBetween(2, 96).toFixed(1)}%`;
-      node.style.setProperty("--vfx-drift", `${randomBetween(-90, 90).toFixed(1)}px`);
-      node.style.setProperty("--vfx-rot", `${Math.round(randomBetween(-260, 260))}deg`);
-      node.style.setProperty("--vfx-delay", `${Math.round(randomBetween(0, 520))}ms`);
-      node.style.setProperty("--vfx-duration", `${Math.round(randomBetween(1150, 1850))}ms`);
-    }
-  }
-
-  function spawnVictoryBeams() {
-    const count = 7;
-
-    for (let i = 0; i < count; i += 1) {
-      const node = addVictoryNode("vfx-beam");
-      if (!node) continue;
-
-      node.style.setProperty("--vfx-angle", `${-62 + i * 21 + randomBetween(-5, 5)}deg`);
-      node.style.setProperty("--vfx-delay", `${Math.round(i * 42 + randomBetween(0, 70))}ms`);
-    }
-  }
-
-  function spawnClassicFireworks() {
-    const palettes = [
-      ["#ff5f5f", "#ffd96b", "#fff4c6"],
-      ["#6fd7ff", "#8ea7ff", "#f1f5ff"],
-      ["#ff8bd1", "#d9a6ff", "#fff2fb"],
-      ["#7de78f", "#e8ff8a", "#f7ffe9"]
-    ];
-
-    const bursts = 3;
-    for (let burstIndex = 0; burstIndex < bursts; burstIndex += 1) {
-      const centerX = randomBetween(20, 80);
-      const centerY = randomBetween(20, 49);
-      const delay = 300 + burstIndex * 300 + randomBetween(0, 45);
-      const palette = palettes[Math.floor(randomBetween(0, palettes.length))];
-
-      const rocket = addVictoryNode("vfx-classic-rocket");
-      if (rocket) {
-        rocket.style.left = `${centerX.toFixed(1)}%`;
-        rocket.style.setProperty("--vfx-rocket-y", `${(-(72 - centerY)).toFixed(1)}vh`);
-        rocket.style.setProperty("--vfx-delay", `${Math.max(0, Math.round(delay - 280))}ms`);
-      }
-
-      const particleCount = 34;
-      for (let i = 0; i < particleCount; i += 1) {
-        const node = addVictoryNode("vfx-classic-firework");
-        if (!node) continue;
-
-        const angle = (Math.PI * 2 * i) / particleCount + randomBetween(-0.075, 0.075);
-        const distance = randomBetween(72, 178);
-        const dx = Math.cos(angle) * distance;
-        const dy = Math.sin(angle) * distance;
-        const gravity = randomBetween(48, 92);
-        const midX = dx * 0.68;
-        const midY = dy * 0.58 + gravity * 0.12;
-        const endY = dy + gravity;
-        const color = palette[i % palette.length];
-
-        node.style.left = `${centerX.toFixed(1)}%`;
-        node.style.top = `${centerY.toFixed(1)}%`;
-        node.style.setProperty("--vfx-x-mid", `${midX.toFixed(1)}px`);
-        node.style.setProperty("--vfx-y-mid", `${midY.toFixed(1)}px`);
-        node.style.setProperty("--vfx-x", `${dx.toFixed(1)}px`);
-        node.style.setProperty("--vfx-y", `${endY.toFixed(1)}px`);
-        node.style.setProperty("--vfx-color", color);
-        node.style.setProperty("--vfx-size", `${randomBetween(2.2, 4.3).toFixed(1)}px`);
-        node.style.setProperty("--vfx-delay", `${Math.round(delay + randomBetween(-24, 32))}ms`);
-        node.style.setProperty("--vfx-duration", `${Math.round(randomBetween(620, 820))}ms`);
-      }
-    }
+    void api.play(target, options).catch(error => {
+      console.warn("[Spider] 勝利特效播放失敗：", error);
+    });
   }
 
   function activateVictoryEffects(selectedEffects) {
     clearVictoryParticles();
 
-    selectedEffects.forEach(effectName => {
-      bombOverlay.classList.add(`fx-${effectName}`);
-    });
-
-    if (selectedEffects.includes("confetti")) spawnConfettiBurst();
-    if (selectedEffects.includes("gold-rain")) spawnGoldRain();
-    if (selectedEffects.includes("stars")) spawnStarExplosion();
-    if (selectedEffects.includes("shockwave")) spawnShockwaves();
-    if (selectedEffects.includes("flash-shake")) spawnScreenFlash();
-    if (selectedEffects.includes("card-rain")) spawnCardRain();
-    if (selectedEffects.includes("victory-beam")) spawnVictoryBeams();
-    if (selectedEffects.includes("classic-fireworks")) spawnClassicFireworks();
+    if (selectedEffects.includes("confetti")) {
+      playVictoryEffect(window.SlowlyConfettiBurst, victoryParticles);
+    }
+    if (selectedEffects.includes("gold-rain")) {
+      playVictoryEffect(window.SlowlyGoldRain, victoryParticles);
+    }
+    if (selectedEffects.includes("stars")) {
+      playVictoryEffect(window.SlowlyStarExplosion, victoryParticles);
+    }
+    if (selectedEffects.includes("shockwave")) {
+      playVictoryEffect(window.SlowlyShockwave, victoryParticles);
+    }
+    if (selectedEffects.includes("flash-shake")) {
+      playVictoryEffect(window.SlowlyFlashShake, victoryParticles, { shakeTarget: gameShell });
+    }
+    if (selectedEffects.includes("jackpot-pop")) {
+      playVictoryEffect(window.SlowlyJackpotPop, bombPlus);
+    }
+    if (selectedEffects.includes("card-rain")) {
+      playVictoryEffect(window.SlowlyCardRain, victoryParticles, { items: VICTORY_CARD_RAIN_ITEMS });
+    }
+    if (selectedEffects.includes("victory-beam")) {
+      playVictoryEffect(window.SlowlyVictoryBeam, victoryParticles);
+    }
+    if (selectedEffects.includes("classic-fireworks")) {
+      playVictoryEffect(window.SlowlyClassicFireworks, victoryParticles);
+    }
   }
 
   function flashCompletedArea() {
