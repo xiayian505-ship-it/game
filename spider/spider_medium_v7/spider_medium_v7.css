@@ -613,27 +613,6 @@ h1 {
   background: rgba(255,255,255,.28);
 }
 
-.victory-burst {
-  position: absolute;
-  width: min(88vw, 520px);
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: repeating-conic-gradient(from 0deg, rgba(255,238,174,.95) 0deg 9deg, rgba(255,255,255,0) 9deg 18deg);
-  filter: blur(1px);
-  opacity: .88;
-  transform: scale(.25) rotate(0deg);
-}
-
-.bom-overlay.is-active .victory-burst {
-  animation: victory-burst-spin .95s cubic-bezier(.18,.7,.15,1) forwards;
-}
-
-.victory-burst-secondary {
-  width: min(96vw, 620px);
-  opacity: .55;
-  background: repeating-conic-gradient(from 8deg, rgba(255,255,255,.92) 0deg 5deg, rgba(255,255,255,0) 5deg 14deg);
-}
-
 .bom-text {
   position: relative;
   z-index: 1;
@@ -659,12 +638,6 @@ h1 {
   margin-top: 10px;
   color: rgba(255,247,225,.92);
   font-size: .96rem;
-}
-
-@keyframes victory-burst-spin {
-  0% { transform: scale(.15) rotate(-18deg); opacity: 0; }
-  45% { opacity: .95; }
-  100% { transform: scale(1.15) rotate(22deg); opacity: 0; }
 }
 
 .message {
@@ -900,8 +873,8 @@ h1 {
 }
 
 
-/* Spider v7 local victory FX pool.
-   之後可再拆回慢慢軍火庫；目前先留在遊戲本體。 */
+/* Spider v7 victory host layer.
+   9 種勝利特效已改由慢慢軍火庫 Celebration FX 提供。 */
 .victory-particles {
   position: absolute;
   inset: 0;
@@ -914,289 +887,8 @@ h1 {
   z-index: 4;
 }
 
-/* 既有放射背景改成 victory-beam 被抽中時才出現。 */
-.bom-overlay.is-active .victory-burst {
-  opacity: 0;
-  animation: none;
-}
-
-.bom-overlay.fx-victory-beam.is-active .victory-burst {
-  opacity: .88;
-  animation: victory-burst-spin .95s cubic-bezier(.18,.7,.15,1) forwards;
-}
-
-.bom-overlay.fx-victory-beam.is-active .victory-burst-secondary {
-  opacity: .55;
-}
-
 .completed-area.victory-flash {
   animation: completed-area-victory .85s ease-out 1;
-}
-
-/* +1 / CLEAR 只有抽到 jackpot-pop 才做大幅彈跳。 */
-.bom-overlay.is-active .bom-plus {
-  opacity: 1;
-  transform: none;
-  animation: none;
-}
-
-.bom-overlay.fx-jackpot-pop.is-active .bom-plus {
-  animation: victory-plus-pop .78s cubic-bezier(.18,.9,.2,1.2) .12s both;
-}
-
-.vfx-confetti,
-.vfx-star,
-.vfx-shockwave,
-.vfx-screen-flash,
-.vfx-card,
-.vfx-beam,
-.vfx-gold-drop,
-.vfx-classic-rocket,
-.vfx-classic-firework {
-  position: absolute;
-  display: block;
-  pointer-events: none;
-  will-change: transform, opacity;
-}
-
-/* Confetti Burst */
-.vfx-confetti {
-  left: 50%;
-  top: 52%;
-  width: calc(var(--vfx-size, 8px) * .55);
-  height: var(--vfx-size, 8px);
-  border-radius: 2px;
-  opacity: 0;
-  background: #ffe58f;
-  box-shadow: 0 0 8px rgba(255,226,135,.45);
-  animation: vfx-confetti-burst var(--vfx-duration, 1200ms) cubic-bezier(.15,.72,.18,1) var(--vfx-delay, 0ms) forwards;
-}
-
-.vfx-confetti[data-tone="1"] { background: #fff8d8; }
-.vfx-confetti[data-tone="2"] { background: #e8b94e; }
-.vfx-confetti[data-tone="3"] { background: #f5d9a0; }
-.vfx-confetti[data-tone="4"] { background: #fff; }
-
-/* Gold Particle Rain */
-.vfx-gold-drop {
-  top: -10%;
-  width: var(--vfx-size, 6px);
-  height: var(--vfx-size, 6px);
-  border-radius: 50%;
-  opacity: 0;
-  background: #ffd966;
-  box-shadow: 0 0 11px rgba(255,215,95,.9);
-  animation: vfx-gold-rain var(--vfx-duration, 1250ms) linear var(--vfx-delay, 0ms) forwards;
-}
-
-/* Star Explosion */
-.vfx-star {
-  left: 50%;
-  top: 48%;
-  color: #fff0ad;
-  font-size: var(--vfx-size, 18px);
-  line-height: 1;
-  opacity: 0;
-  text-shadow: 0 0 12px rgba(255,226,126,.95);
-  animation: vfx-star-explosion var(--vfx-duration, 1000ms) cubic-bezier(.16,.78,.2,1) var(--vfx-delay, 0ms) forwards;
-}
-
-/* Shockwave Ring */
-.vfx-shockwave {
-  left: 50%;
-  top: 50%;
-  width: 110px;
-  aspect-ratio: 1;
-  border: 3px solid rgba(255,232,157,.94);
-  border-radius: 50%;
-  opacity: 0;
-  transform: translate(-50%, -50%) scale(.25);
-  box-shadow: 0 0 22px rgba(255,221,115,.48), inset 0 0 14px rgba(255,255,255,.35);
-  animation: vfx-shockwave 920ms cubic-bezier(.12,.7,.2,1) var(--vfx-delay, 0ms) forwards;
-}
-
-/* Screen Flash + Shake */
-.vfx-screen-flash {
-  inset: 0;
-  z-index: 6;
-  opacity: 0;
-  background: radial-gradient(circle at center, rgba(255,255,255,.98) 0%, rgba(255,235,169,.76) 24%, rgba(255,255,255,0) 68%);
-  animation: vfx-screen-flash 520ms ease-out forwards;
-}
-
-.game-shell.victory-shake {
-  animation: vfx-screen-shake 470ms cubic-bezier(.36,.07,.19,.97) both;
-}
-
-/* Card Rain */
-.vfx-card {
-  top: -18%;
-  min-width: 28px;
-  padding: 5px 4px;
-  border: 1px solid rgba(83,65,40,.26);
-  border-radius: 5px;
-  background: #fffdf8;
-  color: #29251f;
-  font-weight: 800;
-  font-size: 12px;
-  line-height: 1.1;
-  text-align: center;
-  box-shadow: 0 5px 14px rgba(0,0,0,.16);
-  opacity: 0;
-  animation: vfx-card-rain var(--vfx-duration, 1500ms) cubic-bezier(.2,.55,.25,1) var(--vfx-delay, 0ms) forwards;
-}
-
-/* Victory Beam */
-.vfx-beam {
-  left: 50%;
-  top: 50%;
-  width: 34px;
-  height: 82vmax;
-  transform-origin: 50% 100%;
-  opacity: 0;
-  background: linear-gradient(to top, rgba(255,231,150,0), rgba(255,231,150,.7) 35%, rgba(255,255,255,.92) 56%, rgba(255,231,150,0));
-  filter: blur(1.5px);
-  animation: vfx-victory-beam 1120ms ease-out var(--vfx-delay, 0ms) forwards;
-  transform: translate(-50%, -100%) rotate(var(--vfx-angle, 0deg)) scaleY(.2);
-}
-
-/* Classic Windows-style Fireworks：只參考老派煙火節奏，粒子本體為本專案重寫。 */
-.vfx-classic-rocket {
-  bottom: 7%;
-  width: 3px;
-  height: 11px;
-  border-radius: 50% 50% 30% 30%;
-  opacity: 0;
-  background: #fff6c8;
-  box-shadow: 0 0 7px #fff0a0, 0 10px 12px rgba(255,218,106,.58);
-  animation: vfx-classic-rocket 430ms cubic-bezier(.28,.62,.2,1) var(--vfx-delay, 0ms) forwards;
-}
-
-.vfx-classic-firework {
-  width: var(--vfx-size, 3px);
-  height: var(--vfx-size, 3px);
-  margin-left: calc(var(--vfx-size, 3px) * -.5);
-  margin-top: calc(var(--vfx-size, 3px) * -.5);
-  border-radius: 50%;
-  opacity: 0;
-  background: var(--vfx-color, #fff);
-  box-shadow: 0 0 7px var(--vfx-color, #fff);
-  animation: vfx-classic-firework var(--vfx-duration, 1060ms) cubic-bezier(.12,.52,.32,1) var(--vfx-delay, 0ms) forwards;
-}
-
-@keyframes vfx-classic-rocket {
-  0% { opacity: 0; transform: translate3d(0,0,0) scale(.72); }
-  10% { opacity: 1; }
-  78% { opacity: .96; }
-  100% { opacity: 0; transform: translate3d(0, var(--vfx-rocket-y, -48vh), 0) scale(.88); }
-}
-
-@keyframes vfx-classic-firework {
-  0% { opacity: 0; transform: translate3d(0,0,0) scale(.3); }
-  7% { opacity: 1; }
-  52% {
-    opacity: 1;
-    transform: translate3d(var(--vfx-x-mid, 0px), var(--vfx-y-mid, 0px), 0) scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: translate3d(var(--vfx-x, 0px), var(--vfx-y, 80px), 0) scale(.42);
-  }
-}
-
-@keyframes vfx-confetti-burst {
-  0% {
-    opacity: 0;
-    transform: translate(-50%, -50%) rotate(0deg) scale(.45);
-  }
-  12% { opacity: 1; }
-  72% { opacity: 1; }
-  100% {
-    opacity: 0;
-    transform: translate(calc(-50% + var(--vfx-x, 0px)), calc(-50% + var(--vfx-y, -180px))) rotate(var(--vfx-rot, 540deg)) scale(1);
-  }
-}
-
-@keyframes vfx-gold-rain {
-  0% {
-    opacity: 0;
-    transform: translate3d(0, -10vh, 0) scale(.6);
-  }
-  14% { opacity: 1; }
-  75% { opacity: .95; }
-  100% {
-    opacity: 0;
-    transform: translate3d(var(--vfx-drift, 0px), 116vh, 0) scale(1.2);
-  }
-}
-
-@keyframes vfx-star-explosion {
-  0% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(.25) rotate(0deg);
-  }
-  15% { opacity: 1; }
-  72% { opacity: 1; }
-  100% {
-    opacity: 0;
-    transform: translate(calc(-50% + var(--vfx-x, 0px)), calc(-50% + var(--vfx-y, 0px))) scale(1.2) rotate(180deg);
-  }
-}
-
-@keyframes vfx-shockwave {
-  0% { opacity: 0; transform: translate(-50%, -50%) scale(.2); }
-  18% { opacity: .95; }
-  100% { opacity: 0; transform: translate(-50%, -50%) scale(5.6); }
-}
-
-@keyframes vfx-screen-flash {
-  0% { opacity: 0; }
-  12% { opacity: .95; }
-  35% { opacity: .5; }
-  100% { opacity: 0; }
-}
-
-@keyframes vfx-screen-shake {
-  0%, 100% { transform: translate3d(0,0,0) rotate(0deg); }
-  15% { transform: translate3d(-4px,2px,0) rotate(-.18deg); }
-  30% { transform: translate3d(4px,-2px,0) rotate(.16deg); }
-  45% { transform: translate3d(-3px,-1px,0) rotate(-.12deg); }
-  60% { transform: translate3d(3px,2px,0) rotate(.1deg); }
-  78% { transform: translate3d(-1px,1px,0) rotate(-.05deg); }
-}
-
-@keyframes vfx-card-rain {
-  0% {
-    opacity: 0;
-    transform: translate3d(0, -12vh, 0) rotate(0deg) scale(.78);
-  }
-  12% { opacity: 1; }
-  78% { opacity: .96; }
-  100% {
-    opacity: 0;
-    transform: translate3d(var(--vfx-drift, 0px), 122vh, 0) rotate(var(--vfx-rot, 140deg)) scale(1.04);
-  }
-}
-
-@keyframes vfx-victory-beam {
-  0% {
-    opacity: 0;
-    transform: translate(-50%, -100%) rotate(var(--vfx-angle, 0deg)) scaleY(.15);
-  }
-  20% { opacity: .72; }
-  52% { opacity: .92; }
-  100% {
-    opacity: 0;
-    transform: translate(-50%, -100%) rotate(calc(var(--vfx-angle, 0deg) + 12deg)) scaleY(1.16);
-  }
-}
-
-@keyframes victory-plus-pop {
-  0% { opacity: 0; transform: scale(.35) translateY(10px); }
-  48% { opacity: 1; transform: scale(1.42) translateY(-5px); }
-  72% { transform: scale(.88) translateY(1px); }
-  88% { transform: scale(1.08) translateY(0); }
-  100% { opacity: 1; transform: scale(1); }
 }
 
 @keyframes completed-area-victory {
@@ -1218,28 +910,7 @@ h1 {
   }
 }
 
-@media (max-width: 520px) {
-  .vfx-card {
-    min-width: 24px;
-    padding: 4px 3px;
-    font-size: 10px;
-  }
-
-  .vfx-beam {
-    width: 24px;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .vfx-confetti,
-  .vfx-gold-drop,
-  .vfx-star,
-  .vfx-shockwave,
-  .vfx-screen-flash,
-  .vfx-card,
-  .vfx-beam,
-  .vfx-classic-rocket,
-  .vfx-classic-firework,
   .spider-flying-card {
     display: none;
   }
@@ -1248,16 +919,10 @@ h1 {
     animation: none !important;
   }
 
-  .game-shell.victory-shake {
-    animation: none !important;
-  }
-
-  .bom-overlay.fx-jackpot-pop.is-active .bom-plus,
   .completed-area.victory-flash {
     animation-duration: 120ms !important;
   }
 }
-
 
 .deal-best {
   color: var(--muted);
