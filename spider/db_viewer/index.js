@@ -3,7 +3,7 @@
 
   const SUPABASE_URL = "https://bkjqaetxwvcdciieevvs.supabase.co";
   const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_dAHoIimWgbGAF2wtIVSZfg_V8rzc200";
-  const PAGE_SIZE = 50;
+  const PAGE_SIZE = 20;
 
   const MODES = Object.freeze({
     easy: {
@@ -27,6 +27,8 @@
     Object.keys(MODES).map(key => [key, {
       records: [],
       total: null,
+      page: 1,
+      pagination: null,
       loaded: false,
       loading: false
     }])
@@ -47,7 +49,10 @@
       list: document.getElementById(`${mode}List`),
       count: document.getElementById(`${mode}Count`),
       status: document.getElementById(`${mode}Status`),
-      more: document.getElementById(`${mode}More`)
+      pager: document.getElementById(`${mode}Pager`),
+      prev: document.getElementById(`${mode}Prev`),
+      next: document.getElementById(`${mode}Next`),
+      pageInfo: document.getElementById(`${mode}PageInfo`)
     };
   }
 
@@ -84,7 +89,7 @@
     if (!value) return "—";
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return String(value);
-    return timeFormatter.format(date).replaceAll("/", "/");
+    return timeFormatter.format(date);
   }
 
   function normalizeRecord(row) {
@@ -101,6 +106,20 @@
     };
   }
 
+  function makePagination(total, requestedPage) {
+    if (!window.FictionPaginate?.paginate) {
+      throw new Error("慢慢軍火庫 FictionPaginate 載入失敗。");
+    }
+
+    // FictionPaginate 只需要 length 與 slice；這裡用輕量索引陣列
+    // 讓軍火庫統一處理頁碼邊界、總頁數與前後頁狀態。
+    const indexes = Array.from({ length: Math.max(0, total) }, (_, index) => index);
+    return window.FictionPaginate.paginate(indexes, {
+      page: requestedPage,
+      pageSize: PAGE_SIZE
+    });
+  }
+
   async function countMode(mode) {
     const { table } = MODES[mode];
     const { count, error } = await client
@@ -111,9 +130,10 @@
     return Number(count || 0);
   }
 
-  async function fetchRows(mode, start) {
+  async function fetchRows(mode, start, end) {
     const { table } = MODES[mode];
-    const end = start + PAGE_SIZE - 1;
+
+    if (end < start) return [];
 
     let result = await client
       .from(table)
@@ -148,12 +168,15 @@
     const config = MODES[mode];
     const current = state[mode];
     const ui = els(mode);
+    const pagination = current.pagination;
 
     ui.count.textContent = current.total === null ? "—" : String(current.total);
 
     if (!current.records.length && current.loaded) {
       ui.list.innerHTML = '<div class="empty-state">目前沒有資料。</div>';
     } else {
+      const firstIndex = pagination?.startIndex || 0;
+
       ui.list.innerHTML = current.records.map((record, index) => {
         const dbTime = formatTime(record.databaseTime);
         const clientTime = formatTime(record.clientTime);
@@ -164,7 +187,7 @@
           <article class="record-row">
             <div class="record-head">
               <div class="record-uid" title="${escapeHtml(record.uid)}">${escapeHtml(shortUid(record.uid, config.prefix))}</div>
-              <div class="record-index">#${index + 1}</div>
+              <div class="record-index">#${firstIndex + index + 1}</div>
             </div>
             <div class="record-times">
               <div class="time-row">
@@ -185,18 +208,24 @@
       }).join("");
     }
 
-    const hasMore = current.total !== null && current.records.length < current.total;
-    ui.more.hidden = !hasMore;
-    ui.more.disabled = current.loading;
+    if (!pagination || current.total === 0) {
+      ui.pager.hidden = true;
+      return;
+    }
+
+    ui.pager.hidden = false;
+    ui.pageInfo.textContent = `${pagination.page} / ${pagination.totalPages}`;
+    ui.prev.disabled = current.loading || !pagination.hasPrevious;
+    ui.next.disabled = current.loading || !pagination.hasNext;
   }
 
   function renderError(mode, error) {
     const ui = els(mode);
     ui.list.innerHTML = `<div class="error-state">讀取失敗：${escapeHtml(error?.message || error || "未知錯誤")}</div>`;
-    ui.more.hidden = true;
+    ui.pager.hidden = true;
   }
 
-  async function loadMode(mode, { reset = false } = {}) {
+  async function loadMode(mode, { page = state[mode].page } = {}) {
     if (!client) {
       renderError(mode, new Error("Supabase 尚未載入。"));
       return;
@@ -206,35 +235,35 @@
     if (current.loading) return;
 
     current.loading = true;
+    let succeeded = false;
     const ui = els(mode);
     ui.status.textContent = "讀取中…";
-    ui.more.disabled = true;
+    ui.prev.disabled = true;
+    ui.next.disabled = true;
 
     try {
-      if (reset) {
-        current.records = [];
-        current.total = null;
-        current.loaded = false;
-      }
-
-      const start = current.records.length;
-      const [total, rows] = await Promise.all([
-        current.total === null ? countMode(mode) : Promise.resolve(current.total),
-        fetchRows(mode, start)
-      ]);
+      const total = await countMode(mode);
+      const pagination = makePagination(total, page);
+      const rows = await fetchRows(mode, pagination.startIndex, pagination.endIndex);
 
       current.total = total;
-      current.records.push(...rows);
+      current.page = pagination.page;
+      current.pagination = pagination;
+      current.records = rows;
       current.loaded = true;
-      ui.status.textContent = rows.length ? `已載入 ${current.records.length} 筆` : "已是最新";
-      render(mode);
+
+      ui.status.textContent = total === 0
+        ? ""
+        : `本頁 ${rows.length} 筆`;
+
+      succeeded = true;
     } catch (error) {
       console.error(`[Spider DB] ${mode} 讀取失敗：`, error);
       ui.status.textContent = "讀取失敗";
       renderError(mode, error);
     } finally {
       current.loading = false;
-      ui.more.disabled = false;
+      if (succeeded) render(mode);
     }
   }
 
@@ -253,7 +282,7 @@
       initial: "easy",
       onChange({ name }) {
         if (MODES[name] && !state[name].loaded) {
-          void loadMode(name);
+          void loadMode(name, { page: state[name].page });
         }
       }
     });
@@ -261,17 +290,28 @@
 
   function bindEvents() {
     document.getElementById("refreshButton")?.addEventListener("click", () => {
-      void loadMode(activeMode(), { reset: true });
+      const mode = activeMode();
+      void loadMode(mode, { page: state[mode].page });
     });
 
     Object.keys(MODES).forEach(mode => {
-      els(mode).more?.addEventListener("click", () => {
-        void loadMode(mode);
+      const ui = els(mode);
+
+      ui.prev?.addEventListener("click", () => {
+        const pagination = state[mode].pagination;
+        if (!pagination?.hasPrevious) return;
+        void loadMode(mode, { page: pagination.page - 1 });
+      });
+
+      ui.next?.addEventListener("click", () => {
+        const pagination = state[mode].pagination;
+        if (!pagination?.hasNext) return;
+        void loadMode(mode, { page: pagination.page + 1 });
       });
     });
   }
 
   initTabs();
   bindEvents();
-  void loadMode("easy", { reset: true });
+  void loadMode("easy", { page: 1 });
 })();

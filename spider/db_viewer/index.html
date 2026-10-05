@@ -30,7 +30,11 @@
           <span id="easyStatus" class="status-text" aria-live="polite"></span>
         </div>
         <div id="easyList" class="record-list"></div>
-        <button id="easyMore" class="more-button" type="button" hidden>載入更多</button>
+        <nav id="easyPager" class="pager" aria-label="初階分頁" hidden>
+          <button id="easyPrev" type="button">上一頁</button>
+          <span id="easyPageInfo" class="page-info">1 / 1</span>
+          <button id="easyNext" type="button">下一頁</button>
+        </nav>
       </section>
 
       <section class="db-panel" data-view-panel="medium" hidden>
@@ -39,7 +43,11 @@
           <span id="mediumStatus" class="status-text" aria-live="polite"></span>
         </div>
         <div id="mediumList" class="record-list"></div>
-        <button id="mediumMore" class="more-button" type="button" hidden>載入更多</button>
+        <nav id="mediumPager" class="pager" aria-label="中階分頁" hidden>
+          <button id="mediumPrev" type="button">上一頁</button>
+          <span id="mediumPageInfo" class="page-info">1 / 1</span>
+          <button id="mediumNext" type="button">下一頁</button>
+        </nav>
       </section>
 
       <section class="db-panel" data-view-panel="hard" hidden>
@@ -48,7 +56,11 @@
           <span id="hardStatus" class="status-text" aria-live="polite"></span>
         </div>
         <div id="hardList" class="record-list"></div>
-        <button id="hardMore" class="more-button" type="button" hidden>載入更多</button>
+        <nav id="hardPager" class="pager" aria-label="高階分頁" hidden>
+          <button id="hardPrev" type="button">上一頁</button>
+          <span id="hardPageInfo" class="page-info">1 / 1</span>
+          <button id="hardNext" type="button">下一頁</button>
+        </nav>
       </section>
     </div>
 
@@ -56,6 +68,7 @@
   </main>
 
   <script src="https://lib.stillnessbyslowly.com/ui/tabs/tabs.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/fiction/Fiction_paginate.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.min.js"></script>
   <script src="index.js"></script>
   <script src="index_style.js"></script>

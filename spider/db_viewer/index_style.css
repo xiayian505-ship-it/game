@@ -5,7 +5,7 @@
 
 @media (hover: hover) and (pointer: fine) {
   .refresh-button:hover,
-  .more-button:hover {
+  .pager button:hover {
     background: #fffdf8;
   }
 
@@ -19,7 +19,7 @@
 }
 
 .refresh-button:focus-visible,
-.more-button:focus-visible,
+.pager button:focus-visible,
 .db-tabs [data-view-target]:focus-visible {
   outline: 2px solid #a99a7e;
   outline-offset: 3px;
