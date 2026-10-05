@@ -1,0 +1,245 @@
+/* =========================================================
+   連環新接龍主頁｜UI / 外觀 CSS
+   視覺沿用現有 Spider v7：米灰底、淡色 surface、灰褐線條。
+========================================================= */
+
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #f2eee5;
+  --surface: #faf7f0;
+  --ink: #2d2a26;
+  --muted: #756f66;
+  --line: #d7cfc1;
+  --table: #ddd5c7;
+  --card: #fffdf8;
+  --back: #777067;
+  --select: #d5c39c;
+
+  --outline-max-width: 1080px;
+  --outline-line: var(--line);
+  --outline-title-top: 18px;
+  --outline-title-bottom: 14px;
+  --outline-tabs-top: 14px;
+  --outline-tab-bottom: 10px;
+  --outline-content-top: 20px;
+  --outline-content-bottom: 28px;
+  --outline-logo-top: 14px;
+  --outline-logo-bottom: 12px;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: Arial, "Microsoft JhengHei", sans-serif;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  color: inherit;
+}
+
+.spider-home {
+  overflow: hidden;
+}
+
+.page-heading h1 {
+  font-size: 1.55rem;
+}
+
+.view-tabs {
+  flex-wrap: nowrap;
+  gap: 0;
+}
+
+.view-tabs [data-view-target] {
+  flex: 1 1 0;
+  min-width: 0;
+  color: var(--muted);
+  font-size: .92rem;
+  text-align: center;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+}
+
+.view-tabs [data-view-target][aria-selected="true"] {
+  color: var(--ink);
+  border-bottom-color: var(--select);
+  font-weight: 800;
+}
+
+.spider-preview {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--table);
+}
+
+.spider-preview span {
+  border: 1px solid #5f5953;
+  border-radius: 6px;
+  background:
+    repeating-linear-gradient(
+      45deg,
+      #6f6962 0,
+      #6f6962 6px,
+      #817a72 6px,
+      #817a72 12px
+    );
+  box-shadow: 0 1px 2px rgba(0,0,0,.08);
+}
+
+.start-button,
+.gallery-toggle,
+.gallery-range-toggle,
+.gallery-effect-button {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.start-button {
+  font-weight: 800;
+}
+
+.start-button:active,
+.gallery-toggle:active,
+.gallery-range-toggle:active,
+.gallery-effect-button:active {
+  transform: translateY(1px);
+}
+
+.start-button:focus-visible,
+.gallery-toggle:focus-visible,
+.gallery-range-toggle:focus-visible,
+.gallery-effect-button:focus-visible,
+.gallery-item input[type="checkbox"]:focus-visible {
+  outline: 3px solid var(--select);
+  outline-offset: 2px;
+}
+
+.gallery-toggle,
+.gallery-range-toggle {
+  border-radius: 9px;
+}
+
+.gallery-range-toggle {
+  background: rgba(250,247,240,.72);
+}
+
+.gallery-arrow,
+.gallery-count,
+.gallery-effect-number,
+.gallery-preview-heading {
+  color: var(--muted);
+}
+
+.gallery-count {
+  font-size: .78rem;
+}
+
+.gallery-range-toggle {
+  font-size: .88rem;
+}
+
+.gallery-item input[type="checkbox"] {
+  accent-color: #8c7a58;
+}
+
+.gallery-effect-button {
+  border-color: transparent;
+  background: transparent;
+  border-radius: 8px;
+}
+
+.gallery-effect-button:hover {
+  border-color: var(--line);
+  background: rgba(250,247,240,.72);
+}
+
+.gallery-effect-button.is-current {
+  border-color: var(--select);
+  background: #fff8e7;
+}
+
+.gallery-preview {
+  border-top: 1px solid var(--line);
+  padding-top: 18px;
+}
+
+.gallery-preview-heading {
+  font-size: .88rem;
+}
+
+.gallery-stage {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at center, rgba(255,250,233,.16), rgba(80,45,10,.28)),
+    #3a3128;
+}
+
+.gallery-preview-card {
+  padding: 22px 18px;
+  border: 1px solid rgba(255,248,221,.8);
+  border-radius: 22px;
+  color: #fffaf0;
+  text-align: center;
+  background: linear-gradient(180deg, rgba(83,52,20,.88), rgba(35,22,9,.92));
+  box-shadow: 0 14px 44px rgba(0,0,0,.22), 0 0 0 1px rgba(255,234,188,.12) inset;
+}
+
+.gallery-preview-card span {
+  font-size: clamp(1.35rem, 5vw, 2rem);
+  font-weight: 800;
+  letter-spacing: .04em;
+}
+
+.gallery-preview-card strong {
+  color: #ffe38b;
+  font-size: clamp(2rem, 8vw, 3.15rem);
+  text-shadow: 0 0 18px rgba(255,223,112,.5);
+}
+
+.sbs-signature {
+  color: var(--muted);
+  font-size: .82rem;
+}
+
+.sbs-signature-mark {
+  color: var(--ink);
+  font-weight: 800;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .start-button:hover,
+  .gallery-toggle:hover,
+  .gallery-range-toggle:hover {
+    background: #fffaf2;
+  }
+}
+
+@media (max-width: 600px) {
+  :root {
+    --outline-title-top: 16px;
+    --outline-title-bottom: 12px;
+    --outline-tabs-top: 12px;
+    --outline-content-top: 16px;
+  }
+
+  .page-heading h1 {
+    font-size: 1.38rem;
+  }
+
+  .view-tabs [data-view-target] {
+    font-size: .82rem;
+  }
+}

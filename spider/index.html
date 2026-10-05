@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>慢 慢 | 連環新接龍</title>
+
+  <!-- 慢慢軍火庫｜Tabs 基礎 -->
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/ui/tabs/tabs.css">
+
+  <!-- SBS Framework｜Outline 骨架 -->
+  <link rel="stylesheet" href="https://framework.stillnessbyslowly.com/line/outline/outline.css">
+
+  <!-- 主頁功能 / 主頁視覺 -->
+  <link rel="stylesheet" href="index.css">
+  <link rel="stylesheet" href="index_style.css">
+</head>
+<body>
+  <main class="outline-page spider-home">
+    <header class="page-heading">
+      <h1>慢 慢 | 連環新接龍</h1>
+    </header>
+
+    <div class="outline-tabs-shell" id="outlineTabs" data-slowly-tabs>
+      <nav class="view-tabs" role="tablist" aria-label="連環新接龍模式">
+        <button type="button" role="tab" data-view-target="easy" aria-selected="true">初階模式</button>
+        <button type="button" role="tab" data-view-target="medium" aria-selected="false">中階模式</button>
+        <button type="button" role="tab" data-view-target="hard" aria-selected="false">高階模式</button>
+        <button type="button" role="tab" data-view-target="gallery" aria-selected="false">勝利圖鑑</button>
+      </nav>
+
+      <section class="view-panel" data-view-panel="easy">
+        <div class="mode-entry">
+          <div class="spider-preview" aria-hidden="true">
+            <span></span><span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <a class="start-button" href="./spider_v7/spider_v7.html">開始遊戲</a>
+        </div>
+      </section>
+
+      <section class="view-panel" data-view-panel="medium" hidden>
+        <div class="mode-entry">
+          <div class="spider-preview" aria-hidden="true">
+            <span></span><span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <a class="start-button" href="./spider_medium_v7/spider_medium_v7.html">開始遊戲</a>
+        </div>
+      </section>
+
+      <section class="view-panel" data-view-panel="hard" hidden>
+        <div class="mode-entry">
+          <div class="spider-preview" aria-hidden="true">
+            <span></span><span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <a class="start-button" href="./spider_hard_v7/spider_hard_v7.html">開始遊戲</a>
+        </div>
+      </section>
+
+      <section class="view-panel" data-view-panel="gallery" hidden>
+        <div id="galleryTree" class="gallery-tree" aria-label="勝利圖鑑"></div>
+
+        <section class="gallery-preview" aria-labelledby="galleryStageLabel">
+          <div class="gallery-preview-heading">
+            <strong id="galleryStageLabel">尚未選擇</strong>
+          </div>
+
+          <div id="galleryStage" class="gallery-stage" aria-live="polite">
+            <div id="galleryPreviewCard" class="gallery-preview-card">
+              <span>CLEAR</span>
+              <strong>+1</strong>
+            </div>
+          </div>
+        </section>
+      </section>
+    </div>
+
+    <footer class="sbs-signature" aria-label="Stillness by Slowly">
+      <span class="sbs-signature-mark">慢 慢</span>
+      <span class="sbs-signature-separator" aria-hidden="true">|</span>
+      <span class="sbs-signature-name">Stillness by Slowly.com</span>
+    </footer>
+  </main>
+
+  <!-- 軍火庫：同頁 Tabs + Tree 狀態 -->
+  <script src="https://lib.stillnessbyslowly.com/ui/tabs/tabs.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/state/tree_selection.js"></script>
+
+  <!-- Framework：只組裝 Outline Tabs -->
+  <script src="https://framework.stillnessbyslowly.com/line/outline/outline.js"></script>
+
+  <!-- 主頁功能 / 主頁 UI -->
+  <script src="index.js"></script>
+  <script src="index_style.js"></script>
+</body>
+</html>
