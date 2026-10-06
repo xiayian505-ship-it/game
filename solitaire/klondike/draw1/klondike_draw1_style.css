@@ -151,3 +151,11 @@
     transform: translateY(-26px);
   }
 }
+
+
+/* 接龍末段自動收牌：沿用 Spider 的飛牌層級，不改牌桌尺寸。 */
+.card.is-flying-card {
+  z-index: 50;
+  pointer-events: none;
+  will-change: transform, opacity;
+}

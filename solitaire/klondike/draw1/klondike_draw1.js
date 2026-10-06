@@ -66,6 +66,22 @@
   const PIANO_ATTACK_SECONDS = 0.02;
   const PIANO_RELEASE_SECONDS = 0.10;
 
+  const AUTO_COLLECT_NOTES = Object.freeze([
+    "C5", "B4", "A4", "G4", "F4", "E4", "D4",
+    "C4", "B3", "A3", "G3", "F3", "E3"
+  ]);
+
+  function sleep(ms) {
+    return new Promise(resolve => window.setTimeout(resolve, Math.max(0, ms)));
+  }
+
+  function prefersReducedMotion() {
+    return Boolean(
+      window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    );
+  }
+
   function playTone({ freq = 440, dur = 0.08, type = "sine", gain = 0.12, slide = 0 } = {}) {
     if (!globalThis.SlowlyAudioTone?.play) return;
     globalThis.SlowlyAudioTone.play({ frequency: freq, duration: dur, type, gain, slide }).catch(error => {
@@ -145,6 +161,18 @@
       hold: 0.04,
       release: 0.11,
       spacing: 0.055,
+      type: "sine"
+    });
+  }
+
+  function sfxAutoCollectStep(index) {
+    const note = AUTO_COLLECT_NOTES[index % AUTO_COLLECT_NOTES.length];
+    if (!note) return;
+    void playPianoNotes([note], {
+      gain: 0.098,
+      hold: 0.035,
+      release: 0.095,
+      spacing: 0,
       type: "sine"
     });
   }
@@ -777,7 +805,135 @@
     setNotice(message);
     render();
     saveActiveGame();
-    void checkWin();
+    void maybeAutoCollect();
+  }
+
+  function centerOfRect(rect) {
+    return {
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2
+    };
+  }
+
+  async function animateExistingCardToTarget(cardElement, targetElement, options = {}) {
+    if (!cardElement || !targetElement || !cardElement.animate || prefersReducedMotion()) return;
+
+    const sourceRect = cardElement.getBoundingClientRect();
+    const targetRect = targetElement.getBoundingClientRect();
+    const source = centerOfRect(sourceRect);
+    const target = centerOfRect(targetRect);
+    const dx = target.x - source.x;
+    const dy = target.y - source.y;
+    const arc = Number.isFinite(options.arc) ? options.arc : 26;
+    const duration = Number.isFinite(options.duration) ? options.duration : 105;
+
+    cardElement.classList.add("is-flying-card");
+
+    const animation = cardElement.animate(
+      [
+        { transform: "translate3d(0,0,0) scale(1) rotate(0deg)", opacity: 1 },
+        {
+          transform: `translate3d(${(dx * 0.55).toFixed(1)}px, ${(dy * 0.48 - arc).toFixed(1)}px, 0) scale(.76) rotate(-2deg)`,
+          opacity: 1
+        },
+        {
+          transform: `translate3d(${dx.toFixed(1)}px, ${dy.toFixed(1)}px, 0) scale(.32) rotate(2deg)`,
+          opacity: 0.16
+        }
+      ],
+      {
+        duration,
+        easing: "cubic-bezier(.2,.74,.24,1)",
+        fill: "forwards"
+      }
+    );
+
+    await animation.finished.catch(() => undefined);
+  }
+
+  function autoCollectReady() {
+    if (busy || !hasStartedGame) return false;
+    if (stock.length > 0 || waste.length > 0) return false;
+    if (completedCardCount() >= 52) return false;
+    return columns.every(column => column.every(card => card.faceUp));
+  }
+
+  function findAutoCollectCandidate() {
+    const candidates = [];
+
+    columns.forEach((column, columnIndex) => {
+      const card = column[column.length - 1] || null;
+      if (!card?.faceUp) return;
+      const expectedRank = foundations[card.suit].length + 1;
+      if (card.rank !== expectedRank) return;
+      candidates.push({ columnIndex, cardIndex: column.length - 1, card });
+    });
+
+    candidates.sort((a, b) => a.card.rank - b.card.rank || a.columnIndex - b.columnIndex);
+    return candidates[0] || null;
+  }
+
+  async function maybeAutoCollect() {
+    if (completedCardCount() === 52) {
+      await checkWin();
+      return true;
+    }
+
+    if (!autoCollectReady()) {
+      await checkWin();
+      return false;
+    }
+
+    busy = true;
+    selection = null;
+    setNotice("自動收牌中…");
+    render();
+
+    let stepIndex = 0;
+
+    while (completedCardCount() < 52) {
+      const candidate = findAutoCollectCandidate();
+      if (!candidate) break;
+
+      const columnElement = tableauElement.querySelector(
+        `.column[data-column-index="${candidate.columnIndex}"]`
+      );
+      const cardElement = columnElement?.querySelector(
+        `.card[data-card-index="${candidate.cardIndex}"]`
+      );
+      const targetElement = completedArea.querySelector(
+        `.foundation-slot[data-foundation-suit="${candidate.card.suit}"]`
+      );
+
+      await animateExistingCardToTarget(cardElement, targetElement, {
+        duration: 96,
+        arc: 20 + (stepIndex % 5) * 2
+      });
+
+      const movedCard = columns[candidate.columnIndex].pop();
+      if (!movedCard) break;
+      foundations[movedCard.suit].push(movedCard);
+      moveCount += 1;
+      sfxAutoCollectStep(stepIndex);
+      stepIndex += 1;
+
+      render();
+      saveActiveGame();
+      await sleep(prefersReducedMotion() ? 18 : 24);
+    }
+
+    busy = false;
+    render();
+
+    if (completedCardCount() === 52) {
+      setNotice("自動收牌完成。");
+      await checkWin();
+      return true;
+    }
+
+    setNotice("自動收牌暫停，仍需手動整理牌面。");
+    saveActiveGame();
+    return false;
   }
 
   function completedCardCount() {
