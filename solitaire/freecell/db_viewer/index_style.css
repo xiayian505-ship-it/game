@@ -1,0 +1,21 @@
+/*
+  FreeCell DB Viewer｜宿主視覺
+  延續目前新接龍／連環新接龍的低彩度米灰色系。
+*/
+
+@media (hover: hover) and (pointer: fine) {
+  .refresh-button:hover,
+  .pager button:hover {
+    background: #fffdf8;
+  }
+
+  .record-row:hover {
+    background: #faf7f0;
+  }
+}
+
+.refresh-button:focus-visible,
+.pager button:focus-visible {
+  outline: 2px solid #a99a7e;
+  outline-offset: 3px;
+}

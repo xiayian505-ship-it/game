@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>慢 慢 | FreeCell DB</title>
+
+  <link rel="stylesheet" href="index.css">
+  <link rel="stylesheet" href="index_style.css">
+</head>
+<body>
+  <main class="db-shell">
+    <header class="db-header">
+      <h1>慢 慢 | FreeCell DB</h1>
+      <button id="refreshButton" class="refresh-button" type="button">重新整理</button>
+    </header>
+
+    <section class="db-panel freecell-panel">
+      <div class="panel-meta">
+        <span>共 <strong id="freecellCount">—</strong> 局</span>
+        <span id="freecellStatus" class="status-text" aria-live="polite"></span>
+      </div>
+
+      <div id="freecellList" class="record-list"></div>
+
+      <nav id="freecellPager" class="pager" aria-label="新接龍分頁" hidden>
+        <button id="freecellPrev" type="button">上一頁</button>
+        <span id="freecellPageInfo" class="page-info">1 / 1</span>
+        <button id="freecellNext" type="button">下一頁</button>
+      </nav>
+    </section>
+
+    <footer class="hint">慢 慢 | Stillness by Slowly.com</footer>
+  </main>
+
+  <script src="https://lib.stillnessbyslowly.com/fiction/Fiction_paginate.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.min.js"></script>
+  <script src="index.js"></script>
+  <script src="index_style.js"></script>
+</body>
+</html>
