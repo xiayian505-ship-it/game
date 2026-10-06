@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>慢 慢｜接龍・翻 1 張</title>
+
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/typography/shine_text.css">
+  <!-- 慢慢軍火庫｜Celebration FX -->
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/celebration/confetti_burst.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/celebration/gold_rain.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/celebration/star_explosion.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/celebration/shockwave.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/celebration/flash_shake.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/celebration/jackpot_pop.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/celebration/card_rain.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/celebration/victory_beam.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/celebration/classic_fireworks.css">
+  <link rel="stylesheet" href="klondike_draw1.css">
+  <link rel="stylesheet" href="klondike_draw1_style.css">
+</head>
+<body>
+  <main id="gameShell" class="game-shell">
+    <header class="game-header">
+      <div>
+        <h1>慢 慢 | 接龍</h1>
+        <p class="subtitle">需由大至小疊牌，紅黑交錯；空欄只能放 K<br>牌庫每次翻 1 張，4 個回收格由 A 起同花色往上</p>
+      </div>
+
+      <button id="restartButton" class="restart-button" type="button">重新開始</button>
+    </header>
+
+    <section class="status-row" aria-live="polite">
+      <span>完成：<strong id="completedCount">0</strong>/52</span>
+      <span>牌庫：<strong id="stockCount">24</strong></span>
+      <span>步數：<strong id="moveCount">0</strong></span>
+      <span>玩家已解牌局：<strong id="solvedDealCount">0</strong></span>
+    </section>
+
+    <section class="top-row klondike-top-row" aria-label="牌庫、棄牌區與回收區">
+      <button id="stockButton" class="completed-slot klondike-slot stock-slot" type="button" aria-label="牌庫"></button>
+      <button id="wasteButton" class="completed-slot klondike-slot waste-slot" type="button" aria-label="棄牌區：空"></button>
+      <div class="top-spacer" aria-hidden="true"></div>
+      <div id="completedArea" class="completed-area foundation-area" aria-label="四個回收區"></div>
+    </section>
+
+    <p id="notice" class="notice">選擇一副牌局開始。</p>
+
+    <section id="tableau" class="tableau" aria-label="七欄牌區"></section>
+
+    <p class="hint">慢 慢 | Stillness by Slowly.com</p>
+  </main>
+
+  <div id="bombOverlay" class="bom-overlay" aria-hidden="true">
+    <div id="victoryParticles" class="victory-particles" aria-hidden="true"></div>
+    <div class="bom-card">
+      <div id="bombText" class="bom-text slowly-shine-text">牌局完成</div>
+      <div id="bombPlus" class="bom-plus">CLEAR</div>
+      <p id="bombSubtext" class="bom-subtext">翻 1 張牌局完成</p>
+    </div>
+  </div>
+
+  <div id="restartConfirm" class="dialog-overlay" hidden>
+    <div class="dialog-card" role="dialog" aria-modal="true" aria-labelledby="restartConfirmTitle">
+      <p id="restartConfirmTitle" class="dialog-title">要怎麼重新開始？</p>
+      <p class="dialog-text">可以重開目前這副牌，也可以改選其他牌局。</p>
+      <div class="dialog-actions">
+        <button id="restartCancelButton" type="button">取消</button>
+        <button id="restartCurrentButton" type="button">重新開始此局</button>
+      </div>
+      <button id="restartConfirmButton" class="dialog-back" type="button">選擇其他牌局</button>
+    </div>
+  </div>
+
+  <div id="dealPicker" class="dialog-overlay" hidden>
+    <div class="dialog-card deal-picker-card" role="dialog" aria-modal="true" aria-labelledby="dealPickerTitle">
+      <p id="dealPickerTitle" class="dialog-title">選擇牌局</p>
+      <p class="dialog-text">傳統接龍・翻 1 張</p>
+
+      <section class="deal-tools deal-tools-main" aria-label="牌局選擇">
+        <button id="randomDealButton" class="deal-button" type="button">隨機牌局</button>
+        <button id="solvedDealButton" class="deal-button" type="button">玩家已解牌局</button>
+      </section>
+
+      <section id="contributedPanel" class="contributed-panel" hidden aria-label="玩家已解牌局">
+        <div class="contributed-list">
+          <p class="contributed-empty">前端預覽版尚未接 DB。</p>
+        </div>
+
+        <button id="uidDealButton" class="uid-paste-toggle" type="button" aria-expanded="false">有完整 UID？貼上載入</button>
+
+        <section id="uidSearchPanel" class="uid-search" hidden>
+          <label class="uid-search-label" for="uidInput">完整牌局 UID</label>
+          <div class="uid-search-row">
+            <input id="uidInput" type="search" autocomplete="off" spellcheck="false" placeholder="DB 接上後可使用">
+            <button id="uidSearchButton" type="button">載入</button>
+          </div>
+        </section>
+      </section>
+
+      <p id="dealPickerNotice" class="picker-notice" aria-live="polite"></p>
+      <button id="dealPickerBackButton" class="dialog-back" type="button">返回遊戲</button>
+    </div>
+  </div>
+
+  <div id="message" class="message" hidden>
+    <div class="message-card">
+      <p id="messageTitle" class="message-title">牌局完成</p>
+      <p id="messageText" class="message-text"></p>
+      <button id="playAgainButton" type="button">選擇下一局</button>
+    </div>
+  </div>
+
+  <!-- 慢慢軍火庫｜牌組 -->
+  <script src="https://lib.stillnessbyslowly.com/game/card/deck.js"></script>
+
+  <!-- 慢慢軍火庫｜Celebration FX（只在勝利時播放） -->
+  <script src="https://lib.stillnessbyslowly.com/effects/celebration/confetti_burst.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/effects/celebration/gold_rain.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/effects/celebration/star_explosion.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/effects/celebration/shockwave.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/effects/celebration/flash_shake.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/effects/celebration/jackpot_pop.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/effects/celebration/card_rain.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/effects/celebration/victory_beam.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/effects/celebration/classic_fireworks.js"></script>
+
+  <!-- 慢慢軍火庫｜Audio -->
+  <script src="https://lib.stillnessbyslowly.com/audio/context/audio_context.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/audio/pitch/note_frequency.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/audio/source/oscillator.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/audio/gain/gain.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/audio/gain/envelope.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/audio/tone/tone.js"></script>
+
+  <script src="klondike_draw1.js"></script>
+  <script src="klondike_draw1_style.js"></script>
+</body>
+</html>
