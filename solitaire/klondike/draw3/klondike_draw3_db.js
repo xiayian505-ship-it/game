@@ -45,7 +45,10 @@
     return {
       uid: row.uid,
       deal,
-      addedAt: row.client_added_at || row.added_at || ""
+      addedAt: row.client_added_at || row.added_at || "",
+      attemptCount: Number.isInteger(Number(row.attempt_count)) && Number(row.attempt_count) >= 1
+        ? Number(row.attempt_count)
+        : 1
     };
   }
 
@@ -69,7 +72,7 @@
 
   const client = createClient();
   const SELECT_FIELDS = "uid,deal,client_solved_at,solved_at,best_steps,clear_count";
-  const PENDING_SELECT_FIELDS = "uid,deal,client_added_at,added_at";
+  const PENDING_SELECT_FIELDS = "uid,deal,client_added_at,added_at,attempt_count";
 
   async function listPage(page = 1, pageSize = 5) {
     if (!client) throw new Error("Supabase client 尚未載入。");
@@ -312,6 +315,17 @@
     return { record: normalizePendingRecord(data), isNew: true, solved: false };
   }
 
+  async function pendingIncrementAttempt(uid) {
+    if (!client) throw new Error("Supabase client 尚未載入。");
+    const q = String(uid || "").trim();
+    if (!q) throw new TypeError("UID 格式錯誤。");
+
+    const { data, error } = await client.rpc("increment_klondike_draw3_pending_attempt_count", { p_uid: q });
+    if (error) throw error;
+    const value = Number(data);
+    return Number.isInteger(value) && value >= 1 ? value : null;
+  }
+
   async function pendingPromote(uid, deal) {
     if (!client) throw new Error("Supabase client 尚未載入。");
     const q = String(uid || "").trim();
@@ -345,6 +359,7 @@
     findByUid: pendingFindByUid,
     findByDeal: pendingFindByDeal,
     save: pendingSave,
+    incrementAttempt: pendingIncrementAttempt,
     promote: pendingPromote,
     dealKey
   });
@@ -442,7 +457,8 @@
     next.push({
       uid: record.uid,
       deal: cloneDeal(record.deal),
-      addedAt: record.addedAt || old?.addedAt || ""
+      addedAt: record.addedAt || old?.addedAt || "",
+      attemptCount: Math.max(1, Number(record.attemptCount || old?.attemptCount) || 1)
     });
     return writePendingLocal(next);
   }
@@ -524,7 +540,8 @@
       record = {
         uid: String(uid || "").trim() || createUid(),
         deal: cloneDeal(deal),
-        addedAt: window.Timestamp?.create ? window.Timestamp.create() : String(Date.now())
+        addedAt: window.Timestamp?.create ? window.Timestamp.create() : String(Date.now()),
+        attemptCount: 1
       };
     }
     savePendingLocal(record);
@@ -560,6 +577,29 @@
     }
 
     return record;
+  }
+
+  async function markPendingAttempt(record) {
+    if (!record?.uid || !dealKeyOf(record.deal)) return record || null;
+
+    const localRecord = {
+      ...record,
+      attemptCount: Math.max(1, Number(record.attemptCount) || 1) + 1
+    };
+
+    if (window.KlondikeDraw3PendingDealsDB?.incrementAttempt) {
+      try {
+        const value = await window.KlondikeDraw3PendingDealsDB.incrementAttempt(record.uid);
+        if (Number.isInteger(Number(value)) && Number(value) >= 1) {
+          localRecord.attemptCount = Number(value);
+        }
+      } catch (error) {
+        console.warn("Klondike Draw3 待破解挑戰次數更新失敗，保留本機次數。", error);
+      }
+    }
+
+    savePendingLocal(localRecord);
+    return localRecord;
   }
 
   async function refreshCount() {
@@ -811,6 +851,7 @@
     resolveDeal,
     handleWin,
     savePending,
+    markPendingAttempt,
     listPage,
     listPendingPage,
     randomSolved,

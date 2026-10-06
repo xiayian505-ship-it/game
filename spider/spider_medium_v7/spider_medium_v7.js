@@ -1435,7 +1435,8 @@
     next.push({
       uid: record.uid,
       deal: cloneDeal(deal),
-      addedAt: record.addedAt || previous?.addedAt || ""
+      addedAt: record.addedAt || previous?.addedAt || "",
+      attemptCount: Math.max(1, Number(record.attemptCount || previous?.attemptCount) || 1)
     });
     return writePendingDeals(next);
   }
@@ -1516,7 +1517,8 @@
       record = {
         uid: String(uid || "").trim() || createSolvedDealUid(),
         deal: cloneDeal(deal),
-        addedAt: window.Timestamp?.create ? window.Timestamp.create() : String(Date.now())
+        addedAt: window.Timestamp?.create ? window.Timestamp.create() : String(Date.now()),
+        attemptCount: 1
       };
     }
     savePendingRecordLocally(record);
@@ -1552,6 +1554,29 @@
     }
 
     return record;
+  }
+
+  async function markPendingAttempt(record) {
+    if (!record?.uid || !Array.isArray(record.deal) || record.deal.length !== 104) return record || null;
+
+    const localRecord = {
+      ...record,
+      attemptCount: Math.max(1, Number(record.attemptCount) || 1) + 1
+    };
+
+    if (window.SpiderPendingDealsDB?.incrementAttempt) {
+      try {
+        const value = await window.SpiderPendingDealsDB.incrementAttempt(record.uid);
+        if (Number.isInteger(Number(value)) && Number(value) >= 1) {
+          localRecord.attemptCount = Number(value);
+        }
+      } catch (error) {
+        console.warn("待破解挑戰次數更新失敗，保留本機次數。", error);
+      }
+    }
+
+    savePendingRecordLocally(localRecord);
+    return localRecord;
   }
 
   async function syncLocalPendingDealsToDatabase() {
@@ -1958,7 +1983,7 @@
         bestText.className = "contributed-best";
 
         if (isPendingMode()) {
-          bestText.textContent = "待破解";
+          bestText.textContent = `挑戰 ${Math.max(1, Number(record.attemptCount) || 1)} 次`;
         } else {
           const best = bestStepsForRecord(record);
           const clearCount = clearCountForRecord(record);
@@ -1971,13 +1996,15 @@
         button.addEventListener("click", () => {
           if (busy || contributedLoading) return;
           abandonCurrentDeal();
+          const pending = isPendingMode();
           startGame({
             deal: record.deal,
             uid: record.uid,
-            source: isPendingMode() ? "pending" : "contributed",
-            bestSteps: isPendingMode() ? null : bestStepsForRecord(record),
-            clearCount: isPendingMode() ? 0 : clearCountForRecord(record)
+            source: pending ? "pending" : "contributed",
+            bestSteps: pending ? null : bestStepsForRecord(record),
+            clearCount: pending ? 0 : clearCountForRecord(record)
           });
+          if (pending) void markPendingAttempt(record);
         });
 
         contributedList.appendChild(button);
@@ -2096,6 +2123,7 @@
         bestSteps: pending ? null : bestStepsForRecord(record),
         clearCount: pending ? 0 : clearCountForRecord(record)
       });
+      if (pending) void markPendingAttempt(record);
     } catch (error) {
       console.warn(`隨機讀取${label}失敗。`, error);
       setPickerNotice(`${label}目前讀取失敗，請稍後再試。`);
@@ -2149,6 +2177,7 @@
       bestSteps: pending ? null : bestStepsForRecord(record),
       clearCount: pending ? 0 : clearCountForRecord(record)
     });
+    if (pending) void markPendingAttempt(record);
   }
 
   function toggleUidSearch() {

@@ -32,7 +32,10 @@
     return {
       uid: row.uid,
       deal: row.deal.map(Number),
-      addedAt: row.client_added_at || row.added_at || ""
+      addedAt: row.client_added_at || row.added_at || "",
+      attemptCount: Number.isInteger(Number(row.attempt_count)) && Number(row.attempt_count) >= 1
+        ? Number(row.attempt_count)
+        : 1
     };
   }
 
@@ -55,7 +58,7 @@
 
   const SELECT_BASE = "uid,deal,client_solved_at,solved_at";
   const SELECT_WITH_BEST = `${SELECT_BASE},best_steps,clear_count`;
-  const PENDING_SELECT_FIELDS = "uid,deal,client_added_at,added_at";
+  const PENDING_SELECT_FIELDS = "uid,deal,client_added_at,added_at,attempt_count";
 
   async function runWithBestFallback(makeQuery) {
     let result = await makeQuery(SELECT_WITH_BEST);
@@ -370,6 +373,17 @@
     return { record: normalizePendingRecord(data), isNew: true, solved: false };
   }
 
+  async function pendingIncrementAttempt(uid) {
+    if (!client) throw new Error("Supabase client 尚未載入。");
+    const q = String(uid || "").trim();
+    if (!q) throw new TypeError("UID 格式錯誤。");
+
+    const { data, error } = await client.rpc("increment_spider_pending_attempt_count", { p_uid: q });
+    if (error) throw error;
+    const value = Number(data);
+    return Number.isInteger(value) && value >= 1 ? value : null;
+  }
+
   async function pendingPromote(uid, deal) {
     if (!client) throw new Error("Supabase client 尚未載入。");
     const q = String(uid || "").trim();
@@ -404,6 +418,7 @@
     findByUid: pendingFindByUid,
     findByDeal: pendingFindByDeal,
     save: pendingSave,
+    incrementAttempt: pendingIncrementAttempt,
     promote: pendingPromote,
     dealKey
   });

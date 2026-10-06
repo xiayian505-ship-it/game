@@ -154,14 +154,17 @@
         const best = Number(record.bestSteps);
         const clears = Math.max(0, Number(record.clearCount) || 0);
         info.textContent = isPendingMode()
-          ? "待破解"
+          ? `挑戰 ${Math.max(1, Number(record.attemptCount) || 1)} 次`
           : (best > 0 ? `最佳 ${best} 步｜破關 ${clears} 次` : `尚無步數紀錄｜破關 ${clears} 次`);
         button.appendChild(info);
 
         button.addEventListener("click", () => {
           if (contributedLoading) return;
           window.FreeCellGame?.abandonCurrentDeal?.();
-          if (window.FreeCellGame?.startKnownGame(record)) hideDealPicker();
+          if (window.FreeCellGame?.startKnownGame(record)) {
+            if (isPendingMode()) void window.FreeCellData?.markPendingAttempt?.(record);
+            hideDealPicker();
+          }
         });
         contributedList.appendChild(button);
       });
@@ -222,7 +225,10 @@
         return;
       }
       window.FreeCellGame?.abandonCurrentDeal?.();
-      if (window.FreeCellGame?.startKnownGame(record)) hideDealPicker();
+      if (window.FreeCellGame?.startKnownGame(record)) {
+        if (isPendingMode()) void window.FreeCellData?.markPendingAttempt?.(record);
+        hideDealPicker();
+      }
     } catch (error) {
       console.warn(`隨機讀取 FreeCell ${label}失敗。`, error);
       setPickerNotice(`${label}目前讀取失敗，請稍後再試。`);
@@ -246,7 +252,10 @@
       return;
     }
     window.FreeCellGame?.abandonCurrentDeal?.();
-    if (window.FreeCellGame?.startKnownGame(record)) hideDealPicker();
+    if (window.FreeCellGame?.startKnownGame(record)) {
+      if (isPendingMode()) void window.FreeCellData?.markPendingAttempt?.(record);
+      hideDealPicker();
+    }
   }
 
   function clearVictoryEffect(api, target) {
