@@ -21,6 +21,7 @@
 
   const randomDealButton = document.getElementById("randomDealButton");
   const solvedDealButton = document.getElementById("solvedDealButton");
+  const pendingDealButton = document.getElementById("pendingDealButton");
   const contributedPanel = document.getElementById("contributedPanel");
   const contributedList = document.getElementById("contributedList");
   const randomContributedButton = document.getElementById("randomContributedButton");
@@ -55,6 +56,7 @@
   const playAgainButton = document.getElementById("playAgainButton");
 
   const SOLVED_DEALS_STORAGE_KEY = "spider_medium_solved_deals_v1";
+  const PENDING_DEALS_STORAGE_KEY = "spider_medium_pending_deals_v1";
   const ACTIVE_GAME_STORAGE_KEY = "spider_medium_active_game_v1";
   const BEST_STEPS_STORAGE_KEY = "spider_medium_best_steps_v1";
   const LAST_VICTORY_EFFECTS_STORAGE_KEY = "spider_medium_last_victory_effects_v1";
@@ -91,6 +93,7 @@
   let contributedTotalPages = 1;
   let contributedPageRecords = [];
   let contributedLoading = false;
+  let contributedMode = "solved";
 
   const VICTORY_EFFECTS = Object.freeze([
     "confetti",
@@ -780,7 +783,9 @@
     setPickerNotice("");
     setNotice(
       currentDealUid
-        ? `已載入玩家已解牌局 ${shortUid(currentDealUid)}`
+        ? (currentDealSource === "pending"
+            ? `已載入待破解牌局 ${shortUid(currentDealUid)}`
+            : `已載入玩家已解牌局 ${shortUid(currentDealUid)}`)
         : "點一張牌或牌串開始。"
     );
     render();
@@ -809,6 +814,7 @@
     restartButton.disabled = busy;
     randomDealButton.disabled = busy;
     solvedDealButton.disabled = busy || contributedLoading;
+    pendingDealButton.disabled = busy || contributedLoading;
     randomContributedButton.disabled = busy || contributedLoading;
     uidDealButton.disabled = busy || contributedLoading;
     uidSearchButton.disabled = busy || contributedLoading;
@@ -1389,6 +1395,76 @@
     return writeSolvedDeals(solvedDeals);
   }
 
+  function readPendingDeals() {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(PENDING_DEALS_STORAGE_KEY) || "[]");
+      return Array.isArray(parsed)
+        ? parsed.filter(item =>
+            item &&
+            typeof item.uid === "string" &&
+            Array.isArray(item.deal) &&
+            item.deal.length === 104 &&
+            Boolean(dealKeyOf(item.deal))
+          )
+        : [];
+    } catch (error) {
+      console.warn("讀取待破解牌局失敗。", error);
+      return [];
+    }
+  }
+
+  function writePendingDeals(records) {
+    try {
+      localStorage.setItem(PENDING_DEALS_STORAGE_KEY, JSON.stringify(records));
+      return true;
+    } catch (error) {
+      console.warn("儲存待破解牌局失敗。", error);
+      return false;
+    }
+  }
+
+  function savePendingRecordLocally(record) {
+    if (!record?.uid || !Array.isArray(record.deal) || record.deal.length !== 104) return false;
+    const key = dealKeyOf(record.deal);
+    if (!key) return false;
+
+    const records = readPendingDeals();
+    const previous = records.find(item => dealKeyOf(item.deal) === key) || null;
+    const next = records.filter(item => dealKeyOf(item.deal) !== key);
+    const deal = record.deal;
+    next.push({
+      uid: record.uid,
+      deal: cloneDeal(deal),
+      addedAt: record.addedAt || previous?.addedAt || ""
+    });
+    return writePendingDeals(next);
+  }
+
+  function removePendingRecordLocally(deal, uid = "") {
+    const key = dealKeyOf(deal);
+    const q = String(uid || "").trim();
+    if (!key && !q) return false;
+
+    const records = readPendingDeals();
+    const next = records.filter(item => {
+      if (key && dealKeyOf(item.deal) === key) return false;
+      if (q && String(item.uid || "") === q) return false;
+      return true;
+    });
+    return next.length === records.length ? false : writePendingDeals(next);
+  }
+
+  function findLocalPendingByKey(key) {
+    if (!key) return null;
+    return readPendingDeals().find(item => dealKeyOf(item.deal) === key) || null;
+  }
+
+  function getLocalPendingDealsSorted() {
+    return readPendingDeals()
+      .slice()
+      .sort((a, b) => String(b.addedAt || "").localeCompare(String(a.addedAt || "")));
+  }
+
   function getLocalSolvedDealsSorted() {
     return readSolvedDeals()
       .slice()
@@ -1410,6 +1486,102 @@
     }
   }
 
+  async function promotePendingRecord(record) {
+    if (!record?.uid || !Array.isArray(record.deal) || record.deal.length !== 104) return false;
+
+    removePendingRecordLocally(record.deal, record.uid);
+
+    if (!window.SpiderPendingDealsDB?.promote) return false;
+
+    try {
+      return await window.SpiderPendingDealsDB.promote(record.uid, record.deal);
+    } catch (error) {
+      console.warn("待破解牌局移轉失敗。", error);
+      return false;
+    }
+  }
+
+  async function savePendingDeal(deal, uid = null) {
+    const key = dealKeyOf(deal);
+    if (!key || !Array.isArray(deal) || deal.length !== 104) return null;
+
+    const localSolved = findLocalDealByKey(key);
+    if (localSolved) {
+      removePendingRecordLocally(deal, uid);
+      return null;
+    }
+
+    let record = findLocalPendingByKey(key);
+    if (!record) {
+      record = {
+        uid: String(uid || "").trim() || createSolvedDealUid(),
+        deal: cloneDeal(deal),
+        addedAt: window.Timestamp?.create ? window.Timestamp.create() : String(Date.now())
+      };
+    }
+    savePendingRecordLocally(record);
+
+    if (window.SpiderSolvedDealsDB?.findByDeal) {
+      try {
+        const solved = await window.SpiderSolvedDealsDB.findByDeal(deal);
+        if (solved) {
+          saveRecordLocally(solved);
+          removePendingRecordLocally(deal, record.uid);
+          await promotePendingRecord(solved);
+          return null;
+        }
+      } catch (error) {
+        console.warn("待破解牌局比對已解牌庫失敗。", error);
+      }
+    }
+
+    if (window.SpiderPendingDealsDB?.save) {
+      try {
+        const result = await window.SpiderPendingDealsDB.save(record);
+        if (result?.solved) {
+          removePendingRecordLocally(deal, record.uid);
+          return null;
+        }
+        if (result?.record) {
+          record = result.record;
+          savePendingRecordLocally(record);
+        }
+      } catch (error) {
+        console.warn("待破解牌局寫入雲端失敗，已保留本機紀錄。", error);
+      }
+    }
+
+    return record;
+  }
+
+  async function syncLocalPendingDealsToDatabase() {
+    const records = readPendingDeals();
+    for (const record of records) {
+      try {
+        await savePendingDeal(record.deal, record.uid);
+      } catch (error) {
+        console.warn("本機待破解牌局同步至雲端失敗。", error);
+        break;
+      }
+    }
+  }
+
+  function abandonCurrentDeal() {
+    if (
+      busy ||
+      completed >= 8 ||
+      !Array.isArray(originalDeal) ||
+      originalDeal.length !== 104
+    ) {
+      return false;
+    }
+
+    const deal = cloneDeal(originalDeal);
+    const uid = currentDealUid;
+    void savePendingDeal(deal, uid);
+    return true;
+  }
+
   async function syncLocalSolvedDealsToDatabase() {
     if (!window.SpiderSolvedDealsDB?.save) return;
 
@@ -1417,7 +1589,10 @@
     for (const record of localDeals) {
       try {
         const result = await window.SpiderSolvedDealsDB.save(record);
-        if (result?.record) saveRecordLocally(result.record);
+        if (result?.record) {
+          saveRecordLocally(result.record);
+          await promotePendingRecord(result.record);
+        }
       } catch (error) {
         console.warn("本機可解牌局同步至雲端失敗。", error);
         break;
@@ -1429,7 +1604,10 @@
 
   async function initializeDatabase() {
     const online = await refreshRemoteSolvedDealCount();
-    if (online) await syncLocalSolvedDealsToDatabase();
+    if (online) {
+      await syncLocalSolvedDealsToDatabase();
+      await syncLocalPendingDealsToDatabase();
+    }
   }
 
   async function resolveCurrentDealIdentity() {
@@ -1453,6 +1631,7 @@
     }
 
     currentDealUid = record.uid;
+    currentDealSource = "solved";
     currentDealBestValue = bestStepsForRecord(record);
     currentDealClearValue = clearCountForRecord(record);
     saveActiveGame();
@@ -1469,14 +1648,25 @@
     const key = dealKeyOf(originalDeal);
     const existing = findLocalDealByKey(key);
     const localWasNew = !existing;
+    let pending = existing ? null : findLocalPendingByKey(key);
+
+    if (!existing && !pending && window.SpiderPendingDealsDB?.findByDeal) {
+      try {
+        pending = await window.SpiderPendingDealsDB.findByDeal(originalDeal);
+        if (pending) savePendingRecordLocally(pending);
+      } catch (error) {
+        console.warn("比對待破解牌局 UID 失敗。", error);
+      }
+    }
 
     const record = existing || {
-      uid: currentDealUid || createSolvedDealUid(),
+      uid: currentDealUid || pending?.uid || createSolvedDealUid(),
       deal: cloneDeal(originalDeal),
       solvedAt: window.Timestamp?.create ? window.Timestamp.create() : String(Date.now())
     };
 
     saveRecordLocally(record);
+    removePendingRecordLocally(record.deal, record.uid);
     currentDealUid = record.uid;
 
     if (!window.SpiderSolvedDealsDB?.save) {
@@ -1488,6 +1678,7 @@
       const canonical = result?.record || record;
       saveRecordLocally(canonical);
       currentDealUid = canonical.uid;
+      await promotePendingRecord(canonical);
       await refreshRemoteSolvedDealCount();
 
       return {
@@ -1727,18 +1918,29 @@
     return true;
   }
 
+  function isPendingMode() {
+    return contributedMode === "pending";
+  }
+
+  function currentPoolLabel() {
+    return isPendingMode() ? "待破解牌局" : "玩家已解牌局";
+  }
+
   function renderContributedPage(records, totalCount, page, totalPages) {
     contributedPageRecords = Array.isArray(records) ? records.slice() : [];
     contributedPage = Math.max(1, Number(page) || 1);
     contributedTotalPages = Math.max(1, Number(totalPages) || 1);
-    remoteSolvedDealCount = Math.max(remoteSolvedDealCount, Number(totalCount) || 0);
+
+    if (!isPendingMode()) {
+      remoteSolvedDealCount = Math.max(remoteSolvedDealCount, Number(totalCount) || 0);
+    }
 
     contributedList.innerHTML = "";
 
     if (contributedPageRecords.length === 0) {
       const empty = document.createElement("p");
       empty.className = "contributed-empty";
-      empty.textContent = "目前還沒有玩家已解牌局。";
+      empty.textContent = isPendingMode() ? "目前還沒有待破解牌局。" : "目前還沒有玩家已解牌局。";
       contributedList.appendChild(empty);
     } else {
       contributedPageRecords.forEach(record => {
@@ -1752,23 +1954,29 @@
         code.textContent = shortUid(record.uid);
         button.appendChild(code);
 
-        const best = bestStepsForRecord(record);
         const bestText = document.createElement("span");
         bestText.className = "contributed-best";
-        const clearCount = clearCountForRecord(record);
-        bestText.textContent = best
-          ? `最佳 ${best} 步｜破關 ${clearCount} 次`
-          : `尚無步數紀錄｜破關 ${clearCount} 次`;
+
+        if (isPendingMode()) {
+          bestText.textContent = "待破解";
+        } else {
+          const best = bestStepsForRecord(record);
+          const clearCount = clearCountForRecord(record);
+          bestText.textContent = best
+            ? `最佳 ${best} 步｜破關 ${clearCount} 次`
+            : `尚無步數紀錄｜破關 ${clearCount} 次`;
+        }
         button.appendChild(bestText);
 
         button.addEventListener("click", () => {
           if (busy || contributedLoading) return;
+          abandonCurrentDeal();
           startGame({
             deal: record.deal,
             uid: record.uid,
-            source: "contributed",
-            bestSteps: bestStepsForRecord(record),
-            clearCount: clearCountForRecord(record)
+            source: isPendingMode() ? "pending" : "contributed",
+            bestSteps: isPendingMode() ? null : bestStepsForRecord(record),
+            clearCount: isPendingMode() ? 0 : clearCountForRecord(record)
           });
         });
 
@@ -1785,28 +1993,41 @@
 
     contributedLoading = true;
     render();
-    setPickerNotice("正在讀取玩家已解牌局…");
+
+    const pending = isPendingMode();
+    const label = currentPoolLabel();
+    setPickerNotice(`正在讀取${label}…`);
 
     try {
-      if (window.SpiderSolvedDealsDB?.listPage) {
-        const result = await window.SpiderSolvedDealsDB.listPage(page, 5);
-        databaseReady = true;
-        remoteSolvedDealCount = Number(result.totalCount || 0);
+      const remote = pending ? window.SpiderPendingDealsDB : window.SpiderSolvedDealsDB;
+
+      if (remote?.listPage) {
+        const result = await remote.listPage(page, 5);
+        if (!pending) {
+          databaseReady = true;
+          remoteSolvedDealCount = Number(result.totalCount || 0);
+        }
+
+        (result.records || []).forEach(record => {
+          if (pending) savePendingRecordLocally(record);
+          else saveRecordLocally(record);
+        });
+
         renderContributedPage(
           result.records || [],
           result.totalCount || 0,
           result.page || page,
           result.totalPages || 1
         );
-        setPickerNotice(result.totalCount > 0 ? `共有 ${result.totalCount} 副玩家已解牌局。` : "目前還沒有玩家已解牌局。");
+        setPickerNotice(result.totalCount > 0 ? `共有 ${result.totalCount} 副${label}。` : `目前還沒有${label}。`);
         return;
       }
 
       throw new Error("雲端分頁功能尚未載入。");
     } catch (error) {
-      console.warn("讀取玩家已解牌局分頁失敗，改用本機牌庫。", error);
+      console.warn(`讀取${label}分頁失敗，改用本機牌庫。`, error);
 
-      const localDeals = getLocalSolvedDealsSorted();
+      const localDeals = pending ? getLocalPendingDealsSorted() : getLocalSolvedDealsSorted();
       const totalCount = localDeals.length;
       const totalPages = Math.max(1, Math.ceil(totalCount / 5));
       const safePage = Math.min(Math.max(1, Number(page) || 1), totalPages);
@@ -1814,17 +2035,22 @@
       const records = localDeals.slice(start, start + 5);
 
       renderContributedPage(records, totalCount, safePage, totalPages);
-      setPickerNotice(totalCount > 0 ? "目前使用這台裝置上的玩家已解牌局。" : "目前還沒有玩家已解牌局。");
+      setPickerNotice(totalCount > 0 ? `目前使用這台裝置上的${label}。` : `目前還沒有${label}。`);
     } finally {
       contributedLoading = false;
       render();
     }
   }
 
-  async function openContributedPanel() {
+  async function openContributedPanel(mode = "solved") {
     if (busy) return;
 
+    contributedMode = mode === "pending" ? "pending" : "solved";
     contributedPanel.hidden = false;
+    contributedPanel.setAttribute("aria-label", currentPoolLabel());
+    randomContributedButton.textContent = isPendingMode()
+      ? "從待破解牌局隨機抽一局"
+      : "從已解牌局隨機抽一局";
     uidSearchPanel.hidden = true;
     uidDealButton.setAttribute("aria-expanded", "false");
     uidInput.value = "";
@@ -1836,38 +2062,43 @@
 
     contributedLoading = true;
     render();
-    setPickerNotice("正在從玩家已解牌局隨機抽一副…");
+
+    const pending = isPendingMode();
+    const label = currentPoolLabel();
+    setPickerNotice(`正在從${label}隨機抽一副…`);
 
     try {
       let record = null;
+      const remote = pending ? window.SpiderPendingDealsDB : window.SpiderSolvedDealsDB;
 
-      if (window.SpiderSolvedDealsDB?.random) {
-        record = await window.SpiderSolvedDealsDB.random();
-        databaseReady = true;
+      if (remote?.random) {
+        record = await remote.random();
+        if (!pending) databaseReady = true;
       }
 
       if (!record) {
-        const localDeals = getLocalSolvedDealsSorted();
+        const localDeals = pending ? getLocalPendingDealsSorted() : getLocalSolvedDealsSorted();
         if (localDeals.length > 0) {
           record = localDeals[Math.floor(Math.random() * localDeals.length)];
         }
       }
 
       if (!record) {
-        setPickerNotice("目前還沒有玩家已解牌局。先解出第一副吧。");
+        setPickerNotice(pending ? "目前還沒有待破解牌局。" : "目前還沒有玩家已解牌局。先解出第一副吧。");
         return;
       }
 
+      abandonCurrentDeal();
       startGame({
         deal: record.deal,
         uid: record.uid,
-        source: "contributed-random",
-        bestSteps: bestStepsForRecord(record),
-        clearCount: clearCountForRecord(record)
+        source: pending ? "pending" : "contributed-random",
+        bestSteps: pending ? null : bestStepsForRecord(record),
+        clearCount: pending ? 0 : clearCountForRecord(record)
       });
     } catch (error) {
-      console.warn("隨機讀取玩家已解牌局失敗。", error);
-      setPickerNotice("玩家已解牌局目前讀取失敗，請稍後再試。");
+      console.warn(`隨機讀取${label}失敗。`, error);
+      setPickerNotice(`${label}目前讀取失敗，請稍後再試。`);
     } finally {
       contributedLoading = false;
       render();
@@ -1883,16 +2114,22 @@
       return;
     }
 
-    let record = readSolvedDeals().find(item =>
+    const pending = isPendingMode();
+    let record = (pending ? readPendingDeals() : readSolvedDeals()).find(item =>
       String(item.uid || "").toLowerCase() === q.toLowerCase()
     ) || null;
 
-    if (!record && window.SpiderSolvedDealsDB?.findByUid) {
+    const remote = pending ? window.SpiderPendingDealsDB : window.SpiderSolvedDealsDB;
+
+    if (!record && remote?.findByUid) {
       try {
-        record = await window.SpiderSolvedDealsDB.findByUid(q);
+        record = await remote.findByUid(q);
         if (record) {
-          databaseReady = true;
-          saveRecordLocally(record);
+          if (pending) savePendingRecordLocally(record);
+          else {
+            databaseReady = true;
+            saveRecordLocally(record);
+          }
         }
       } catch (error) {
         console.warn("UID 查詢失敗。", error);
@@ -1904,12 +2141,13 @@
       return;
     }
 
+    abandonCurrentDeal();
     startGame({
       deal: record.deal,
       uid: record.uid,
-      source: "uid",
-      bestSteps: bestStepsForRecord(record),
-      clearCount: clearCountForRecord(record)
+      source: pending ? "pending" : "uid",
+      bestSteps: pending ? null : bestStepsForRecord(record),
+      clearCount: pending ? 0 : clearCountForRecord(record)
     });
   }
 
@@ -1993,9 +2231,12 @@
   dealPickerBackButton.addEventListener("click", hideDealPicker);
 
   randomDealButton.addEventListener("click", () => {
-    if (!busy) startGame({ source: "random" });
+    if (busy) return;
+    abandonCurrentDeal();
+    startGame({ source: "random" });
   });
-  solvedDealButton.addEventListener("click", () => void openContributedPanel());
+  solvedDealButton.addEventListener("click", () => void openContributedPanel("solved"));
+  pendingDealButton.addEventListener("click", () => void openContributedPanel("pending"));
   randomContributedButton.addEventListener("click", () => void loadRandomSolvedDeal());
   contributedPrevButton.addEventListener("click", () => {
     if (contributedPage > 1) void loadContributedPage(contributedPage - 1);

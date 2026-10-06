@@ -328,6 +328,14 @@
     return true;
   }
 
+  function abandonCurrentDeal() {
+    if (busy || !hasStartedGame || originalDeal.length !== 52 || completedCardCount() === 52) return false;
+    const deal = cloneDeal(originalDeal);
+    const uid = currentDealUid;
+    void window.KlondikeDraw3Data?.savePending?.({ deal, uid });
+    return true;
+  }
+
   function clearCardPeekTimer() {
     if (!cardPeekState.timerId) return;
     window.clearTimeout(cardPeekState.timerId);
@@ -1128,6 +1136,7 @@
       return true;
     },
     restartCurrentDeal,
+    abandonCurrentDeal,
     hasGame() {
       return hasStartedGame;
     },

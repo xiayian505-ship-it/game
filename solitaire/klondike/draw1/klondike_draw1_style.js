@@ -10,6 +10,7 @@
   const dealPickerBackButton = document.getElementById("dealPickerBackButton");
   const randomDealButton = document.getElementById("randomDealButton");
   const solvedDealButton = document.getElementById("solvedDealButton");
+  const pendingDealButton = document.getElementById("pendingDealButton");
   const contributedPanel = document.getElementById("contributedPanel");
   const randomContributedButton = document.getElementById("randomContributedButton");
   const contributedList = document.getElementById("contributedList");
@@ -64,6 +65,7 @@
   let contributedPage = 1;
   let contributedTotalPages = 1;
   let contributedLoading = false;
+  let contributedMode = "solved";
   let lastVictoryEffectSignature = "";
   let lastVictoryEffects = (() => {
     try {
@@ -117,6 +119,14 @@
     if (willOpen) uidInput.focus();
   }
 
+  function isPendingMode() {
+    return contributedMode === "pending";
+  }
+
+  function currentPoolLabel() {
+    return isPendingMode() ? "待破解牌局" : "玩家已解牌局";
+  }
+
   function renderContributedPage(result) {
     const records = Array.isArray(result?.records) ? result.records : [];
     contributedPage = Math.max(1, Number(result?.page) || 1);
@@ -126,7 +136,7 @@
     if (!records.length) {
       const empty = document.createElement("p");
       empty.className = "contributed-empty";
-      empty.textContent = "目前還沒有玩家已解牌局。";
+      empty.textContent = isPendingMode() ? "目前還沒有待破解牌局。" : "目前還沒有玩家已解牌局。";
       contributedList.appendChild(empty);
     } else {
       records.forEach(record => {
@@ -143,11 +153,14 @@
         info.className = "contributed-best";
         const best = Number(record.bestSteps);
         const clears = Math.max(0, Number(record.clearCount) || 0);
-        info.textContent = best > 0 ? `最佳 ${best} 步｜破關 ${clears} 次` : `尚無步數紀錄｜破關 ${clears} 次`;
+        info.textContent = isPendingMode()
+          ? "待破解"
+          : (best > 0 ? `最佳 ${best} 步｜破關 ${clears} 次` : `尚無步數紀錄｜破關 ${clears} 次`);
         button.appendChild(info);
 
         button.addEventListener("click", () => {
           if (contributedLoading) return;
+          window.KlondikeDraw1Game?.abandonCurrentDeal?.();
           if (window.KlondikeDraw1Game?.startKnownGame(record)) hideDealPicker();
         });
         contributedList.appendChild(button);
@@ -164,14 +177,17 @@
     contributedLoading = true;
     contributedPrevButton.disabled = true;
     contributedNextButton.disabled = true;
-    setPickerNotice("正在讀取玩家已解牌局…");
+    const label = currentPoolLabel();
+    setPickerNotice(`正在讀取${label}…`);
     try {
-      const result = await window.KlondikeDraw1Data.listPage(page, 5);
+      const result = isPendingMode()
+        ? await window.KlondikeDraw1Data.listPendingPage(page, 5)
+        : await window.KlondikeDraw1Data.listPage(page, 5);
       renderContributedPage(result);
-      setPickerNotice(result.totalCount > 0 ? `共有 ${result.totalCount} 副玩家已解牌局。` : "目前還沒有玩家已解牌局。");
+      setPickerNotice(result.totalCount > 0 ? `共有 ${result.totalCount} 副${label}。` : `目前還沒有${label}。`);
     } catch (error) {
-      console.warn("讀取 Klondike Draw 1 已解牌局失敗。", error);
-      setPickerNotice("玩家已解牌局目前讀取失敗，請稍後再試。");
+      console.warn(`讀取 Klondike Draw 1 ${label}失敗。`, error);
+      setPickerNotice(`${label}目前讀取失敗，請稍後再試。`);
     } finally {
       contributedLoading = false;
       contributedPrevButton.disabled = contributedPage <= 1;
@@ -179,8 +195,13 @@
     }
   }
 
-  async function openContributedPanel() {
+  async function openContributedPanel(mode = "solved") {
+    contributedMode = mode === "pending" ? "pending" : "solved";
     contributedPanel.hidden = false;
+    contributedPanel.setAttribute("aria-label", currentPoolLabel());
+    randomContributedButton.textContent = isPendingMode()
+      ? "從待破解牌局隨機抽一局"
+      : "從已解牌局隨機抽一局";
     uidSearchPanel.hidden = true;
     uidDealButton.setAttribute("aria-expanded", "false");
     uidInput.value = "";
@@ -190,17 +211,21 @@
   async function loadRandomSolvedDeal() {
     if (contributedLoading) return;
     contributedLoading = true;
-    setPickerNotice("正在從玩家已解牌局隨機抽一副…");
+    const label = currentPoolLabel();
+    setPickerNotice(`正在從${label}隨機抽一副…`);
     try {
-      const record = await window.KlondikeDraw1Data.randomSolved();
+      const record = isPendingMode()
+        ? await window.KlondikeDraw1Data.randomPending()
+        : await window.KlondikeDraw1Data.randomSolved();
       if (!record) {
-        setPickerNotice("目前還沒有玩家已解牌局。先解出第一副吧。");
+        setPickerNotice(isPendingMode() ? "目前還沒有待破解牌局。" : "目前還沒有玩家已解牌局。先解出第一副吧。");
         return;
       }
+      window.KlondikeDraw1Game?.abandonCurrentDeal?.();
       if (window.KlondikeDraw1Game?.startKnownGame(record)) hideDealPicker();
     } catch (error) {
-      console.warn("隨機讀取 Klondike Draw 1 已解牌局失敗。", error);
-      setPickerNotice("玩家已解牌局目前讀取失敗，請稍後再試。");
+      console.warn(`隨機讀取 Klondike Draw 1 ${label}失敗。`, error);
+      setPickerNotice(`${label}目前讀取失敗，請稍後再試。`);
     } finally {
       contributedLoading = false;
     }
@@ -213,11 +238,14 @@
       return;
     }
     setPickerNotice("正在查詢 UID…");
-    const record = await window.KlondikeDraw1Data.findByUid(q);
+    const record = isPendingMode()
+      ? await window.KlondikeDraw1Data.findPendingByUid(q)
+      : await window.KlondikeDraw1Data.findByUid(q);
     if (!record) {
       setPickerNotice("找不到這個完整 UID。");
       return;
     }
+    window.KlondikeDraw1Game?.abandonCurrentDeal?.();
     if (window.KlondikeDraw1Game?.startKnownGame(record)) hideDealPicker();
   }
 
@@ -413,6 +441,7 @@
   randomDealButton.addEventListener("click", () => {
     if (window.KlondikeDraw1Game?.isBusy()) return;
     try {
+      window.KlondikeDraw1Game?.abandonCurrentDeal?.();
       window.KlondikeDraw1Game?.startRandomGame();
       hideDealPicker();
     } catch (error) {
@@ -421,7 +450,8 @@
     }
   });
 
-  solvedDealButton.addEventListener("click", () => void openContributedPanel());
+  solvedDealButton.addEventListener("click", () => void openContributedPanel("solved"));
+  pendingDealButton.addEventListener("click", () => void openContributedPanel("pending"));
   randomContributedButton.addEventListener("click", () => void loadRandomSolvedDeal());
   contributedPrevButton.addEventListener("click", () => {
     if (contributedPage > 1) void loadContributedPage(contributedPage - 1);
