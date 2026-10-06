@@ -50,6 +50,13 @@
     diamond: "red"
   });
 
+  const CLASSIC_UNSOLVABLE_DEALS = Object.freeze([
+    11982, 146692, 186216, 455889,
+    495505, 512118, 517776, 781948
+  ]);
+
+  const MICROSOFT_DEAL_SUITS = Object.freeze(["club", "diamond", "heart", "spade"]);
+
   let columns = Array.from({ length: 8 }, () => []);
   let freeCells = Array(4).fill(null);
   let foundations = createEmptyFoundations();
@@ -59,6 +66,8 @@
   let busy = false;
   let hasStartedGame = false;
   let currentDealUid = null;
+  let currentDealSource = "random";
+  let currentClassicDealNumber = null;
   let currentDealBestValue = null;
   let currentDealClearValue = 0;
   let solvedDealCount = 0;
@@ -347,6 +356,36 @@
     });
   }
 
+  function createMicrosoftClassicDeal(dealNumber) {
+    const number = Math.trunc(Number(dealNumber));
+    if (!CLASSIC_UNSOLVABLE_DEALS.includes(number)) return null;
+
+    const deck = [];
+    for (let rank = 1; rank <= 13; rank += 1) {
+      MICROSOFT_DEAL_SUITS.forEach(suit => {
+        deck.push({ rank, suit, faceUp: true });
+      });
+    }
+
+    let state = number & 0x7fffffff;
+    const deal = [];
+
+    while (deck.length) {
+      state = (Math.imul(state, 214013) + 2531011) & 0x7fffffff;
+      const randomValue = (state >>> 16) & 0x7fff;
+      const selectedIndex = randomValue % deck.length;
+      const lastIndex = deck.length - 1;
+      [deck[selectedIndex], deck[lastIndex]] = [deck[lastIndex], deck[selectedIndex]];
+      deal.push(deck.pop());
+    }
+
+    return deal.map(serializeCard);
+  }
+
+  function classicDealUid(dealNumber) {
+    return `freecell-classic-${Math.trunc(Number(dealNumber))}`;
+  }
+
   function startGame(options = {}) {
     assertDependencies();
 
@@ -374,6 +413,10 @@
     busy = false;
     hasStartedGame = true;
     currentDealUid = String(options.uid || "").trim() || null;
+    currentDealSource = String(options.source || (options.classicDealNumber ? "classic" : "random"));
+    currentClassicDealNumber = Number.isInteger(Number(options.classicDealNumber))
+      ? Number(options.classicDealNumber)
+      : null;
     currentDealBestValue = Number.isInteger(Number(options.bestSteps)) && Number(options.bestSteps) > 0 ? Number(options.bestSteps) : null;
     currentDealClearValue = Number.isInteger(Number(options.clearCount)) && Number(options.clearCount) >= 0 ? Number(options.clearCount) : 0;
 
@@ -384,7 +427,9 @@
       columns[index % 8].push(card);
     }
 
-    setNotice(currentDealUid ? `已載入牌局 ${window.FreeCellData?.shortUid?.(currentDealUid) || currentDealUid}。` : "點一張牌或牌串開始。");
+    setNotice(currentDealSource === "classic" && currentClassicDealNumber
+      ? `已載入經典無解牌局 #${currentClassicDealNumber}。`
+      : (currentDealUid ? `已載入牌局 ${window.FreeCellData?.shortUid?.(currentDealUid) || currentDealUid}。` : "點一張牌或牌串開始。"));
     render();
     saveActiveGame();
     if (!currentDealUid && window.FreeCellData?.resolveDeal) {
@@ -402,13 +447,21 @@
 
   function restartCurrentDeal() {
     if (busy || originalDeal.length !== 52) return false;
-    startGame({ deal: originalDeal, uid: currentDealUid, bestSteps: currentDealBestValue, clearCount: currentDealClearValue });
+    startGame({
+      deal: originalDeal,
+      uid: currentDealUid,
+      source: currentDealSource,
+      classicDealNumber: currentClassicDealNumber,
+      bestSteps: currentDealBestValue,
+      clearCount: currentDealClearValue
+    });
     setNotice("已重新開始此局。");
     return true;
   }
 
   function abandonCurrentDeal() {
     if (busy || !hasStartedGame || originalDeal.length !== 52 || completedCardCount() === 52) return false;
+    if (currentDealSource === "classic") return false;
     const deal = cloneDeal(originalDeal);
     const uid = currentDealUid;
     void window.FreeCellData?.savePending?.({ deal, uid });
@@ -430,7 +483,8 @@
 
   function renderDealIdentity() {
     const hasUid = Boolean(currentDealUid);
-    currentDealIdentity.hidden = !hasUid;
+    const hideUid = currentDealSource === "classic";
+    currentDealIdentity.hidden = !hasUid || hideUid;
     copyDealUidButton.disabled = !hasUid;
     if (!hasUid) return;
     currentDealShortUid.textContent = window.FreeCellData?.shortUid?.(currentDealUid) || currentDealUid;
@@ -1071,8 +1125,10 @@
     render();
     clearActiveGame();
 
-    let result = { uid: currentDealUid, bestSteps: currentDealBestValue, clearCount: currentDealClearValue, isNew: false };
-    if (window.FreeCellData?.handleWin) {
+    let result = currentDealSource === "classic"
+      ? { uid: null, bestSteps: null, clearCount: 0, isNew: false }
+      : { uid: currentDealUid, bestSteps: currentDealBestValue, clearCount: currentDealClearValue, isNew: false };
+    if (currentDealSource !== "classic" && window.FreeCellData?.handleWin) {
       try {
         result = await window.FreeCellData.handleWin({ deal: originalDeal, steps: moveCount, uid: currentDealUid });
         currentDealUid = result.uid || currentDealUid;
@@ -1111,6 +1167,8 @@
       moveCount,
       originalDeal: originalDeal.map(serializeCard),
       currentDealUid,
+      currentDealSource,
+      currentClassicDealNumber,
       currentDealBestValue,
       currentDealClearValue
     };
@@ -1205,6 +1263,10 @@
     busy = false;
     hasStartedGame = true;
     currentDealUid = String(parsed.currentDealUid || "").trim() || null;
+    currentDealSource = String(parsed.currentDealSource || (currentDealUid?.startsWith("freecell-classic-") ? "classic" : "random"));
+    currentClassicDealNumber = Number.isInteger(Number(parsed.currentClassicDealNumber))
+      ? Number(parsed.currentClassicDealNumber)
+      : null;
     currentDealBestValue = Number.isInteger(Number(parsed.currentDealBestValue)) && Number(parsed.currentDealBestValue) > 0 ? Number(parsed.currentDealBestValue) : null;
     currentDealClearValue = Number.isInteger(Number(parsed.currentDealClearValue)) && Number(parsed.currentDealClearValue) >= 0 ? Number(parsed.currentDealClearValue) : 0;
 
@@ -1225,12 +1287,25 @@
   if (!restored) render();
 
   window.FreeCellGame = Object.freeze({
-    startRandomGame() { startGame({}); },
+    startRandomGame() { startGame({ source: "random" }); },
     startKnownGame(record) {
       if (!record?.deal) return false;
-      startGame({ deal: record.deal, uid: record.uid, bestSteps: record.bestSteps, clearCount: record.clearCount });
+      startGame({ deal: record.deal, uid: record.uid, source: "known", bestSteps: record.bestSteps, clearCount: record.clearCount });
       return true;
     },
+    startClassicGame(dealNumber) {
+      const number = Math.trunc(Number(dealNumber));
+      const deal = createMicrosoftClassicDeal(number);
+      if (!deal) return false;
+      startGame({
+        deal,
+        uid: classicDealUid(number),
+        source: "classic",
+        classicDealNumber: number
+      });
+      return true;
+    },
+    classicDealNumbers() { return CLASSIC_UNSOLVABLE_DEALS.slice(); },
     setSolvedDealCount(value) {
       solvedDealCount = Math.max(0, Math.trunc(Number(value)) || 0);
       render();

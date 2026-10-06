@@ -11,12 +11,15 @@
   const randomDealButton = document.getElementById("randomDealButton");
   const solvedDealButton = document.getElementById("solvedDealButton");
   const pendingDealButton = document.getElementById("pendingDealButton");
+  const classicDealButton = document.getElementById("classicDealButton");
   const contributedPanel = document.getElementById("contributedPanel");
+  const classicListTitle = document.getElementById("classicListTitle");
   const randomContributedButton = document.getElementById("randomContributedButton");
   const contributedList = document.getElementById("contributedList");
   const contributedPrevButton = document.getElementById("contributedPrevButton");
   const contributedNextButton = document.getElementById("contributedNextButton");
   const contributedPageInfo = document.getElementById("contributedPageInfo");
+  const contributedPager = contributedPageInfo?.closest(".contributed-pager");
   const uidDealButton = document.getElementById("uidDealButton");
   const uidSearchPanel = document.getElementById("uidSearchPanel");
   const uidInput = document.getElementById("uidInput");
@@ -97,6 +100,10 @@
     message.hidden = true;
     dealPickerBackButton.hidden = !canReturn;
     contributedPanel.hidden = true;
+    classicListTitle.hidden = true;
+    randomContributedButton.hidden = false;
+    if (contributedPager) contributedPager.hidden = false;
+    uidDealButton.hidden = false;
     uidSearchPanel.hidden = true;
     uidDealButton.setAttribute("aria-expanded", "false");
     uidInput.value = "";
@@ -123,7 +130,12 @@
     return contributedMode === "pending";
   }
 
+  function isClassicMode() {
+    return contributedMode === "classic";
+  }
+
   function currentPoolLabel() {
+    if (isClassicMode()) return "經典無解牌局";
     return isPendingMode() ? "待破解牌局" : "玩家已解牌局";
   }
 
@@ -202,13 +214,54 @@
     contributedMode = mode === "pending" ? "pending" : "solved";
     contributedPanel.hidden = false;
     contributedPanel.setAttribute("aria-label", currentPoolLabel());
+    classicListTitle.hidden = true;
+    randomContributedButton.hidden = false;
     randomContributedButton.textContent = isPendingMode()
       ? "從待破解牌局隨機抽一局"
       : "從已解牌局隨機抽一局";
+    if (contributedPager) contributedPager.hidden = false;
+    uidDealButton.hidden = false;
     uidSearchPanel.hidden = true;
     uidDealButton.setAttribute("aria-expanded", "false");
     uidInput.value = "";
     await loadContributedPage(1);
+  }
+
+  function openClassicPanel() {
+    contributedMode = "classic";
+    contributedPanel.hidden = false;
+    contributedPanel.setAttribute("aria-label", "經典無解牌局");
+    classicListTitle.hidden = false;
+    randomContributedButton.hidden = true;
+    if (contributedPager) contributedPager.hidden = true;
+    uidDealButton.hidden = true;
+    uidSearchPanel.hidden = true;
+    uidDealButton.setAttribute("aria-expanded", "false");
+    uidInput.value = "";
+    contributedList.innerHTML = "";
+
+    const dealNumbers = window.FreeCellGame?.classicDealNumbers?.() || [];
+    dealNumbers.forEach(dealNumber => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "contributed-deal-row";
+
+      const code = document.createElement("span");
+      code.className = "contributed-code";
+      code.textContent = `#${dealNumber}`;
+      button.appendChild(code);
+
+      button.addEventListener("click", () => {
+        window.FreeCellGame?.abandonCurrentDeal?.();
+        if (window.FreeCellGame?.startClassicGame?.(dealNumber)) {
+          hideDealPicker();
+        }
+      });
+
+      contributedList.appendChild(button);
+    });
+
+    setPickerNotice("");
   }
 
   async function loadRandomSolvedDeal() {
@@ -461,6 +514,7 @@
 
   solvedDealButton.addEventListener("click", () => void openContributedPanel("solved"));
   pendingDealButton.addEventListener("click", () => void openContributedPanel("pending"));
+  classicDealButton.addEventListener("click", openClassicPanel);
   randomContributedButton.addEventListener("click", () => void loadRandomSolvedDeal());
   contributedPrevButton.addEventListener("click", () => {
     if (contributedPage > 1) void loadContributedPage(contributedPage - 1);
