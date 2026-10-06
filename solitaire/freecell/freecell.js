@@ -786,7 +786,15 @@
       }
     }
 
-    if (window.FreeCellUI?.playVictory) await window.FreeCellUI.playVictory(result);
+    try {
+      if (window.FreeCellUI?.playVictory) await window.FreeCellUI.playVictory(result);
+    } catch (error) {
+      console.warn("FreeCell 勝利特效播放失敗，遊戲仍照常完成。", error);
+    }
+
+    busy = false;
+    render();
+
     if (window.FreeCellUI?.showWinMessage) window.FreeCellUI.showWinMessage(moveCount, result);
     return true;
   }
