@@ -12,6 +12,10 @@
   const solvedDealButton = document.getElementById("solvedDealButton");
   const contributedPanel = document.getElementById("contributedPanel");
   const randomContributedButton = document.getElementById("randomContributedButton");
+  const contributedList = document.getElementById("contributedList");
+  const contributedPrevButton = document.getElementById("contributedPrevButton");
+  const contributedNextButton = document.getElementById("contributedNextButton");
+  const contributedPageInfo = document.getElementById("contributedPageInfo");
   const uidDealButton = document.getElementById("uidDealButton");
   const uidSearchPanel = document.getElementById("uidSearchPanel");
   const uidInput = document.getElementById("uidInput");
@@ -34,6 +38,8 @@
   const messageBest = document.getElementById("messageBest");
   const messageClears = document.getElementById("messageClears");
   const messageUidRow = document.getElementById("messageUidRow");
+  const messageUid = document.getElementById("messageUid");
+  const messageCopyUidButton = document.getElementById("messageCopyUidButton");
   const playAgainButton = document.getElementById("playAgainButton");
 
   const LAST_VICTORY_EFFECTS_STORAGE_KEY = "freecell_last_victory_effects_v1";
@@ -55,6 +61,9 @@
     "K♠", "K♥", "K♦", "K♣"
   ]);
 
+  let contributedPage = 1;
+  let contributedTotalPages = 1;
+  let contributedLoading = false;
   let lastVictoryEffectSignature = "";
   let lastVictoryEffects = (() => {
     try {
@@ -108,9 +117,108 @@
     if (willOpen) uidInput.focus();
   }
 
-  function showDbPreviewNotice() {
+  function renderContributedPage(result) {
+    const records = Array.isArray(result?.records) ? result.records : [];
+    contributedPage = Math.max(1, Number(result?.page) || 1);
+    contributedTotalPages = Math.max(1, Number(result?.totalPages) || 1);
+    contributedList.innerHTML = "";
+
+    if (!records.length) {
+      const empty = document.createElement("p");
+      empty.className = "contributed-empty";
+      empty.textContent = "目前還沒有玩家已解牌局。";
+      contributedList.appendChild(empty);
+    } else {
+      records.forEach(record => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "contributed-deal-row";
+
+        const code = document.createElement("span");
+        code.className = "contributed-code";
+        code.textContent = window.FreeCellData?.shortUid?.(record.uid) || record.uid;
+        button.appendChild(code);
+
+        const info = document.createElement("span");
+        info.className = "contributed-best";
+        const best = Number(record.bestSteps);
+        const clears = Math.max(0, Number(record.clearCount) || 0);
+        info.textContent = best > 0 ? `最佳 ${best} 步｜破關 ${clears} 次` : `尚無步數紀錄｜破關 ${clears} 次`;
+        button.appendChild(info);
+
+        button.addEventListener("click", () => {
+          if (contributedLoading) return;
+          if (window.FreeCellGame?.startKnownGame(record)) hideDealPicker();
+        });
+        contributedList.appendChild(button);
+      });
+    }
+
+    contributedPageInfo.textContent = `${contributedPage} / ${contributedTotalPages}`;
+    contributedPrevButton.disabled = contributedLoading || contributedPage <= 1;
+    contributedNextButton.disabled = contributedLoading || contributedPage >= contributedTotalPages;
+  }
+
+  async function loadContributedPage(page = 1) {
+    if (contributedLoading) return;
+    contributedLoading = true;
+    contributedPrevButton.disabled = true;
+    contributedNextButton.disabled = true;
+    setPickerNotice("正在讀取玩家已解牌局…");
+    try {
+      const result = await window.FreeCellData.listPage(page, 5);
+      renderContributedPage(result);
+      setPickerNotice(result.totalCount > 0 ? `共有 ${result.totalCount} 副玩家已解牌局。` : "目前還沒有玩家已解牌局。");
+    } catch (error) {
+      console.warn("讀取 FreeCell 已解牌局失敗。", error);
+      setPickerNotice("玩家已解牌局目前讀取失敗，請稍後再試。");
+    } finally {
+      contributedLoading = false;
+      contributedPrevButton.disabled = contributedPage <= 1;
+      contributedNextButton.disabled = contributedPage >= contributedTotalPages;
+    }
+  }
+
+  async function openContributedPanel() {
     contributedPanel.hidden = false;
-    setPickerNotice("前端預覽版尚未接 DB；目前只測隨機牌局與遊戲規則。");
+    uidSearchPanel.hidden = true;
+    uidDealButton.setAttribute("aria-expanded", "false");
+    uidInput.value = "";
+    await loadContributedPage(1);
+  }
+
+  async function loadRandomSolvedDeal() {
+    if (contributedLoading) return;
+    contributedLoading = true;
+    setPickerNotice("正在從玩家已解牌局隨機抽一副…");
+    try {
+      const record = await window.FreeCellData.randomSolved();
+      if (!record) {
+        setPickerNotice("目前還沒有玩家已解牌局。先解出第一副吧。");
+        return;
+      }
+      if (window.FreeCellGame?.startKnownGame(record)) hideDealPicker();
+    } catch (error) {
+      console.warn("隨機讀取 FreeCell 已解牌局失敗。", error);
+      setPickerNotice("玩家已解牌局目前讀取失敗，請稍後再試。");
+    } finally {
+      contributedLoading = false;
+    }
+  }
+
+  async function loadDealByUid() {
+    const q = String(uidInput.value || "").trim();
+    if (!q) {
+      setPickerNotice("貼上完整 UID 後再載入。");
+      return;
+    }
+    setPickerNotice("正在查詢 UID…");
+    const record = await window.FreeCellData.findByUid(q);
+    if (!record) {
+      setPickerNotice("找不到這個完整 UID。");
+      return;
+    }
+    if (window.FreeCellGame?.startKnownGame(record)) hideDealPicker();
   }
 
   function clearVictoryEffect(api, target) {
@@ -234,13 +342,13 @@
     completedArea.classList.add("victory-flash");
   }
 
-  async function playVictory() {
+  async function playVictory(result = {}) {
     const reduced = prefersReducedMotion();
     const selectedEffects = pickVictoryEffects();
 
     bombText.textContent = "牌局完成";
     bombPlus.textContent = "CLEAR";
-    bombSubtext.textContent = "前端預覽版未連接資料庫";
+    bombSubtext.textContent = result?.isNew ? "玩家已解牌局 +1" : "已完成玩家已解牌局";
 
     bombText.classList.remove("slowly-shine-text");
     void bombText.offsetWidth;
@@ -261,12 +369,24 @@
     clearVictoryParticles();
   }
 
-  function showWinMessage(steps) {
-    messageTitle.textContent = "牌局完成";
-    messageText.textContent = `完成！共用了 ${steps} 步。這版只測前端，尚未寫入玩家已解牌庫。`;
-    messageBest.hidden = true;
-    messageClears.hidden = true;
-    messageUidRow.hidden = true;
+  function showWinMessage(steps, result = {}) {
+    messageTitle.textContent = result?.isNew ? "恭喜玩家貢獻可解牌局 +1" : "牌局完成";
+    messageText.textContent = `完成！共用了 ${steps} 步。`;
+
+    const best = Number(result?.bestSteps);
+    messageBest.hidden = !(best > 0);
+    messageBest.textContent = best > 0
+      ? (steps <= best ? `本局 ${steps} 步｜最佳紀錄 ${best} 步` : `本局 ${steps} 步｜最佳紀錄 ${best} 步`)
+      : "";
+
+    const clears = Math.max(0, Number(result?.clearCount) || 0);
+    messageClears.hidden = !(clears > 0);
+    messageClears.textContent = clears > 0 ? `這副牌已成功破關 ${clears} 次` : "";
+
+    const uid = String(result?.uid || "");
+    messageUidRow.hidden = !uid;
+    messageUid.textContent = uid ? (window.FreeCellData?.shortUid?.(uid) || uid) : "";
+    messageCopyUidButton.dataset.uid = uid;
     message.hidden = false;
   }
 
@@ -301,16 +421,25 @@
     }
   });
 
-  solvedDealButton.addEventListener("click", showDbPreviewNotice);
-  randomContributedButton.addEventListener("click", showDbPreviewNotice);
+  solvedDealButton.addEventListener("click", () => void openContributedPanel());
+  randomContributedButton.addEventListener("click", () => void loadRandomSolvedDeal());
+  contributedPrevButton.addEventListener("click", () => {
+    if (contributedPage > 1) void loadContributedPage(contributedPage - 1);
+  });
+  contributedNextButton.addEventListener("click", () => {
+    if (contributedPage < contributedTotalPages) void loadContributedPage(contributedPage + 1);
+  });
 
   uidDealButton.addEventListener("click", toggleUidSearch);
-  uidSearchButton.addEventListener("click", showDbPreviewNotice);
+  uidSearchButton.addEventListener("click", () => void loadDealByUid());
   uidInput.addEventListener("keydown", event => {
-    if (event.key === "Enter") showDbPreviewNotice();
+    if (event.key === "Enter") void loadDealByUid();
   });
 
   dealPickerBackButton.addEventListener("click", hideDealPicker);
+  messageCopyUidButton.addEventListener("click", () => {
+    void window.FreeCellData?.copyUid?.(messageCopyUidButton.dataset.uid, messageCopyUidButton);
+  });
 
   playAgainButton.addEventListener("click", () => {
     message.hidden = true;
@@ -322,6 +451,8 @@
     showWinMessage,
     showDealPicker
   });
+
+  void window.FreeCellData?.initialize?.();
 
   if (!window.FreeCellGame?.hasGame()) {
     showDealPicker({ canReturn: false });

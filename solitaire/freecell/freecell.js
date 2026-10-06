@@ -11,6 +11,12 @@
   const noticeElement = document.getElementById("notice");
   const restartButton = document.getElementById("restartButton");
   const currentDealIdentity = document.getElementById("currentDealIdentity");
+  const currentDealShortUid = document.getElementById("currentDealShortUid");
+  const currentDealBest = document.getElementById("currentDealBest");
+  const currentDealBestSteps = document.getElementById("currentDealBestSteps");
+  const currentDealClears = document.getElementById("currentDealClears");
+  const currentDealClearCount = document.getElementById("currentDealClearCount");
+  const copyDealUidButton = document.getElementById("copyDealUidButton");
 
   const ACTIVE_GAME_STORAGE_KEY = "freecell_active_game_v1";
 
@@ -44,6 +50,10 @@
   let originalDeal = [];
   let busy = false;
   let hasStartedGame = false;
+  let currentDealUid = null;
+  let currentDealBestValue = null;
+  let currentDealClearValue = 0;
+  let solvedDealCount = 0;
 
   /* ===============================
      音效｜沿用 Spider v7 現有音色
@@ -291,6 +301,9 @@
     selection = null;
     busy = false;
     hasStartedGame = true;
+    currentDealUid = String(options.uid || "").trim() || null;
+    currentDealBestValue = Number.isInteger(Number(options.bestSteps)) && Number(options.bestSteps) > 0 ? Number(options.bestSteps) : null;
+    currentDealClearValue = Number.isInteger(Number(options.clearCount)) && Number(options.clearCount) >= 0 ? Number(options.clearCount) : 0;
 
     for (let index = 0; index < 52; index += 1) {
       const [card] = deck.draw(1);
@@ -299,15 +312,25 @@
       columns[index % 8].push(card);
     }
 
-    currentDealIdentity.hidden = true;
-    setNotice("點一張牌或牌串開始。");
+    setNotice(currentDealUid ? `已載入牌局 ${window.FreeCellData?.shortUid?.(currentDealUid) || currentDealUid}。` : "點一張牌或牌串開始。");
     render();
     saveActiveGame();
+    if (!currentDealUid && window.FreeCellData?.resolveDeal) {
+      void window.FreeCellData.resolveDeal(originalDeal).then(record => {
+        if (!record || currentDealUid) return;
+        currentDealUid = record.uid;
+        currentDealBestValue = record.bestSteps || null;
+        currentDealClearValue = Number(record.clearCount || 0);
+        render();
+        saveActiveGame();
+        setNotice(`這副隨機牌局已在玩家已解牌庫：${window.FreeCellData.shortUid(record.uid)}`);
+      }).catch(() => {});
+    }
   }
 
   function restartCurrentDeal() {
     if (busy || originalDeal.length !== 52) return false;
-    startGame({ deal: originalDeal });
+    startGame({ deal: originalDeal, uid: currentDealUid, bestSteps: currentDealBestValue, clearCount: currentDealClearValue });
     setNotice("已重新開始此局。");
     return true;
   }
@@ -320,8 +343,21 @@
     completedCountElement.textContent = String(completedCardCount());
     freeCellCountElement.textContent = String(freeCells.filter(Boolean).length);
     moveCountElement.textContent = String(moveCount);
-    solvedDealCountElement.textContent = "0";
+    solvedDealCountElement.textContent = String(solvedDealCount);
+    renderDealIdentity();
     restartButton.disabled = busy || !hasStartedGame || originalDeal.length !== 52;
+  }
+
+  function renderDealIdentity() {
+    const hasUid = Boolean(currentDealUid);
+    currentDealIdentity.hidden = !hasUid;
+    copyDealUidButton.disabled = !hasUid;
+    if (!hasUid) return;
+    currentDealShortUid.textContent = window.FreeCellData?.shortUid?.(currentDealUid) || currentDealUid;
+    currentDealBest.hidden = !(currentDealBestValue > 0);
+    currentDealBestSteps.textContent = currentDealBestValue > 0 ? String(currentDealBestValue) : "—";
+    currentDealClears.hidden = !(currentDealClearValue > 0);
+    currentDealClearCount.textContent = currentDealClearValue > 0 ? String(currentDealClearValue) : "—";
   }
 
   function renderColumns() {
@@ -736,14 +772,22 @@
     render();
     clearActiveGame();
 
-    if (window.FreeCellUI?.playVictory) {
-      await window.FreeCellUI.playVictory();
+    let result = { uid: currentDealUid, bestSteps: currentDealBestValue, clearCount: currentDealClearValue, isNew: false };
+    if (window.FreeCellData?.handleWin) {
+      try {
+        result = await window.FreeCellData.handleWin({ deal: originalDeal, steps: moveCount, uid: currentDealUid });
+        currentDealUid = result.uid || currentDealUid;
+        currentDealBestValue = result.bestSteps || currentDealBestValue;
+        currentDealClearValue = Number(result.clearCount || currentDealClearValue || 0);
+        if (Number.isInteger(Number(result.totalCount))) solvedDealCount = Number(result.totalCount);
+        render();
+      } catch (error) {
+        console.warn("FreeCell 勝利資料寫入失敗，遊戲仍照常完成。", error);
+      }
     }
 
-    if (window.FreeCellUI?.showWinMessage) {
-      window.FreeCellUI.showWinMessage(moveCount);
-    }
-
+    if (window.FreeCellUI?.playVictory) await window.FreeCellUI.playVictory(result);
+    if (window.FreeCellUI?.showWinMessage) window.FreeCellUI.showWinMessage(moveCount, result);
     return true;
   }
 
@@ -758,7 +802,10 @@
         SUITS.map(suit => [suit, foundations[suit].map(serializeCard)])
       ),
       moveCount,
-      originalDeal: originalDeal.map(serializeCard)
+      originalDeal: originalDeal.map(serializeCard),
+      currentDealUid,
+      currentDealBestValue,
+      currentDealClearValue
     };
 
     try {
@@ -850,12 +897,18 @@
     selection = null;
     busy = false;
     hasStartedGame = true;
-    currentDealIdentity.hidden = true;
+    currentDealUid = String(parsed.currentDealUid || "").trim() || null;
+    currentDealBestValue = Number.isInteger(Number(parsed.currentDealBestValue)) && Number(parsed.currentDealBestValue) > 0 ? Number(parsed.currentDealBestValue) : null;
+    currentDealClearValue = Number.isInteger(Number(parsed.currentDealClearValue)) && Number(parsed.currentDealClearValue) >= 0 ? Number(parsed.currentDealClearValue) : 0;
 
     setNotice("已恢復上次牌局。");
     render();
     return true;
   }
+
+  copyDealUidButton.addEventListener("click", () => {
+    if (currentDealUid) void window.FreeCellData?.copyUid?.(currentDealUid, copyDealUidButton);
+  });
 
   window.addEventListener("pagehide", () => {
     if (!busy) saveActiveGame();
@@ -865,19 +918,19 @@
   if (!restored) render();
 
   window.FreeCellGame = Object.freeze({
-    startRandomGame() {
-      startGame({});
+    startRandomGame() { startGame({}); },
+    startKnownGame(record) {
+      if (!record?.deal) return false;
+      startGame({ deal: record.deal, uid: record.uid, bestSteps: record.bestSteps, clearCount: record.clearCount });
+      return true;
     },
-    restartCurrentDeal,
-    hasGame() {
-      return hasStartedGame;
-    },
-    isBusy() {
-      return busy;
-    },
-    clearSelection() {
-      selection = null;
+    setSolvedDealCount(value) {
+      solvedDealCount = Math.max(0, Math.trunc(Number(value)) || 0);
       render();
-    }
+    },
+    hasGame() { return hasStartedGame; },
+    isBusy() { return busy; },
+    restartCurrentDeal,
+    clearSelection() { selection = null; render(); }
   });
 })();

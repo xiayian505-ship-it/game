@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>新接龍・前端預覽</title>
+  <title>慢 慢｜新接龍</title>
 
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/typography/shine_text.css">
   <!-- 慢慢軍火庫｜Celebration FX -->
@@ -24,7 +24,7 @@
     <header class="game-header">
       <div>
         <h1>慢 慢 | 新接龍</h1>
-        <p class="subtitle">紅黑交錯、由大至小疊牌，善用 4 個自由格整理牌面。</p>
+        <p class="subtitle">需由大至小疊牌，僅紅黑交錯連續牌串能移動<br>4個自由格可任意放牌，4個回收格可返回牌串</p>
       </div>
 
       <button id="restartButton" class="restart-button" type="button">重新開始</button>
@@ -61,7 +61,7 @@
     <div class="bom-card">
       <div id="bombText" class="bom-text slowly-shine-text">牌局完成</div>
       <div id="bombPlus" class="bom-plus">CLEAR</div>
-      <p id="bombSubtext" class="bom-subtext">前端預覽版未連接資料庫</p>
+      <p id="bombSubtext" class="bom-subtext">玩家已解牌局 +1</p>
     </div>
   </div>
 
@@ -91,7 +91,7 @@
         <button id="randomContributedButton" class="contributed-random" type="button">從已解牌局隨機抽一局</button>
 
         <div id="contributedList" class="contributed-list" aria-live="polite">
-          <p class="contributed-empty">前端預覽版尚未接 DB。</p>
+          <p class="contributed-empty">正在讀取玩家已解牌局…</p>
         </div>
 
         <div class="contributed-pager">
@@ -130,8 +130,10 @@
     </div>
   </div>
 
-  <!-- 慢慢軍火庫｜牌組 -->
+  <!-- 慢慢軍火庫｜牌組／時間戳／UID -->
   <script src="https://lib.stillnessbyslowly.com/game/card/deck.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/date/timestamp.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/data/random/random_id.js"></script>
 
   <!-- 慢慢軍火庫｜Celebration FX（只在勝利時播放） -->
   <script src="https://lib.stillnessbyslowly.com/effects/celebration/confetti_burst.js"></script>
@@ -152,6 +154,8 @@
   <script src="https://lib.stillnessbyslowly.com/audio/gain/envelope.js"></script>
   <script src="https://lib.stillnessbyslowly.com/audio/tone/tone.js"></script>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.min.js"></script>
+  <script src="freecell_db.js"></script>
   <script src="freecell.js"></script>
   <script src="freecell_style.js"></script>
 </body>
