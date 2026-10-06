@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>慢 慢｜接龍・翻 1 張</title>
+  <title>慢 慢｜接龍・翻 3 張</title>
 
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/typography/shine_text.css">
   <!-- 慢慢軍火庫｜Celebration FX -->
@@ -16,15 +16,15 @@
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/celebration/card_rain.css">
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/celebration/victory_beam.css">
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/celebration/classic_fireworks.css">
-  <link rel="stylesheet" href="klondike_draw1.css">
-  <link rel="stylesheet" href="klondike_draw1_style.css">
+  <link rel="stylesheet" href="klondike_draw3.css">
+  <link rel="stylesheet" href="klondike_draw3_style.css">
 </head>
 <body>
   <main id="gameShell" class="game-shell">
     <header class="game-header">
       <div>
         <h1>慢 慢 | 接龍</h1>
-        <p class="subtitle">需由大至小疊牌，紅黑交錯；空欄只能放 K<br>牌庫每次翻 1 張，4 個回收格由 A 起同花色往上</p>
+        <p class="subtitle">需由大至小疊牌，紅黑交錯；空欄只能放 K<br>牌庫每次翻 3 張，4 個回收格由 A 起同花色往上</p>
       </div>
 
       <button id="restartButton" class="restart-button" type="button">重新開始</button>
@@ -40,14 +40,13 @@
     <section class="top-row klondike-top-row" aria-label="牌庫、棄牌區與回收區">
       <button id="stockButton" class="completed-slot klondike-slot stock-slot" type="button" aria-label="牌庫"></button>
       <button id="wasteButton" class="completed-slot klondike-slot waste-slot" type="button" aria-label="棄牌區：空"></button>
-      <div class="top-spacer" aria-hidden="true"></div>
       <div id="completedArea" class="completed-area foundation-area" aria-label="四個回收區"></div>
     </section>
 
     <p id="notice" class="notice">選擇一副牌局開始。</p>
 
     <div id="currentDealIdentity" class="deal-identity" hidden>
-      <span>牌局 <strong id="currentDealShortUid">K1-────────</strong></span>
+      <span>牌局 <strong id="currentDealShortUid">K3-────────</strong></span>
       <span id="currentDealBest" class="deal-best" hidden>最佳：<strong id="currentDealBestSteps">—</strong> 步</span>
       <span id="currentDealClears" class="deal-clears" hidden>破關：<strong id="currentDealClearCount">—</strong> 次</span>
       <button id="copyDealUidButton" type="button">複製 UID</button>
@@ -63,7 +62,7 @@
     <div class="bom-card">
       <div id="bombText" class="bom-text slowly-shine-text">牌局完成</div>
       <div id="bombPlus" class="bom-plus">CLEAR</div>
-      <p id="bombSubtext" class="bom-subtext">翻 1 張牌局完成</p>
+      <p id="bombSubtext" class="bom-subtext">翻 3 張牌局完成</p>
     </div>
   </div>
 
@@ -82,7 +81,7 @@
   <div id="dealPicker" class="dialog-overlay" hidden>
     <div class="dialog-card deal-picker-card" role="dialog" aria-modal="true" aria-labelledby="dealPickerTitle">
       <p id="dealPickerTitle" class="dialog-title">選擇牌局</p>
-      <p class="dialog-text">傳統接龍・翻 1 張</p>
+      <p class="dialog-text">傳統接龍・翻 3 張</p>
 
       <section class="deal-tools deal-tools-main" aria-label="牌局選擇">
         <button id="randomDealButton" class="deal-button" type="button">隨機牌局</button>
@@ -107,7 +106,7 @@
         <section id="uidSearchPanel" class="uid-search" hidden>
           <label class="uid-search-label" for="uidInput">完整牌局 UID</label>
           <div class="uid-search-row">
-            <input id="uidInput" type="search" autocomplete="off" spellcheck="false" placeholder="貼上 klondike-draw1-...">
+            <input id="uidInput" type="search" autocomplete="off" spellcheck="false" placeholder="貼上 klondike-draw3-...">
             <button id="uidSearchButton" type="button">載入</button>
           </div>
         </section>
@@ -157,8 +156,8 @@
   <script src="https://lib.stillnessbyslowly.com/audio/tone/tone.js"></script>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.min.js"></script>
-  <script src="klondike_draw1_db.js"></script>
-  <script src="klondike_draw1.js"></script>
-  <script src="klondike_draw1_style.js"></script>
+  <script src="klondike_draw3_db.js"></script>
+  <script src="klondike_draw3.js"></script>
+  <script src="klondike_draw3_style.js"></script>
 </body>
 </html>

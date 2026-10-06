@@ -19,7 +19,7 @@
   const currentDealClearCount = document.getElementById("currentDealClearCount");
   const copyDealUidButton = document.getElementById("copyDealUidButton");
 
-  const ACTIVE_GAME_STORAGE_KEY = "klondike_draw1_active_game_v1";
+  const ACTIVE_GAME_STORAGE_KEY = "klondike_draw3_active_game_v1";
   const CARD_PEEK_DELAY_MS = 220;
 
   const RANK_LABELS = Object.freeze({
@@ -69,7 +69,7 @@
   function playTone({ freq = 440, dur = 0.08, type = "sine", gain = 0.12, slide = 0 } = {}) {
     if (!globalThis.SlowlyAudioTone?.play) return;
     globalThis.SlowlyAudioTone.play({ frequency: freq, duration: dur, type, gain, slide }).catch(error => {
-      console.warn("[Klondike Draw 1] 音效播放失敗：", error);
+      console.warn("[Klondike Draw 3] 音效播放失敗：", error);
     });
   }
 
@@ -127,7 +127,7 @@
         globalThis.SlowlyAudioOscillator.stop(oscillator, releaseAt + Math.max(0.04, release) + 0.02);
       });
     } catch (error) {
-      console.warn("[Klondike Draw 1] 鋼琴音效播放失敗：", error);
+      console.warn("[Klondike Draw 3] 鋼琴音效播放失敗：", error);
     }
   }
 
@@ -185,7 +185,7 @@
   function normalizeCard(card, index = 0, defaultFaceUp = false) {
     if (!card || !isValidRank(card.rank) || !isValidSuit(card.suit)) return null;
     return {
-      id: String(card.id || `K1-${card.suit}-${card.rank}-${index}`),
+      id: String(card.id || `K3-${card.suit}-${card.rank}-${index}`),
       rank: Number(card.rank),
       suit: String(card.suit),
       faceUp: typeof card.faceUp === "boolean" ? card.faceUp : defaultFaceUp
@@ -210,7 +210,7 @@
     let id = 0;
     for (const suit of SUITS) {
       for (let rank = 1; rank <= 13; rank += 1) {
-        cards.push({ id: `K1-${suit}-${rank}-${id++}`, rank, suit, faceUp: false });
+        cards.push({ id: `K3-${suit}-${rank}-${id++}`, rank, suit, faceUp: false });
       }
     }
     return cards;
@@ -350,7 +350,7 @@
     currentDealIdentity.hidden = !hasUid;
     copyDealUidButton.disabled = !hasUid;
     if (!hasUid) return;
-    currentDealShortUid.textContent = window.KlondikeDraw1Data?.shortUid?.(currentDealUid) || currentDealUid;
+    currentDealShortUid.textContent = window.KlondikeDraw3Data?.shortUid?.(currentDealUid) || currentDealUid;
     currentDealBest.hidden = !(currentDealBestValue > 0);
     currentDealBestSteps.textContent = currentDealBestValue > 0 ? String(currentDealBestValue) : "—";
     currentDealClears.hidden = !(currentDealClearValue > 0);
@@ -477,18 +477,38 @@
 
   function renderWaste() {
     wasteButton.className = "completed-slot klondike-slot waste-slot";
-    const card = waste[waste.length - 1] || null;
+    wasteButton.innerHTML = "";
 
-    if (!card) {
-      wasteButton.textContent = "";
+    const visibleCards = waste.slice(-3);
+    const topCard = visibleCards[visibleCards.length - 1] || null;
+
+    if (!topCard) {
+      wasteButton.classList.add("empty-waste");
       wasteButton.setAttribute("aria-label", "棄牌區：空");
       return;
     }
 
-    wasteButton.classList.add("occupied", `suit-${card.suit}`);
+    wasteButton.classList.add("occupied");
     if (selection?.type === "waste") wasteButton.classList.add("selected");
-    wasteButton.textContent = cardLabel(card);
-    wasteButton.setAttribute("aria-label", `棄牌區：${cardLabel(card)}`);
+    wasteButton.setAttribute("aria-label", `棄牌區頂牌：${cardLabel(topCard)}；目前顯示 ${visibleCards.length} 張`);
+
+    visibleCards.forEach((card, index) => {
+      const preview = document.createElement("span");
+      preview.className = `waste-preview-card suit-${card.suit}${index === visibleCards.length - 1 ? " is-top" : ""}`;
+      preview.style.setProperty("--waste-index", String(index));
+      preview.setAttribute("aria-hidden", "true");
+
+      const rank = document.createElement("span");
+      rank.className = "waste-preview-rank";
+      rank.textContent = rankLabel(card.rank);
+
+      const suit = document.createElement("span");
+      suit.className = "waste-preview-suit";
+      suit.textContent = suitSymbol(card.suit);
+
+      preview.append(rank, suit);
+      wasteButton.appendChild(preview);
+    });
   }
 
   function renderFoundations() {
@@ -614,12 +634,18 @@
     selection = null;
 
     if (stock.length > 0) {
-      const card = stock.pop();
-      card.faceUp = true;
-      waste.push(card);
+      const drawnCards = [];
+
+      for (let count = 0; count < 3 && stock.length > 0; count += 1) {
+        const card = stock.pop();
+        card.faceUp = true;
+        waste.push(card);
+        drawnCards.push(card);
+      }
+
       moveCount += 1;
       sfxMove();
-      setNotice(`翻出 ${cardLabel(card)}。`);
+      setNotice(`翻出 ${drawnCards.map(cardLabel).join("、")}。`);
       render();
       saveActiveGame();
       return;
@@ -792,28 +818,28 @@
     clearActiveGame();
 
     let result = { uid: currentDealUid, bestSteps: currentDealBestValue, clearCount: currentDealClearValue, isNew: false };
-    if (window.KlondikeDraw1Data?.handleWin) {
+    if (window.KlondikeDraw3Data?.handleWin) {
       try {
-        result = await window.KlondikeDraw1Data.handleWin({ deal: originalDeal, steps: moveCount, uid: currentDealUid });
+        result = await window.KlondikeDraw3Data.handleWin({ deal: originalDeal, steps: moveCount, uid: currentDealUid });
         currentDealUid = result.uid || currentDealUid;
         currentDealBestValue = result.bestSteps || currentDealBestValue;
         currentDealClearValue = Number(result.clearCount || currentDealClearValue || 0);
         if (Number.isInteger(Number(result.totalCount))) solvedDealCount = Number(result.totalCount);
         render();
       } catch (error) {
-        console.warn("Klondike Draw 1 勝利資料寫入失敗，遊戲仍照常完成。", error);
+        console.warn("Klondike Draw 3 勝利資料寫入失敗，遊戲仍照常完成。", error);
       }
     }
 
     try {
-      if (window.KlondikeDraw1UI?.playVictory) await window.KlondikeDraw1UI.playVictory(result);
+      if (window.KlondikeDraw3UI?.playVictory) await window.KlondikeDraw3UI.playVictory(result);
     } catch (error) {
       console.warn("接龍勝利特效播放失敗，遊戲仍照常完成。", error);
     }
 
     busy = false;
     render();
-    window.KlondikeDraw1UI?.showWinMessage?.(moveCount, result);
+    window.KlondikeDraw3UI?.showWinMessage?.(moveCount, result);
     return true;
   }
 
@@ -930,12 +956,12 @@
   });
 
   copyDealUidButton.addEventListener("click", () => {
-    if (currentDealUid) void window.KlondikeDraw1Data?.copyUid?.(currentDealUid, copyDealUidButton);
+    if (currentDealUid) void window.KlondikeDraw3Data?.copyUid?.(currentDealUid, copyDealUidButton);
   });
 
   window.addEventListener("pagehide", saveActiveGame);
 
-  window.KlondikeDraw1Game = Object.freeze({
+  window.KlondikeDraw3Game = Object.freeze({
     startRandomGame() {
       startGame({});
       return true;

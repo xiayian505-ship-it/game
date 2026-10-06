@@ -42,7 +42,7 @@
   const messageCopyUidButton = document.getElementById("messageCopyUidButton");
   const playAgainButton = document.getElementById("playAgainButton");
 
-  const LAST_VICTORY_EFFECTS_STORAGE_KEY = "klondike_draw1_last_victory_effects_v1";
+  const LAST_VICTORY_EFFECTS_STORAGE_KEY = "klondike_draw3_last_victory_effects_v1";
   const VICTORY_EFFECTS = Object.freeze([
     "confetti",
     "gold-rain",
@@ -136,7 +136,7 @@
 
         const code = document.createElement("span");
         code.className = "contributed-code";
-        code.textContent = window.KlondikeDraw1Data?.shortUid?.(record.uid) || record.uid;
+        code.textContent = window.KlondikeDraw3Data?.shortUid?.(record.uid) || record.uid;
         button.appendChild(code);
 
         const info = document.createElement("span");
@@ -148,7 +148,7 @@
 
         button.addEventListener("click", () => {
           if (contributedLoading) return;
-          if (window.KlondikeDraw1Game?.startKnownGame(record)) hideDealPicker();
+          if (window.KlondikeDraw3Game?.startKnownGame(record)) hideDealPicker();
         });
         contributedList.appendChild(button);
       });
@@ -166,11 +166,11 @@
     contributedNextButton.disabled = true;
     setPickerNotice("正在讀取玩家已解牌局…");
     try {
-      const result = await window.KlondikeDraw1Data.listPage(page, 5);
+      const result = await window.KlondikeDraw3Data.listPage(page, 5);
       renderContributedPage(result);
       setPickerNotice(result.totalCount > 0 ? `共有 ${result.totalCount} 副玩家已解牌局。` : "目前還沒有玩家已解牌局。");
     } catch (error) {
-      console.warn("讀取 Klondike Draw 1 已解牌局失敗。", error);
+      console.warn("讀取 Klondike Draw 3 已解牌局失敗。", error);
       setPickerNotice("玩家已解牌局目前讀取失敗，請稍後再試。");
     } finally {
       contributedLoading = false;
@@ -192,14 +192,14 @@
     contributedLoading = true;
     setPickerNotice("正在從玩家已解牌局隨機抽一副…");
     try {
-      const record = await window.KlondikeDraw1Data.randomSolved();
+      const record = await window.KlondikeDraw3Data.randomSolved();
       if (!record) {
         setPickerNotice("目前還沒有玩家已解牌局。先解出第一副吧。");
         return;
       }
-      if (window.KlondikeDraw1Game?.startKnownGame(record)) hideDealPicker();
+      if (window.KlondikeDraw3Game?.startKnownGame(record)) hideDealPicker();
     } catch (error) {
-      console.warn("隨機讀取 Klondike Draw 1 已解牌局失敗。", error);
+      console.warn("隨機讀取 Klondike Draw 3 已解牌局失敗。", error);
       setPickerNotice("玩家已解牌局目前讀取失敗，請稍後再試。");
     } finally {
       contributedLoading = false;
@@ -213,12 +213,12 @@
       return;
     }
     setPickerNotice("正在查詢 UID…");
-    const record = await window.KlondikeDraw1Data.findByUid(q);
+    const record = await window.KlondikeDraw3Data.findByUid(q);
     if (!record) {
       setPickerNotice("找不到這個完整 UID。");
       return;
     }
-    if (window.KlondikeDraw1Game?.startKnownGame(record)) hideDealPicker();
+    if (window.KlondikeDraw3Game?.startKnownGame(record)) hideDealPicker();
   }
 
   function clearVictoryEffect(api, target) {
@@ -300,7 +300,7 @@
   function playVictoryEffect(api, target, options) {
     if (!api?.play || !target) return;
     void api.play(target, options).catch(error => {
-      console.warn("[Klondike Draw 1] 勝利特效播放失敗：", error);
+      console.warn("[Klondike Draw 3] 勝利特效播放失敗：", error);
     });
   }
 
@@ -385,13 +385,13 @@
 
     const uid = String(result?.uid || "");
     messageUidRow.hidden = !uid;
-    messageUid.textContent = uid ? (window.KlondikeDraw1Data?.shortUid?.(uid) || uid) : "";
+    messageUid.textContent = uid ? (window.KlondikeDraw3Data?.shortUid?.(uid) || uid) : "";
     messageCopyUidButton.dataset.uid = uid;
     message.hidden = false;
   }
 
   restartButton.addEventListener("click", () => {
-    if (window.KlondikeDraw1Game?.isBusy()) return;
+    if (window.KlondikeDraw3Game?.isBusy()) return;
     restartConfirm.hidden = false;
   });
 
@@ -400,7 +400,7 @@
   });
 
   restartCurrentButton.addEventListener("click", () => {
-    if (window.KlondikeDraw1Game?.restartCurrentDeal()) {
+    if (window.KlondikeDraw3Game?.restartCurrentDeal()) {
       restartConfirm.hidden = true;
     }
   });
@@ -411,9 +411,9 @@
   });
 
   randomDealButton.addEventListener("click", () => {
-    if (window.KlondikeDraw1Game?.isBusy()) return;
+    if (window.KlondikeDraw3Game?.isBusy()) return;
     try {
-      window.KlondikeDraw1Game?.startRandomGame();
+      window.KlondikeDraw3Game?.startRandomGame();
       hideDealPicker();
     } catch (error) {
       console.error(error);
@@ -438,7 +438,7 @@
 
   dealPickerBackButton.addEventListener("click", hideDealPicker);
   messageCopyUidButton.addEventListener("click", () => {
-    void window.KlondikeDraw1Data?.copyUid?.(messageCopyUidButton.dataset.uid, messageCopyUidButton);
+    void window.KlondikeDraw3Data?.copyUid?.(messageCopyUidButton.dataset.uid, messageCopyUidButton);
   });
 
   playAgainButton.addEventListener("click", () => {
@@ -446,15 +446,15 @@
     showDealPicker({ canReturn: false });
   });
 
-  window.KlondikeDraw1UI = Object.freeze({
+  window.KlondikeDraw3UI = Object.freeze({
     playVictory,
     showWinMessage,
     showDealPicker
   });
 
-  void window.KlondikeDraw1Data?.initialize?.();
+  void window.KlondikeDraw3Data?.initialize?.();
 
-  if (!window.KlondikeDraw1Game?.hasGame()) {
+  if (!window.KlondikeDraw3Game?.hasGame()) {
     showDealPicker({ canReturn: false });
   }
 })();
