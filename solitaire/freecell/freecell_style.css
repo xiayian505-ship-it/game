@@ -122,3 +122,17 @@
     transform: translateY(-26px);
   }
 }
+
+/* FreeCell 自動收牌飛牌：沿用 Spider 收牌時的弧線飛牌層級。 */
+.card.is-flying-card {
+  z-index: 50;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.freecell-slot.is-flying-card {
+  position: relative;
+  z-index: 50;
+  pointer-events: none;
+  will-change: transform, opacity;
+}

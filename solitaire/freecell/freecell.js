@@ -184,6 +184,24 @@
     });
   }
 
+  const AUTO_COLLECT_NOTES = Object.freeze([
+    "C5", "B4", "A4", "G4", "F4", "E4", "D4",
+    "C4", "B3", "A3", "G3", "F3", "E3"
+  ]);
+
+  function sfxAutoCollectStep(index) {
+    const note = AUTO_COLLECT_NOTES[index % AUTO_COLLECT_NOTES.length];
+    if (!note) return;
+
+    void playPianoNotes([note], {
+      gain: 0.098,
+      hold: 0.035,
+      release: 0.095,
+      spacing: 0,
+      type: "sine"
+    });
+  }
+
   function createEmptyFoundations() {
     return {
       spade: [],
@@ -213,6 +231,17 @@
 
   function setNotice(text) {
     noticeElement.textContent = String(text || "");
+  }
+
+  function sleep(ms) {
+    return new Promise(resolve => window.setTimeout(resolve, Math.max(0, ms)));
+  }
+
+  function prefersReducedMotion() {
+    return Boolean(
+      window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    );
   }
 
   function clearCardPeekTimer() {
@@ -835,6 +864,184 @@
     }
   }
 
+  function centerOfRect(rect) {
+    return {
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2
+    };
+  }
+
+  async function animateExistingCardToTarget(cardElement, targetElement, options = {}) {
+    if (!cardElement || !targetElement || !cardElement.animate || prefersReducedMotion()) return;
+
+    const sourceRect = cardElement.getBoundingClientRect();
+    const targetRect = targetElement.getBoundingClientRect();
+    const source = centerOfRect(sourceRect);
+    const target = centerOfRect(targetRect);
+    const dx = target.x - source.x;
+    const dy = target.y - source.y;
+    const arc = Number.isFinite(options.arc) ? options.arc : 26;
+    const duration = Number.isFinite(options.duration) ? options.duration : 105;
+
+    cardElement.classList.add("is-flying-card");
+
+    const animation = cardElement.animate(
+      [
+        { transform: "translate3d(0,0,0) scale(1) rotate(0deg)", opacity: 1 },
+        {
+          transform: `translate3d(${(dx * 0.55).toFixed(1)}px, ${(dy * 0.48 - arc).toFixed(1)}px, 0) scale(.76) rotate(-2deg)`,
+          opacity: 1
+        },
+        {
+          transform: `translate3d(${dx.toFixed(1)}px, ${dy.toFixed(1)}px, 0) scale(.32) rotate(2deg)`,
+          opacity: 0.16
+        }
+      ],
+      {
+        duration,
+        easing: "cubic-bezier(.2,.74,.24,1)",
+        fill: "forwards"
+      }
+    );
+
+    await animation.finished.catch(() => undefined);
+  }
+
+  function buildAutoCollectPlan() {
+    if (!hasStartedGame || completedCardCount() >= 52) return null;
+
+    const simulatedColumns = columns.map(column => column.slice());
+    const simulatedFreeCells = freeCells.slice();
+    const foundationRanks = Object.fromEntries(
+      SUITS.map(suit => [suit, foundations[suit].length])
+    );
+    const plan = [];
+
+    while (true) {
+      let next = null;
+
+      for (let index = 0; index < simulatedFreeCells.length; index += 1) {
+        const card = simulatedFreeCells[index];
+        if (card && card.rank === foundationRanks[card.suit] + 1) {
+          next = { type: "freecell", index, card };
+          break;
+        }
+      }
+
+      if (!next) {
+        for (let columnIndex = 0; columnIndex < simulatedColumns.length; columnIndex += 1) {
+          const column = simulatedColumns[columnIndex];
+          const card = column[column.length - 1] || null;
+          if (card && card.rank === foundationRanks[card.suit] + 1) {
+            next = { type: "column", columnIndex, card };
+            break;
+          }
+        }
+      }
+
+      if (!next) break;
+
+      plan.push({
+        type: next.type,
+        index: next.index,
+        columnIndex: next.columnIndex,
+        rank: next.card.rank,
+        suit: next.card.suit
+      });
+
+      if (next.type === "freecell") {
+        simulatedFreeCells[next.index] = null;
+      } else {
+        simulatedColumns[next.columnIndex].pop();
+      }
+
+      foundationRanks[next.card.suit] += 1;
+    }
+
+    const remaining = simulatedColumns.reduce((sum, column) => sum + column.length, 0)
+      + simulatedFreeCells.filter(Boolean).length;
+
+    return remaining === 0 && plan.length > 0 ? plan : null;
+  }
+
+  function sourceElementForAutoCollect(step) {
+    if (step.type === "freecell") {
+      return freeCellArea.querySelector(`.freecell-slot[data-free-cell-index="${step.index}"]`);
+    }
+
+    const column = columns[step.columnIndex];
+    const cardIndex = column.length - 1;
+    return tableauElement.querySelector(
+      `.column[data-column-index="${step.columnIndex}"] .card[data-card-index="${cardIndex}"]`
+    );
+  }
+
+  function takeAutoCollectCard(step) {
+    if (step.type === "freecell") {
+      const card = freeCells[step.index];
+      if (!card || card.rank !== step.rank || card.suit !== step.suit) return null;
+      freeCells[step.index] = null;
+      return card;
+    }
+
+    const column = columns[step.columnIndex];
+    const card = column[column.length - 1] || null;
+    if (!card || card.rank !== step.rank || card.suit !== step.suit) return null;
+    column.pop();
+    return card;
+  }
+
+  async function tryAutoCollect() {
+    if (busy) return false;
+
+    const plan = buildAutoCollectPlan();
+    if (!plan) return false;
+
+    busy = true;
+    selection = null;
+    setNotice("自動收牌中…");
+    render();
+
+    for (let index = 0; index < plan.length; index += 1) {
+      const step = plan[index];
+      const sourceElement = sourceElementForAutoCollect(step);
+      const targetElement = completedArea.querySelector(
+        `.foundation-slot[data-foundation-suit="${step.suit}"]`
+      );
+
+      await animateExistingCardToTarget(sourceElement, targetElement, {
+        duration: 92,
+        arc: 20 + (index % 8) * 0.7
+      });
+
+      const card = takeAutoCollectCard(step);
+      if (!card) {
+        busy = false;
+        setNotice("自動收牌已停止。請繼續手動整理。");
+        render();
+        saveActiveGame();
+        return false;
+      }
+
+      foundations[card.suit].push(card);
+      moveCount += 1;
+      sfxAutoCollectStep(index);
+      render();
+      saveActiveGame();
+      await sleep(prefersReducedMotion() ? 8 : 12);
+    }
+
+    busy = false;
+    render();
+    await checkWin();
+    return true;
+  }
+
+  async function continueAfterMove() {
+    const collected = await tryAutoCollect();
+    if (!collected) await checkWin();
+  }
+
   function finishMove(message) {
     selection = null;
     moveCount += 1;
@@ -842,7 +1049,7 @@
     setNotice(message);
     render();
     saveActiveGame();
-    void checkWin();
+    void continueAfterMove();
   }
 
   function completedCardCount() {
