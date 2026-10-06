@@ -20,6 +20,14 @@
 
   const ACTIVE_GAME_STORAGE_KEY = "freecell_active_game_v1";
 
+  const CARD_PEEK_DELAY_MS = 220;
+
+  const cardPeekState = {
+    timerId: 0,
+    button: null,
+    active: false
+  };
+
   const RANK_LABELS = Object.freeze({
     1: "A",
     11: "J",
@@ -205,6 +213,41 @@
 
   function setNotice(text) {
     noticeElement.textContent = String(text || "");
+  }
+
+  function clearCardPeekTimer() {
+    if (cardPeekState.timerId) {
+      window.clearTimeout(cardPeekState.timerId);
+      cardPeekState.timerId = 0;
+    }
+  }
+
+  function endCardPeek(button, { suppressClick = false } = {}) {
+    clearCardPeekTimer();
+
+    if (cardPeekState.button === button) {
+      if (cardPeekState.active) {
+        button.classList.remove("peeking");
+        if (suppressClick) {
+          button.dataset.peekSuppressClick = "true";
+        }
+      }
+
+      cardPeekState.button = null;
+      cardPeekState.active = false;
+    }
+  }
+
+  function scheduleCardPeek(button) {
+    endCardPeek(cardPeekState.button);
+    cardPeekState.button = button;
+    cardPeekState.active = false;
+    cardPeekState.timerId = window.setTimeout(() => {
+      cardPeekState.timerId = 0;
+      if (cardPeekState.button !== button) return;
+      cardPeekState.active = true;
+      button.classList.add("peeking");
+    }, CARD_PEEK_DELAY_MS);
   }
 
   function isValidRank(value) {
@@ -415,8 +458,49 @@
 
     button.append(rank, suit);
 
+    button.addEventListener("pointerdown", event => {
+      if (busy) return;
+      if (event.pointerType === "mouse" && event.button !== 0) return;
+
+      button.dataset.peekSuppressClick = "";
+
+      if (typeof button.setPointerCapture === "function") {
+        try {
+          button.setPointerCapture(event.pointerId);
+        } catch (error) {
+          // ignore unsupported pointer capture states
+        }
+      }
+
+      scheduleCardPeek(button);
+    });
+
+    const finishPeek = () => {
+      endCardPeek(button, { suppressClick: true });
+    };
+
+    const cancelPeek = () => {
+      endCardPeek(button, { suppressClick: false });
+    };
+
+    button.addEventListener("pointerup", finishPeek);
+    button.addEventListener("pointercancel", cancelPeek);
+    button.addEventListener("lostpointercapture", cancelPeek);
+    button.addEventListener("contextmenu", event => {
+      if (cardPeekState.active && cardPeekState.button === button) {
+        event.preventDefault();
+      }
+    });
+
     button.addEventListener("click", event => {
       event.stopPropagation();
+
+      if (button.dataset.peekSuppressClick === "true") {
+        button.dataset.peekSuppressClick = "";
+        event.preventDefault();
+        return;
+      }
+
       if (!busy) handleColumnCardClick(columnIndex, cardIndex);
     });
 
