@@ -4,6 +4,7 @@
   const gameShell = document.getElementById("gameShell");
   const completedArea = document.getElementById("completedArea");
   const restartButton = document.getElementById("restartButton");
+  const leaveFreeCellButton = document.getElementById("leaveFreeCellButton");
 
   const dealPicker = document.getElementById("dealPicker");
   const dealPickerNotice = document.getElementById("dealPickerNotice");
@@ -45,6 +46,17 @@
   const messageUid = document.getElementById("messageUid");
   const messageCopyUidButton = document.getElementById("messageCopyUidButton");
   const playAgainButton = document.getElementById("playAgainButton");
+
+  // 帝國首頁 iframe 模式｜離開自由之都：通知外層恢復領地介紹，iframe 本身不銷毀。
+  leaveFreeCellButton?.addEventListener("click", () => {
+    if (window.parent !== window) {
+      window.parent.postMessage({ type: "slowly-freecell-leave" }, window.location.origin);
+      return;
+    }
+
+    // 單獨開啟遊戲頁時，沒有外層帝國頁可通知，就回到上一頁。
+    if (window.history.length > 1) window.history.back();
+  });
 
   const LAST_VICTORY_EFFECTS_STORAGE_KEY = "freecell_last_victory_effects_v1";
   const VICTORY_EFFECTS = Object.freeze([

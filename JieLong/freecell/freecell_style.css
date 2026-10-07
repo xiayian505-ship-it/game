@@ -258,6 +258,19 @@ body {
   }
 }
 
+@media (max-width: 600px) {
+  .game-header {
+    flex-wrap: nowrap;
+  }
+
+  .game-header .restart-button,
+  .game-header .leave-freecell-button {
+    min-height: 34px;
+    padding-inline: 10px;
+    font-size: .8rem;
+  }
+}
+
 /* 帝國版｜自由寄放格／本位回收格：用上下錯位區分兩種用途。 */
 .slot-zone {
   min-width: 0;
@@ -321,6 +334,7 @@ body {
 
 /* 帝國版｜自由之都入口：頂部入口與重新選局彈窗使用同一套深藍金色按鈕語言。 */
 .game-header .restart-button,
+.game-header .leave-freecell-button,
 #restartConfirm .dialog-actions button,
 #restartConfirm .dialog-back {
   border: 1px solid #dcb567;
@@ -332,14 +346,32 @@ body {
   font-weight: 700;
 }
 
-.game-header .restart-button {
-  white-space: nowrap;
+.empire-header-actions {
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: stretch;
+  justify-items: stretch;
+  gap: 6px;
 }
 
+.game-header .restart-button,
+.game-header .leave-freecell-button {
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 10px;
+  font: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+
 .game-header .restart-button:hover,
+.game-header .leave-freecell-button:hover,
 #restartConfirm .dialog-actions button:hover,
 #restartConfirm .dialog-back:hover,
 .game-header .restart-button:focus-visible,
+.game-header .leave-freecell-button:focus-visible,
 #restartConfirm .dialog-actions button:focus-visible,
 #restartConfirm .dialog-back:focus-visible {
   border-color: #f0cf83;
@@ -347,6 +379,7 @@ body {
 }
 
 .game-header .restart-button:active,
+.game-header .leave-freecell-button:active,
 #restartConfirm .dialog-actions button:active,
 #restartConfirm .dialog-back:active {
   transform: translateY(1px);

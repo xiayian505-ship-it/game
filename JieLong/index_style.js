@@ -192,6 +192,21 @@
     requestAnimationFrame(() => syncBookHeight());
   });
 
+  // 自由之都遊戲本體通知「離開」時，只收起 iframe；不清 src，保留目前牌局。
+  window.addEventListener("message", (event) => {
+    if (!freecellPage || !freecellEmbed || !freecellIframe) return;
+    if (event.origin !== window.location.origin) return;
+    if (event.source !== freecellIframe.contentWindow) return;
+    if (event.data?.type !== "slowly-freecell-leave") return;
+
+    freecellPage.classList.remove("is-freecell-playing");
+    freecellEmbed.hidden = true;
+    requestAnimationFrame(() => {
+      syncBookHeight();
+      freecellEnter?.focus?.();
+    });
+  });
+
   document.querySelectorAll("[data-territory-jump]").forEach((link) => {
     link.addEventListener("click", (event) => {
       event.preventDefault();
