@@ -160,6 +160,38 @@
   bookPrev?.addEventListener("click", () => turnBookTo(activeBookIndex - 1, { direction: "prev" }));
   bookNext?.addEventListener("click", () => turnBookTo(activeBookIndex + 1, { direction: "next" }));
 
+  // 自由之都｜經典牌局收合：狀態由慢慢軍火庫 TreeSelection 管理。
+  const classicTreeToggle = document.querySelector("[data-classic-tree-toggle]");
+  const classicTreePanel = document.querySelector("[data-classic-tree-panel]");
+  const classicTree = window.TreeSelection?.create?.({ expansion: "single" });
+
+  classicTreeToggle?.addEventListener("click", () => {
+    const key = "freecell-classics";
+    const expanded = classicTree
+      ? classicTree.toggleExpanded(key)
+      : classicTreeToggle.getAttribute("aria-expanded") !== "true";
+
+    classicTreeToggle.setAttribute("aria-expanded", String(expanded));
+    if (classicTreePanel) classicTreePanel.hidden = !expanded;
+    requestAnimationFrame(() => syncBookHeight());
+  });
+
+  // 自由之都｜入境後整頁交給遊戲本體，只留下帝國翻頁箭頭與頁尾。
+  const freecellPage = bookPages.find((page) => page.dataset.bookPage === "territory-freecell");
+  const freecellEnter = document.querySelector("[data-freecell-enter]");
+  const freecellEmbed = document.querySelector("[data-freecell-embed]");
+  const freecellIframe = document.querySelector("[data-freecell-iframe]");
+
+  freecellEnter?.addEventListener("click", (event) => {
+    event.preventDefault();
+    if (!freecellPage || !freecellEmbed || !freecellIframe) return;
+
+    if (!freecellIframe.getAttribute("src")) freecellIframe.src = freecellEnter.href;
+    freecellPage.classList.add("is-freecell-playing");
+    freecellEmbed.hidden = false;
+    requestAnimationFrame(() => syncBookHeight());
+  });
+
   document.querySelectorAll("[data-territory-jump]").forEach((link) => {
     link.addEventListener("click", (event) => {
       event.preventDefault();

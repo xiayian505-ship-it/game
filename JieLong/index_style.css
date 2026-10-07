@@ -725,3 +725,141 @@ body.quick-panel-open { overflow: hidden; }
     animation: none !important;
   }
 }
+
+/* === 自由之都｜首頁入口與入境模式 === */
+.freecell-gate-list {
+  gap: 16px;
+}
+
+.freecell-classic-tree {
+  display: grid;
+  gap: 10px;
+}
+
+.classic-tree-toggle {
+  width: 100%;
+  min-height: 58px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border: 1px solid rgba(139, 102, 61, .32);
+  border-radius: 16px;
+  color: #58351f;
+  background: linear-gradient(145deg, #fffaf0, #eee1c5);
+  box-shadow: 0 8px 18px rgba(74, 48, 24, .08), inset 0 0 0 2px rgba(255,255,255,.5);
+  font: inherit;
+  font-weight: 800;
+  text-align: left;
+  cursor: pointer;
+  --slowly-lift-y: -2px;
+  --slowly-press-scale: .992;
+}
+
+.classic-tree-icon {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(159, 107, 36, .36);
+  border-radius: 50%;
+  color: #9a692d;
+  background: rgba(255,255,255,.54);
+}
+
+.classic-tree-arrow {
+  color: #9a692d;
+  font-size: 1.25rem;
+  transform: rotate(0deg);
+  transition: transform .22s ease;
+}
+
+.classic-tree-toggle[aria-expanded="true"] .classic-tree-arrow {
+  transform: rotate(180deg);
+}
+
+.classic-tree-panel[hidden] { display: none !important; }
+.classic-tree-panel {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  padding: 2px 0 4px;
+}
+
+.classic-deal-button {
+  min-height: 76px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 4px;
+  padding: 12px 10px;
+  border: 1px solid rgba(144, 103, 55, .3);
+  border-radius: 15px;
+  color: #57331e;
+  background: linear-gradient(145deg, #fffdf5, #efe2c8);
+  box-shadow: 0 7px 16px rgba(69, 42, 20, .07), inset 0 0 0 2px rgba(255,255,255,.42);
+  font: inherit;
+  cursor: pointer;
+  --slowly-lift-y: -2px;
+  --slowly-press-scale: .99;
+}
+
+.classic-deal-button strong { font-size: .95rem; }
+.classic-deal-button span {
+  color: #9a6b32;
+  font-size: .82rem;
+  font-weight: 800;
+}
+
+.freecell-enter .game-text {
+  align-content: center;
+}
+
+.freecell-enter .game-text strong {
+  font-size: 1.13rem;
+  letter-spacing: .04em;
+}
+
+.freecell-embed[hidden] { display: none !important; }
+.freecell-embed {
+  width: 100%;
+  height: calc(100dvh - 78px);
+  min-height: 620px;
+  background: #0a2f48;
+  overflow: hidden;
+}
+
+.freecell-iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #f7f0df;
+}
+
+.book-page[data-book-page="territory-freecell"].is-freecell-playing {
+  padding: 0;
+}
+
+.book-page[data-book-page="territory-freecell"].is-freecell-playing > .territory {
+  display: none;
+}
+
+.book-page[data-book-page="territory-freecell"].is-freecell-playing > .freecell-embed {
+  display: block;
+}
+
+@media (max-width: 600px) {
+  .classic-tree-panel { gap: 7px; }
+  .classic-deal-button {
+    min-height: 70px;
+    padding-inline: 7px;
+  }
+  .classic-deal-button strong { font-size: .82rem; }
+  .classic-deal-button span { font-size: .75rem; }
+  .freecell-embed {
+    height: calc(100dvh - 62px);
+    min-height: 600px;
+  }
+}

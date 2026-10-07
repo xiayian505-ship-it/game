@@ -115,7 +115,7 @@
             <p class="eyebrow">自由之都</p>
             <h2 id="freecell-title">新接龍 <span>FreeCell</span></h2>
           </div>
-          <p class="territory-copy">策略・計算・掌控全局</p>
+          <p class="territory-copy">策略・計算・一手掌控</p>
         </div>
 
         <div class="territory-body">
@@ -128,16 +128,37 @@
             <div class="art-label"><strong>♣</strong><span>FREECELL</span></div>
           </div>
 
-          <div class="game-list single">
-            <div class="museum-badge">♛ 經典無解牌局館藏 8 局</div>
-            <a class="game-link slowly-lift slowly-press" href="https://game.stillnessbyslowly.com/JieLong/freecell/freecell.html">
+          <div class="game-list single freecell-gate-list">
+            <div class="freecell-classic-tree" data-freecell-classic-tree>
+              <button class="classic-tree-toggle slowly-lift slowly-press" type="button" data-classic-tree-toggle aria-expanded="false" aria-controls="freecell-classic-panel">
+                <span class="classic-tree-icon" aria-hidden="true">♛</span>
+                <span>經典牌局</span>
+                <span class="classic-tree-arrow" aria-hidden="true">⌄</span>
+              </button>
+              <div class="classic-tree-panel" id="freecell-classic-panel" data-classic-tree-panel hidden>
+                <button class="classic-deal-button slowly-lift slowly-press" type="button">
+                  <strong>微軟無解牌局</strong>
+                  <span>8 局</span>
+                </button>
+                <button class="classic-deal-button slowly-lift slowly-press" type="button">
+                  <strong>微軟隱藏牌局</strong>
+                  <span>4 局</span>
+                </button>
+              </div>
+            </div>
+
+            <a class="game-link freecell-enter slowly-lift slowly-press" data-freecell-enter href="https://game.stillnessbyslowly.com/JieLong/freecell/freecell.html">
               <span class="card-stack club">♣</span>
-              <span class="game-text"><strong>慢 慢｜新接龍</strong><small>全明牌策略・自由格調度</small></span>
+              <span class="game-text"><strong>進入 自由之都</strong></span>
               <span class="arrow">›</span>
             </a>
           </div>
         </div>
       </section>
+
+      <div class="freecell-embed" data-freecell-embed hidden>
+        <iframe class="freecell-iframe" data-freecell-iframe title="自由之都｜新接龍" loading="eager" allowfullscreen></iframe>
+      </div>
         </div>
 
         <div class="book-page book-page-territory" data-book-page="territory-klondike">
@@ -271,6 +292,7 @@
   </div>
 
   <script src="https://lib.stillnessbyslowly.com/effects/reveal/auto_reveal.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/state/tree_selection.js"></script>
   <script src="./index.js"></script>
   <script src="./index_style.js"></script>
 </body>
