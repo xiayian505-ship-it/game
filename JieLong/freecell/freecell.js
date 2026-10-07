@@ -55,6 +55,13 @@
     495505, 512118, 517776, 781948
   ]);
 
+  const CLASSIC_HIDDEN_DEALS = Object.freeze([
+    Object.freeze({ dealNumber: -1, result: "無解" }),
+    Object.freeze({ dealNumber: -2, result: "無解" }),
+    Object.freeze({ dealNumber: -3, result: "必勝" }),
+    Object.freeze({ dealNumber: -4, result: "必勝" })
+  ]);
+
   const MICROSOFT_DEAL_SUITS = Object.freeze(["club", "diamond", "heart", "spade"]);
 
   let columns = Array.from({ length: 8 }, () => []);
@@ -356,8 +363,57 @@
     });
   }
 
+  function interleaveClassicColumns(columnRanks) {
+    const columns = columnRanks.map((ranks, columnIndex) => {
+      const suit = MICROSOFT_DEAL_SUITS[columnIndex % 4];
+      return ranks.map(rank => ({ rank, suit, faceUp: true }));
+    });
+    const deal = [];
+    const maxRows = Math.max(...columns.map(column => column.length));
+
+    for (let rowIndex = 0; rowIndex < maxRows; rowIndex += 1) {
+      columns.forEach(column => {
+        if (column[rowIndex]) deal.push(column[rowIndex]);
+      });
+    }
+
+    return deal.map(serializeCard);
+  }
+
+  function createMicrosoftHiddenDeal(dealNumber) {
+    const number = Math.trunc(Number(dealNumber));
+    const patterns = {
+      [-1]: [
+        [1, 3, 5, 7, 9, 11, 13],
+        [12, 10, 8, 6, 4, 2]
+      ],
+      [-2]: [
+        [1, 13, 12, 11, 10, 9, 8],
+        [7, 6, 5, 4, 3, 2]
+      ],
+      [-3]: [
+        [13, 12, 11, 10, 9, 8, 7],
+        [6, 5, 4, 3, 2, 1]
+      ],
+      [-4]: [
+        [13, 11, 9, 7, 5, 3, 1],
+        [12, 10, 8, 6, 4, 2]
+      ]
+    };
+    const pattern = patterns[number];
+    if (!pattern) return null;
+
+    return interleaveClassicColumns([
+      pattern[0], pattern[0], pattern[0], pattern[0],
+      pattern[1], pattern[1], pattern[1], pattern[1]
+    ]);
+  }
+
   function createMicrosoftClassicDeal(dealNumber) {
     const number = Math.trunc(Number(dealNumber));
+    if (CLASSIC_HIDDEN_DEALS.some(record => record.dealNumber === number)) {
+      return createMicrosoftHiddenDeal(number);
+    }
     if (!CLASSIC_UNSOLVABLE_DEALS.includes(number)) return null;
 
     const deck = [];
@@ -380,6 +436,14 @@
     }
 
     return deal.map(serializeCard);
+  }
+
+  function classicDealNotice(dealNumber) {
+    const number = Math.trunc(Number(dealNumber));
+    const hidden = CLASSIC_HIDDEN_DEALS.find(record => record.dealNumber === number);
+    if (!hidden) return `已載入經典無解牌局 #${number}。`;
+    if (hidden.result === "無解") return `已載入經典隱藏牌局 #${number}（無解）。`;
+    return `已載入經典隱藏牌局 #${number}（必勝）。移動任一張 A 到本位回收格即可自動完成。`;
   }
 
   function classicDealUid(dealNumber) {
@@ -428,7 +492,7 @@
     }
 
     setNotice(currentDealSource === "classic" && currentClassicDealNumber
-      ? `已載入經典無解牌局 #${currentClassicDealNumber}。`
+      ? classicDealNotice(currentClassicDealNumber)
       : (currentDealUid ? `已載入牌局 ${window.FreeCellData?.shortUid?.(currentDealUid) || currentDealUid}。` : "點一張牌或牌串開始。"));
     render();
     saveActiveGame();
@@ -1306,6 +1370,7 @@
       return true;
     },
     classicDealNumbers() { return CLASSIC_UNSOLVABLE_DEALS.slice(); },
+    classicHiddenDeals() { return CLASSIC_HIDDEN_DEALS.map(record => ({ ...record })); },
     setSolvedDealCount(value) {
       solvedDealCount = Math.max(0, Math.trunc(Number(value)) || 0);
       render();

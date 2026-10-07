@@ -27,23 +27,28 @@
         <div class="empire-title-copy">
           <p class="eyebrow">自由之都</p>
           <h1>新接龍 <span>FreeCell</span></h1>
-          <p class="subtitle">需由大至小疊牌，僅紅黑交錯連續牌串能移動<br>4個自由格可任意放牌，4個回收格可返回牌串</p>
+          <p class="subtitle empire-status-line">
+            <span>步數：<strong id="moveCount">0</strong></span>
+            <span>玩家已解牌局：<strong id="solvedDealCount">0</strong></span>
+          </p>
         </div>
       </div>
 
-      <button id="restartButton" class="restart-button" type="button">重新開始</button>
+      <button id="restartButton" class="restart-button" type="button">入境自由之都</button>
     </header>
 
-    <section class="status-row" aria-live="polite">
-      <span>完成：<strong id="completedCount">0</strong>/52</span>
-      <span>自由格：<strong id="freeCellCount">0</strong>/4</span>
-      <span>步數：<strong id="moveCount">0</strong></span>
-      <span>玩家已解牌局：<strong id="solvedDealCount">0</strong></span>
-    </section>
+    <span id="completedCount" hidden>0</span>
+    <span id="freeCellCount" hidden>0</span>
 
-    <section class="top-row" aria-label="自由格與回收區">
-      <div id="freeCellArea" class="completed-area freecell-area" aria-label="四個自由格"></div>
-      <div id="completedArea" class="completed-area foundation-area" aria-label="四個回收區"></div>
+    <section class="top-row" aria-label="自由寄放格與本位回收格">
+      <div class="slot-zone freecell-zone">
+        <div id="freeCellArea" class="completed-area freecell-area" aria-label="四個自由寄放格"></div>
+        <p class="slot-zone-label">自由寄放格</p>
+      </div>
+      <div class="slot-zone foundation-zone">
+        <p class="slot-zone-label">本位回收格</p>
+        <div id="completedArea" class="completed-area foundation-area" aria-label="四個本位回收格"></div>
+      </div>
     </section>
 
     <p id="notice" class="notice">選擇一副牌局開始。</p>

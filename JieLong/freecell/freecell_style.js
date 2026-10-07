@@ -135,7 +135,7 @@
   }
 
   function currentPoolLabel() {
-    if (isClassicMode()) return "經典無解牌局";
+    if (isClassicMode()) return "經典牌局";
     return isPendingMode() ? "待破解牌局" : "玩家已解牌局";
   }
 
@@ -227,41 +227,75 @@
     await loadContributedPage(1);
   }
 
+  function appendClassicDealRow(dealNumber, resultLabel = "") {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "contributed-deal-row";
+
+    const code = document.createElement("span");
+    code.className = "contributed-code";
+    code.textContent = `#${dealNumber}`;
+    button.appendChild(code);
+
+    if (resultLabel) {
+      const info = document.createElement("span");
+      info.className = "contributed-best";
+      info.textContent = resultLabel;
+      button.appendChild(info);
+    }
+
+    button.addEventListener("click", () => {
+      window.FreeCellGame?.abandonCurrentDeal?.();
+      if (window.FreeCellGame?.startClassicGame?.(dealNumber)) {
+        hideDealPicker();
+      }
+    });
+
+    contributedList.appendChild(button);
+  }
+
+  function renderClassicPage(page = 1) {
+    contributedPage = page === 2 ? 2 : 1;
+    contributedTotalPages = 2;
+    contributedList.innerHTML = "";
+
+    if (contributedPage === 1) {
+      classicListTitle.textContent = "經典無解牌局";
+      const dealNumbers = window.FreeCellGame?.classicDealNumbers?.() || [];
+      dealNumbers.forEach(dealNumber => appendClassicDealRow(dealNumber));
+    } else {
+      classicListTitle.textContent = "經典隱藏牌局";
+
+      const hiddenNotice = document.createElement("p");
+      hiddenNotice.className = "contributed-empty";
+      hiddenNotice.style.margin = "0 0 8px";
+      hiddenNotice.textContent = "#-1、#-2 為無解牌局；#-3、#-4 為必勝牌局。";
+      contributedList.appendChild(hiddenNotice);
+
+      const hiddenDeals = window.FreeCellGame?.classicHiddenDeals?.() || [];
+      hiddenDeals.forEach(record => {
+        appendClassicDealRow(record.dealNumber, record.result);
+      });
+    }
+
+    contributedPageInfo.textContent = `${contributedPage} / ${contributedTotalPages}`;
+    contributedPrevButton.disabled = contributedPage <= 1;
+    contributedNextButton.disabled = contributedPage >= contributedTotalPages;
+    setPickerNotice("");
+  }
+
   function openClassicPanel() {
     contributedMode = "classic";
     contributedPanel.hidden = false;
-    contributedPanel.setAttribute("aria-label", "經典無解牌局");
+    contributedPanel.setAttribute("aria-label", "經典牌局");
     classicListTitle.hidden = false;
     randomContributedButton.hidden = true;
-    if (contributedPager) contributedPager.hidden = true;
+    if (contributedPager) contributedPager.hidden = false;
     uidDealButton.hidden = true;
     uidSearchPanel.hidden = true;
     uidDealButton.setAttribute("aria-expanded", "false");
     uidInput.value = "";
-    contributedList.innerHTML = "";
-
-    const dealNumbers = window.FreeCellGame?.classicDealNumbers?.() || [];
-    dealNumbers.forEach(dealNumber => {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "contributed-deal-row";
-
-      const code = document.createElement("span");
-      code.className = "contributed-code";
-      code.textContent = `#${dealNumber}`;
-      button.appendChild(code);
-
-      button.addEventListener("click", () => {
-        window.FreeCellGame?.abandonCurrentDeal?.();
-        if (window.FreeCellGame?.startClassicGame?.(dealNumber)) {
-          hideDealPicker();
-        }
-      });
-
-      contributedList.appendChild(button);
-    });
-
-    setPickerNotice("");
+    renderClassicPage(1);
   }
 
   async function loadRandomSolvedDeal() {
@@ -517,10 +551,20 @@
   classicDealButton.addEventListener("click", openClassicPanel);
   randomContributedButton.addEventListener("click", () => void loadRandomSolvedDeal());
   contributedPrevButton.addEventListener("click", () => {
-    if (contributedPage > 1) void loadContributedPage(contributedPage - 1);
+    if (contributedPage <= 1) return;
+    if (isClassicMode()) {
+      renderClassicPage(contributedPage - 1);
+      return;
+    }
+    void loadContributedPage(contributedPage - 1);
   });
   contributedNextButton.addEventListener("click", () => {
-    if (contributedPage < contributedTotalPages) void loadContributedPage(contributedPage + 1);
+    if (contributedPage >= contributedTotalPages) return;
+    if (isClassicMode()) {
+      renderClassicPage(contributedPage + 1);
+      return;
+    }
+    void loadContributedPage(contributedPage + 1);
   });
 
   uidDealButton.addEventListener("click", toggleUidSearch);
