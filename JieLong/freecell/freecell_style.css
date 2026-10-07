@@ -466,3 +466,145 @@ body {
 #dealPicker .uid-search button:disabled {
   opacity: .42;
 }
+
+/* 帝國版｜最後一輪外觀收口：把仍沿用慢慢版視覺的 HUD、勝利視窗與提示統一成自由之都。 */
+
+/* 遮罩改成自由之都的深藍色系；不碰任何彈窗文字或互動。 */
+.dialog-overlay,
+.message {
+  background: rgba(6, 27, 40, .62);
+  backdrop-filter: blur(1px);
+  -webkit-backdrop-filter: blur(1px);
+}
+
+/* 遊戲中的狀態提示：保留原本位置與文字，只改成帝國版色彩。 */
+.notice {
+  color: rgba(15, 69, 103, .76);
+  font-weight: 600;
+}
+
+/* 目前牌局資訊列：由原本慢慢版米白工具列改成自由之都 HUD。 */
+.deal-identity {
+  border-color: rgba(214, 165, 77, .72);
+  background: rgba(255, 250, 240, .72);
+  color: #5f6f78;
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.34),
+    0 2px 6px rgba(17,45,61,.08);
+}
+
+.deal-identity strong,
+.deal-best,
+.deal-clears {
+  color: #0f4567;
+}
+
+.deal-identity button {
+  border-color: #dcb567;
+  background: linear-gradient(135deg, #0a2f48 0%, #0f4567 100%);
+  color: #fbe5aa;
+  box-shadow: inset 0 0 0 1px rgba(255,239,186,.10);
+  font-weight: 700;
+}
+
+.deal-identity button:hover,
+.deal-identity button:focus-visible {
+  border-color: #f0cf83;
+  background: linear-gradient(135deg, #0d3b59 0%, #15577f 100%);
+}
+
+.deal-identity button:active {
+  transform: translateY(1px);
+}
+
+/* 勝利特效中央卡片也改成自由之都的深藍＋金色。 */
+.bom-overlay {
+  background: radial-gradient(
+    circle at center,
+    rgba(184,216,231,.20) 0%,
+    rgba(15,69,103,.42) 44%,
+    rgba(6,27,40,.72) 100%
+  );
+}
+
+.bom-card {
+  border-color: rgba(220,181,103,.88);
+  color: #fff8df;
+  background: linear-gradient(145deg, rgba(10,47,72,.96), rgba(15,69,103,.94));
+  box-shadow:
+    0 16px 46px rgba(6,27,40,.34),
+    inset 0 0 0 1px rgba(255,239,186,.16);
+}
+
+.bom-card::before {
+  background: rgba(220,181,103,.62);
+}
+
+.bom-card::after {
+  background: rgba(184,216,231,.34);
+}
+
+.bom-plus {
+  color: #fbe5aa;
+  text-shadow:
+    0 0 18px rgba(220,181,103,.52),
+    0 4px 18px rgba(0,0,0,.22);
+}
+
+.bom-subtext {
+  color: rgba(255,244,213,.88);
+}
+
+/* 最後的「牌局完成」訊息窗：原本仍是慢慢版白卡，補成帝國版。 */
+.message-card {
+  border: 1px solid rgba(214,165,77,.82);
+  background: linear-gradient(180deg, #fffaf0 0%, #f5ead0 100%);
+  box-shadow:
+    inset 0 0 0 2px rgba(255,255,255,.42),
+    0 22px 60px rgba(17,45,61,.30);
+}
+
+.message-title {
+  color: #0f4567;
+}
+
+.message-text,
+.message-best,
+.message-clears {
+  color: #6f675b;
+}
+
+.message-uid {
+  border: 1px solid rgba(214,165,77,.52);
+  background: rgba(255,250,240,.76);
+  color: #0f4567;
+}
+
+.message-card button {
+  border-color: #dcb567;
+  background: linear-gradient(135deg, #0a2f48 0%, #0f4567 100%);
+  color: #fbe5aa;
+  box-shadow:
+    inset 0 0 0 1px rgba(255,239,186,.10),
+    0 3px 8px rgba(29,47,58,.14);
+  font-weight: 700;
+}
+
+.message-card button:hover,
+.message-card button:focus-visible {
+  border-color: #f0cf83;
+  background: linear-gradient(135deg, #0d3b59 0%, #15577f 100%);
+}
+
+.message-card button:active {
+  transform: translateY(1px);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,239,186,.08),
+    0 1px 3px rgba(29,47,58,.12);
+}
+
+/* 頁尾保留原文字，只降低慢慢版工具頁感。 */
+.hint {
+  color: rgba(15,69,103,.62);
+}
+
