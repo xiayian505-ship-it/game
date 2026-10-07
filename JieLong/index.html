@@ -14,6 +14,9 @@
 </head>
 <body>
   <div class="empire-shell">
+    <div class="empire-book" data-page-book aria-label="接龍帝國領地冊">
+      <div class="book-stage" data-book-stage>
+        <div class="book-page book-page-cover is-active" data-book-page="cover">
     <header class="hero" aria-labelledby="page-title">
       <div class="hero-sky" aria-hidden="true">
         <span class="tower tower-a"></span>
@@ -42,8 +45,6 @@
         </div>
       </div>
     </header>
-
-    <main>
       <section class="empire-stats slowly-fade-up" data-slowly-reveal aria-label="帝國概況">
         <button class="stat-card stat-gate slowly-lift slowly-press" type="button" data-quick-panel="territories" aria-haspopup="dialog">
           <span class="stat-icon">♛</span>
@@ -61,7 +62,9 @@
           <span>經典無解局</span>
         </button>
       </section>
+        </div>
 
+        <div class="book-page book-page-territory" data-book-page="territory-spider">
       <section id="territory-spider" class="territory territory-spider slowly-fade-up" data-slowly-reveal aria-labelledby="spider-title">
         <div class="territory-heading">
           <div class="suit-seal">♠</div>
@@ -102,7 +105,9 @@
           </nav>
         </div>
       </section>
+        </div>
 
+        <div class="book-page book-page-territory" data-book-page="territory-freecell">
       <section id="territory-freecell" class="territory territory-freecell slowly-fade-up" data-slowly-reveal aria-labelledby="freecell-title">
         <div class="territory-heading">
           <div class="suit-seal">♣</div>
@@ -133,7 +138,9 @@
           </div>
         </div>
       </section>
+        </div>
 
+        <div class="book-page book-page-territory" data-book-page="territory-klondike">
       <section id="territory-klondike" class="territory territory-klondike slowly-fade-up" data-slowly-reveal aria-labelledby="klondike-title">
         <div class="territory-heading">
           <div class="suit-seal">♦</div>
@@ -168,7 +175,16 @@
           </nav>
         </div>
       </section>
-    </main>
+        </div>
+      </div>
+
+      <button class="book-turn book-turn-prev" type="button" data-book-prev aria-label="上一頁">
+        <span aria-hidden="true">◀</span>
+      </button>
+      <button class="book-turn book-turn-next" type="button" data-book-next aria-label="下一頁">
+        <span aria-hidden="true">▶</span>
+      </button>
+    </div>
 
 
 

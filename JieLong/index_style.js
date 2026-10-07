@@ -58,20 +58,132 @@
     button.addEventListener("click", () => closeQuickPanel());
   });
 
+  const book = document.querySelector("[data-page-book]");
+  const bookStage = document.querySelector("[data-book-stage]");
+  const bookPages = Array.from(document.querySelectorAll("[data-book-page]"));
+  const bookPrev = document.querySelector("[data-book-prev]");
+  const bookNext = document.querySelector("[data-book-next]");
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let activeBookIndex = Math.max(0, bookPages.findIndex((page) => page.classList.contains("is-active")));
+  let bookTurning = false;
+  let bookTimer = null;
+
+  function revealPageContent(page) {
+    page?.querySelectorAll("[data-slowly-reveal]").forEach((element) => {
+      element.classList.add("is-visible");
+    });
+  }
+
+  function syncBookHeight(index = activeBookIndex) {
+    if (!bookStage || !bookPages[index]) return;
+    const pageHeight = Math.ceil(bookPages[index].scrollHeight);
+    if (pageHeight > 0) bookStage.style.height = `${pageHeight}px`;
+  }
+
+  function syncBookControls() {
+    const unavailable = bookPages.length <= 1;
+    if (bookPrev) bookPrev.disabled = unavailable;
+    if (bookNext) bookNext.disabled = unavailable;
+  }
+
+  function wrapBookIndex(index) {
+    if (!bookPages.length) return -1;
+    return (index + bookPages.length) % bookPages.length;
+  }
+
+  function getShortestBookDirection(targetIndex) {
+    const total = bookPages.length;
+    if (total <= 1 || targetIndex === activeBookIndex) return "next";
+    const forward = (targetIndex - activeBookIndex + total) % total;
+    const backward = (activeBookIndex - targetIndex + total) % total;
+    return forward <= backward ? "next" : "prev";
+  }
+
+  function finishBookTurn(fromPage, toPage, targetIndex) {
+    window.clearTimeout(bookTimer);
+    fromPage?.classList.remove("is-active", "is-stage-exit");
+    toPage?.classList.remove("is-book-reveal");
+    toPage?.classList.add("is-active");
+    activeBookIndex = targetIndex;
+    bookTurning = false;
+    book?.classList.remove("is-turning", "is-turning-next", "is-turning-prev", "is-curtain-transition");
+    syncBookControls();
+    syncBookHeight();
+  }
+
+  function turnBookTo(targetIndex, options = {}) {
+    if (!bookPages.length) return;
+    targetIndex = wrapBookIndex(targetIndex);
+    if (targetIndex === activeBookIndex) {
+      syncBookHeight();
+      return;
+    }
+    if (bookTurning && !options.instant) return;
+
+    const fromPage = bookPages[activeBookIndex];
+    const toPage = bookPages[targetIndex];
+    const direction = options.direction || getShortestBookDirection(targetIndex);
+    revealPageContent(toPage);
+
+    if (options.instant || reduceMotion) {
+      window.clearTimeout(bookTimer);
+      bookPages.forEach((page, index) => {
+        page.classList.toggle("is-active", index === targetIndex);
+        page.classList.remove("is-book-reveal", "is-stage-exit", "is-book-flip-next", "is-book-flip-prev");
+      });
+      activeBookIndex = targetIndex;
+      bookTurning = false;
+      book?.classList.remove("is-turning", "is-turning-next", "is-turning-prev", "is-curtain-transition");
+      syncBookControls();
+      requestAnimationFrame(() => syncBookHeight());
+      return;
+    }
+
+    bookTurning = true;
+    book?.classList.add(
+      "is-turning",
+      "is-curtain-transition",
+      direction === "next" ? "is-turning-next" : "is-turning-prev"
+    );
+    toPage.classList.add("is-book-reveal");
+    fromPage.classList.add("is-stage-exit");
+    syncBookHeight(targetIndex);
+
+    const done = () => {
+      if (!bookTurning) return;
+      finishBookTurn(fromPage, toPage, targetIndex);
+    };
+
+    bookTimer = window.setTimeout(done, 1740);
+  }
+
+  bookPrev?.addEventListener("click", () => turnBookTo(activeBookIndex - 1, { direction: "prev" }));
+  bookNext?.addEventListener("click", () => turnBookTo(activeBookIndex + 1, { direction: "next" }));
+
   document.querySelectorAll("[data-territory-jump]").forEach((link) => {
     link.addEventListener("click", (event) => {
       event.preventDefault();
-      const target = document.querySelector(link.getAttribute("href"));
+      const targetId = link.getAttribute("href")?.replace(/^#/, "");
+      const targetIndex = bookPages.findIndex((page) => page.dataset.bookPage === targetId);
       closeQuickPanel({ restoreFocus: false });
-      window.setTimeout(() => target?.scrollIntoView({ behavior: "smooth", block: "start" }), 190);
+      window.setTimeout(() => turnBookTo(targetIndex), 190);
     });
   });
+
+  const initialHash = window.location.hash.replace(/^#/, "");
+  const initialIndex = bookPages.findIndex((page) => page.dataset.bookPage === initialHash);
+  if (initialIndex >= 0) turnBookTo(initialIndex, { instant: true });
+  else {
+    syncBookControls();
+    requestAnimationFrame(() => syncBookHeight());
+  }
+
+  window.addEventListener("resize", () => syncBookHeight());
 
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && quickLayer && !quickLayer.hidden) closeQuickPanel();
   });
 
-  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const hero = document.querySelector(".hero");
   if (reduceMotion || !hero) return;
 

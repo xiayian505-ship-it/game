@@ -413,3 +413,315 @@ body.quick-panel-open { overflow: hidden; }
   .quick-panel-layer,
   .quick-panel { transition: none !important; }
 }
+
+/* === 帝國舞台｜布幕開門測試 v3（尚未收編軍火庫） === */
+.empire-book {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background: #1d120d;
+  isolation: isolate;
+}
+
+.book-stage {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  min-height: 430px;
+  background: var(--paper);
+  transition: height .42s ease;
+  overflow: hidden;
+}
+
+/* 舞台左右布幕：切頁時先合攏，再向兩側拉開。 */
+.book-stage::before,
+.book-stage::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 30;
+  width: 51%;
+  opacity: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(255,255,255,.06), transparent 13% 27%, rgba(0,0,0,.16) 28% 35%, transparent 36% 52%, rgba(255,255,255,.045) 53% 65%, rgba(0,0,0,.2) 66% 74%, transparent 75%),
+    linear-gradient(180deg, #8f2529 0%, #671619 44%, #4d0f12 100%);
+  box-shadow: inset 0 0 42px rgba(32,5,7,.38), 0 0 28px rgba(25,9,6,.34);
+  will-change: transform, opacity;
+}
+
+.book-stage::before {
+  left: 0;
+  border-right: 2px solid rgba(238,190,91,.42);
+  transform: translateX(-102%);
+}
+
+.book-stage::after {
+  right: 0;
+  border-left: 2px solid rgba(238,190,91,.42);
+  transform: translateX(102%);
+  background:
+    linear-gradient(270deg, rgba(255,255,255,.06), transparent 13% 27%, rgba(0,0,0,.16) 28% 35%, transparent 36% 52%, rgba(255,255,255,.045) 53% 65%, rgba(0,0,0,.2) 66% 74%, transparent 75%),
+    linear-gradient(180deg, #8f2529 0%, #671619 44%, #4d0f12 100%);
+}
+
+.empire-book.is-curtain-transition .book-stage::before {
+  animation: empireCurtainLeft 1.72s cubic-bezier(.62,.02,.20,1) both;
+}
+
+.empire-book.is-curtain-transition .book-stage::after {
+  animation: empireCurtainRight 1.72s cubic-bezier(.62,.02,.20,1) both;
+}
+
+/* 頂部舞台燈：布幕合攏時點亮，開幕後讓新頁由暗轉亮。 */
+.empire-book::before {
+  content: "";
+  position: absolute;
+  z-index: 24;
+  top: -9%;
+  left: 50%;
+  width: min(92%, 980px);
+  height: 118%;
+  transform: translateX(-50%) scaleY(.86);
+  transform-origin: 50% 0;
+  opacity: 0;
+  pointer-events: none;
+  clip-path: polygon(43% 0, 57% 0, 91% 100%, 9% 100%);
+  background:
+    radial-gradient(ellipse at 50% 8%, rgba(255,253,222,.98) 0 4%, rgba(255,237,164,.58) 16%, rgba(255,218,119,.20) 43%, rgba(255,217,133,0) 72%),
+    linear-gradient(180deg, rgba(255,250,215,.48), rgba(255,220,128,.12) 54%, rgba(255,216,130,0) 100%);
+  filter: blur(2px);
+  mix-blend-mode: screen;
+  will-change: opacity, transform, filter;
+}
+
+.empire-book::after {
+  content: "";
+  position: absolute;
+  z-index: 23;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 14%, transparent 0 23%, rgba(24,12,7,.08) 48%, rgba(18,8,5,.56) 100%),
+    linear-gradient(180deg, rgba(17,9,5,.48), transparent 38%);
+  will-change: opacity;
+}
+
+.empire-book.is-curtain-transition::before {
+  animation: empireSpotlight 1.72s cubic-bezier(.22,.62,.22,1) both;
+}
+
+.empire-book.is-curtain-transition::after {
+  animation: empireStageVignette 1.72s ease both;
+}
+
+.book-page {
+  position: absolute;
+  inset: 0 0 auto;
+  width: 100%;
+  min-height: 100%;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  background: var(--paper);
+  will-change: filter, opacity, transform;
+}
+
+.book-page.is-active,
+.book-page.is-book-reveal,
+.book-page.is-stage-exit {
+  opacity: 1;
+  visibility: visible;
+}
+
+.book-page.is-active {
+  z-index: 2;
+  pointer-events: auto;
+}
+
+.book-page.is-book-reveal {
+  z-index: 1;
+  pointer-events: none;
+  animation: empireStageReveal 1.72s cubic-bezier(.2,.54,.18,1) both;
+}
+
+.book-page.is-stage-exit {
+  z-index: 3;
+  pointer-events: none;
+  animation: empireStageExit 1.72s ease both;
+}
+
+.book-page-cover .empire-stats { margin-bottom: 28px; }
+.book-page-territory { padding: 30px 22px 34px; }
+.book-page-territory .territory { margin-bottom: 0; }
+
+.book-turn {
+  position: absolute;
+  top: 50%;
+  z-index: 50;
+  width: 48px;
+  height: 76px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(156, 111, 50, .38);
+  border-radius: 999px;
+  color: #70461f;
+  background: rgba(255, 249, 232, .78);
+  box-shadow: 0 8px 22px rgba(64, 37, 17, .16), inset 0 0 0 2px rgba(255,255,255,.42);
+  font: inherit;
+  font-size: 1.15rem;
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition: opacity .2s ease, transform .2s ease, background .2s ease, box-shadow .2s ease;
+  backdrop-filter: blur(5px);
+}
+
+.book-turn:hover,
+.book-turn:focus-visible {
+  background: rgba(255, 248, 224, .96);
+  box-shadow: 0 12px 26px rgba(64, 37, 17, .22), inset 0 0 0 2px rgba(255,255,255,.56);
+  outline: none;
+}
+
+.book-turn-prev { left: 12px; }
+.book-turn-next { right: 12px; }
+.book-turn-prev:hover,
+.book-turn-prev:focus-visible { transform: translateY(-50%) translateX(-2px); }
+.book-turn-next:hover,
+.book-turn-next:focus-visible { transform: translateY(-50%) translateX(2px); }
+
+.book-turn:disabled {
+  opacity: .16;
+  cursor: default;
+  pointer-events: none;
+}
+
+.empire-book.is-turning .book-turn { pointer-events: none; }
+
+@keyframes empireCurtainLeft {
+  0%   { opacity: 0; transform: translateX(-102%) scaleX(1); }
+  8%   { opacity: 1; }
+  39%  { opacity: 1; transform: translateX(0) scaleX(1.025); }
+  52%  { opacity: 1; transform: translateX(0) scaleX(1.025); }
+  66%  { opacity: 1; transform: translateX(-7%) scaleX(1.02); }
+  84%  { opacity: 1; transform: translateX(-74%) scaleX(1.01); }
+  100% { opacity: 0; transform: translateX(-104%) scaleX(1); }
+}
+
+@keyframes empireCurtainRight {
+  0%   { opacity: 0; transform: translateX(102%) scaleX(1); }
+  8%   { opacity: 1; }
+  39%  { opacity: 1; transform: translateX(0) scaleX(1.025); }
+  52%  { opacity: 1; transform: translateX(0) scaleX(1.025); }
+  66%  { opacity: 1; transform: translateX(7%) scaleX(1.02); }
+  84%  { opacity: 1; transform: translateX(74%) scaleX(1.01); }
+  100% { opacity: 0; transform: translateX(104%) scaleX(1); }
+}
+
+@keyframes empireSpotlight {
+  0%, 31% {
+    opacity: 0;
+    transform: translateX(-50%) scaleY(.72) scaleX(.74);
+    filter: blur(9px) brightness(.72);
+  }
+  48% {
+    opacity: .14;
+    transform: translateX(-50%) scaleY(.84) scaleX(.86);
+    filter: blur(7px) brightness(.9);
+  }
+  63% {
+    opacity: .48;
+    transform: translateX(-50%) scaleY(.96) scaleX(.96);
+    filter: blur(4px) brightness(1.06);
+  }
+  80% {
+    opacity: .82;
+    transform: translateX(-50%) scaleY(1.04) scaleX(1.035);
+    filter: blur(2px) brightness(1.18);
+  }
+  100% {
+    opacity: .18;
+    transform: translateX(-50%) scaleY(1) scaleX(1);
+    filter: blur(4px) brightness(1);
+  }
+}
+
+@keyframes empireStageVignette {
+  0%   { opacity: 0; }
+  18%  { opacity: .44; }
+  48%  { opacity: .72; }
+  62%  { opacity: .48; }
+  82%  { opacity: .16; }
+  100% { opacity: 0; }
+}
+
+@keyframes empireStageExit {
+  0%, 28% {
+    opacity: 1;
+    filter: brightness(1) saturate(1);
+    transform: scale(1);
+  }
+  45% {
+    opacity: .86;
+    filter: brightness(.58) saturate(.86);
+    transform: scale(.995);
+  }
+  52%, 100% {
+    opacity: 0;
+    filter: brightness(.34) saturate(.72);
+    transform: scale(.99);
+  }
+}
+
+@keyframes empireStageReveal {
+  0%, 46% {
+    opacity: 1;
+    filter: brightness(.24) saturate(.68) contrast(.96);
+    transform: scale(.988);
+  }
+  57% {
+    filter: brightness(.34) saturate(.74) contrast(.98);
+    transform: scale(.99);
+  }
+  72% {
+    filter: brightness(.62) saturate(.86) contrast(1);
+    transform: scale(.995);
+  }
+  88% {
+    filter: brightness(.90) saturate(.96) contrast(1);
+    transform: scale(.999);
+  }
+  100% {
+    opacity: 1;
+    filter: brightness(1) saturate(1) contrast(1);
+    transform: scale(1);
+  }
+}
+
+@media (max-width: 760px) {
+  .book-page-territory { padding: 18px 10px 24px; }
+  .book-turn {
+    width: 38px;
+    height: 62px;
+    font-size: .95rem;
+    background: rgba(255, 249, 232, .86);
+  }
+  .book-turn-prev { left: 4px; }
+  .book-turn-next { right: 4px; }
+  .empire-book::before { width: 120%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .book-stage { transition: none !important; }
+  .book-stage::before,
+  .book-stage::after,
+  .empire-book::before,
+  .empire-book::after,
+  .book-page.is-book-reveal,
+  .book-page.is-stage-exit {
+    animation: none !important;
+  }
+}
