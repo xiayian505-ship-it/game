@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#6f1718" />
+  <title>朕的接龍帝國</title>
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/hover/lift.css" />
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/feedback/press.css" />
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/feedback/pulse_dot.css" />
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/reveal/fade_up.css" />
+  <link rel="stylesheet" href="./index.css" />
+  <link rel="stylesheet" href="./index_style.css" />
+</head>
+<body>
+  <div class="empire-shell">
+    <header class="hero" aria-labelledby="page-title">
+      <div class="hero-sky" aria-hidden="true">
+        <span class="tower tower-a"></span>
+        <span class="tower tower-b"></span>
+        <span class="tower tower-c"></span>
+        <span class="tower tower-d"></span>
+        <span class="banner banner-left">♠</span>
+        <span class="banner banner-right">♥</span>
+      </div>
+
+      <div class="hero-content">
+        <div class="royal-crest" aria-hidden="true">♠ <span>♥</span> ♦ ♣</div>
+        <div class="crown" aria-hidden="true">♛</div>
+        <h1 id="page-title">朕的接龍帝國</h1>
+        <p class="hero-subtitle"><span class="open-dot slowly-pulse-dot" aria-hidden="true"></span>三大領地已開放・巡覽牌庫・挑戰待破解牌局</p>
+
+        <div class="royal-card" aria-hidden="true">
+          <div class="royal-card-crown">♛</div>
+          <div class="royal-card-face">
+            <span class="eye"></span><span class="eye"></span>
+            <span class="smile">⌣</span>
+            <strong>♠</strong>
+          </div>
+          <div class="cape cape-left"></div>
+          <div class="cape cape-right"></div>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="empire-stats slowly-fade-up" data-slowly-reveal aria-label="帝國概況">
+        <button class="stat-card stat-gate slowly-lift slowly-press" type="button" data-quick-panel="territories" aria-haspopup="dialog">
+          <span class="stat-icon">♛</span>
+          <strong>3</strong>
+          <span>大領地</span>
+        </button>
+        <button class="stat-card stat-gate slowly-lift slowly-press" type="button" data-quick-panel="games" aria-haspopup="dialog">
+          <span class="stat-icon">♠</span>
+          <strong>6</strong>
+          <span>遊戲入口</span>
+        </button>
+        <button class="stat-card stat-gate slowly-lift slowly-press" type="button" data-quick-panel="classics" aria-haspopup="dialog">
+          <span class="stat-icon">♣</span>
+          <strong>8</strong>
+          <span>經典無解局</span>
+        </button>
+      </section>
+
+      <section id="territory-spider" class="territory territory-spider slowly-fade-up" data-slowly-reveal aria-labelledby="spider-title">
+        <div class="territory-heading">
+          <div class="suit-seal">♠</div>
+          <div>
+            <p class="eyebrow">秩序之城</p>
+            <h2 id="spider-title">連環新接龍 <span>Spider</span></h2>
+          </div>
+          <p class="territory-copy">耐心・布局・連環制勝</p>
+        </div>
+
+        <div class="territory-body">
+          <div class="territory-art" aria-hidden="true">
+            <div class="moon"></div>
+            <div class="mountain mountain-1"></div>
+            <div class="mountain mountain-2"></div>
+            <div class="castle castle-dark">
+              <i></i><i></i><i></i><i></i>
+            </div>
+            <div class="art-label"><strong>♠</strong><span>SPIDER</span></div>
+          </div>
+
+          <nav class="game-list" aria-label="連環新接龍難度">
+            <a class="game-link slowly-lift slowly-press" href="https://game.stillnessbyslowly.com/spider/spider_v7/spider_v7.html">
+              <span class="card-stack spade">♠</span>
+              <span class="game-text"><strong>連環新接龍 v7</strong><small>初階・單一花色</small></span>
+              <span class="arrow">›</span>
+            </a>
+            <a class="game-link slowly-lift slowly-press" href="https://game.stillnessbyslowly.com/spider/spider_medium_v7/spider_medium_v7.html">
+              <span class="card-stack spade">♠</span>
+              <span class="game-text"><strong>連環新接龍・中階 v7</strong><small>雙花色挑戰</small></span>
+              <span class="arrow">›</span>
+            </a>
+            <a class="game-link slowly-lift slowly-press" href="https://game.stillnessbyslowly.com/spider/spider_hard_v7/spider_hard_v7.html">
+              <span class="card-stack spade">♠</span>
+              <span class="game-text"><strong>連環新接龍・高階 v7</strong><small>四花色戰場</small></span>
+              <span class="arrow">›</span>
+            </a>
+          </nav>
+        </div>
+      </section>
+
+      <section id="territory-freecell" class="territory territory-freecell slowly-fade-up" data-slowly-reveal aria-labelledby="freecell-title">
+        <div class="territory-heading">
+          <div class="suit-seal">♣</div>
+          <div>
+            <p class="eyebrow">自由之都</p>
+            <h2 id="freecell-title">新接龍 <span>FreeCell</span></h2>
+          </div>
+          <p class="territory-copy">策略・計算・掌控全局</p>
+        </div>
+
+        <div class="territory-body">
+          <div class="territory-art" aria-hidden="true">
+            <div class="sun"></div>
+            <div class="castle castle-blue">
+              <i></i><i></i><i></i><i></i>
+            </div>
+            <div class="fountain">♣</div>
+            <div class="art-label"><strong>♣</strong><span>FREECELL</span></div>
+          </div>
+
+          <div class="game-list single">
+            <div class="museum-badge">♛ 經典無解牌局館藏 8 局</div>
+            <a class="game-link slowly-lift slowly-press" href="https://game.stillnessbyslowly.com/solitaire/freecell/freecell.html">
+              <span class="card-stack club">♣</span>
+              <span class="game-text"><strong>慢 慢｜新接龍</strong><small>全明牌策略・自由格調度</small></span>
+              <span class="arrow">›</span>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section id="territory-klondike" class="territory territory-klondike slowly-fade-up" data-slowly-reveal aria-labelledby="klondike-title">
+        <div class="territory-heading">
+          <div class="suit-seal">♦</div>
+          <div>
+            <p class="eyebrow">經典之境</p>
+            <h2 id="klondike-title">接龍 <span>Klondike</span></h2>
+          </div>
+          <p class="territory-copy">探索・思考・與運氣交手</p>
+        </div>
+
+        <div class="territory-body">
+          <div class="territory-art" aria-hidden="true">
+            <div class="sun warm"></div>
+            <div class="hill"></div>
+            <div class="castle castle-red">
+              <i></i><i></i><i></i><i></i>
+            </div>
+            <div class="art-label"><strong>♦</strong><span>KLONDIKE</span></div>
+          </div>
+
+          <nav class="game-list" aria-label="接龍玩法">
+            <a class="game-link slowly-lift slowly-press" href="https://game.stillnessbyslowly.com/solitaire/klondike/draw1/klondike_draw1.html">
+              <span class="card-stack diamond">♦</span>
+              <span class="game-text"><strong>慢 慢｜接龍・翻 1 張</strong><small>經典牌庫・每次翻 1 張</small></span>
+              <span class="arrow">›</span>
+            </a>
+            <a class="game-link slowly-lift slowly-press" href="https://game.stillnessbyslowly.com/solitaire/klondike/draw3/klondike_draw3.html">
+              <span class="card-stack diamond">♦</span>
+              <span class="game-text"><strong>慢 慢｜接龍・翻 3 張</strong><small>傳統挑戰・每次翻 3 張</small></span>
+              <span class="arrow">›</span>
+            </a>
+          </nav>
+        </div>
+      </section>
+    </main>
+
+
+
+    <div class="quick-panel-layer" id="quick-panel-layer" hidden>
+      <button class="quick-panel-backdrop" type="button" data-panel-close aria-label="關閉帝國快捷入口"></button>
+
+      <section class="quick-panel" role="dialog" aria-modal="true" aria-labelledby="quick-panel-title">
+        <header class="quick-panel-header">
+          <div>
+            <p class="quick-panel-kicker">JieLong Imperial Gate</p>
+            <h2 id="quick-panel-title">帝國快捷入口</h2>
+          </div>
+          <button class="quick-panel-close slowly-press" type="button" data-panel-close aria-label="關閉">×</button>
+        </header>
+
+        <div class="quick-panel-view" data-panel-view="territories" hidden>
+          <p class="quick-panel-intro">選擇領地，直接前往首頁中的三大接龍系列。</p>
+          <nav class="territory-shortcuts" aria-label="三大領地">
+            <a class="territory-shortcut shortcut-spider slowly-lift slowly-press" href="#territory-spider" data-territory-jump>
+              <span class="shortcut-seal">♠</span>
+              <span><small>秩序之城</small><strong>連環新接龍 <em>Spider</em></strong></span>
+              <b>›</b>
+            </a>
+            <a class="territory-shortcut shortcut-freecell slowly-lift slowly-press" href="#territory-freecell" data-territory-jump>
+              <span class="shortcut-seal">♣</span>
+              <span><small>自由之都</small><strong>新接龍 <em>FreeCell</em></strong></span>
+              <b>›</b>
+            </a>
+            <a class="territory-shortcut shortcut-klondike slowly-lift slowly-press" href="#territory-klondike" data-territory-jump>
+              <span class="shortcut-seal">♦</span>
+              <span><small>經典之境</small><strong>接龍 <em>Klondike</em></strong></span>
+              <b>›</b>
+            </a>
+          </nav>
+        </div>
+
+        <div class="quick-panel-view" data-panel-view="games" hidden>
+          <p class="quick-panel-intro">帝國版遊戲尚未動工，現階段先通往既有乾淨版。</p>
+          <nav class="quick-game-list" aria-label="六個遊戲入口">
+            <a class="quick-game-entry slowly-lift slowly-press" href="https://game.stillnessbyslowly.com/spider/spider_v7/spider_v7.html">
+              <span class="mini-card mini-spade">♠</span><span><strong>連環新接龍 v7</strong><small>初階・單一花色</small></span><b>›</b>
+            </a>
+            <a class="quick-game-entry slowly-lift slowly-press" href="https://game.stillnessbyslowly.com/spider/spider_medium_v7/spider_medium_v7.html">
+              <span class="mini-card mini-spade">♠</span><span><strong>連環新接龍・中階 v7</strong><small>雙花色挑戰</small></span><b>›</b>
+            </a>
+            <a class="quick-game-entry slowly-lift slowly-press" href="https://game.stillnessbyslowly.com/spider/spider_hard_v7/spider_hard_v7.html">
+              <span class="mini-card mini-spade">♠</span><span><strong>連環新接龍・高階 v7</strong><small>四花色戰場</small></span><b>›</b>
+            </a>
+            <a class="quick-game-entry slowly-lift slowly-press" href="https://game.stillnessbyslowly.com/solitaire/freecell/freecell.html">
+              <span class="mini-card mini-club">♣</span><span><strong>慢 慢｜新接龍</strong><small>FreeCell・全明牌策略</small></span><b>›</b>
+            </a>
+            <a class="quick-game-entry slowly-lift slowly-press" href="https://game.stillnessbyslowly.com/solitaire/klondike/draw1/klondike_draw1.html">
+              <span class="mini-card mini-diamond">♦</span><span><strong>慢 慢｜接龍・翻 1 張</strong><small>Klondike・翻 1 張</small></span><b>›</b>
+            </a>
+            <a class="quick-game-entry slowly-lift slowly-press" href="https://game.stillnessbyslowly.com/solitaire/klondike/draw3/klondike_draw3.html">
+              <span class="mini-card mini-diamond">♦</span><span><strong>慢 慢｜接龍・翻 3 張</strong><small>Klondike・翻 3 張</small></span><b>›</b>
+            </a>
+          </nav>
+        </div>
+
+        <div class="quick-panel-view" data-panel-view="classics" hidden>
+          <p class="quick-panel-intro">經典無解牌局先列入帝國館藏；公開版 FreeCell 完成後再接直接開局。</p>
+          <div class="classic-deal-grid" aria-label="八個經典無解牌局">
+            <div class="classic-deal-entry"><span>♣</span><strong>#11982</strong></div>
+            <div class="classic-deal-entry"><span>♣</span><strong>#146692</strong></div>
+            <div class="classic-deal-entry"><span>♣</span><strong>#186216</strong></div>
+            <div class="classic-deal-entry"><span>♣</span><strong>#455889</strong></div>
+            <div class="classic-deal-entry"><span>♣</span><strong>#495505</strong></div>
+            <div class="classic-deal-entry"><span>♣</span><strong>#512118</strong></div>
+            <div class="classic-deal-entry"><span>♣</span><strong>#517776</strong></div>
+            <div class="classic-deal-entry"><span>♣</span><strong>#781948</strong></div>
+          </div>
+          <p class="classic-reserved-note">♛ 帝國版入口預留中</p>
+        </div>
+      </section>
+    </div>
+
+    <footer class="empire-footer">
+      <span class="footer-line"></span>
+      <span class="footer-crown">♛</span>
+      <p>慢慢｜Stillness by Slowly.com</p>
+      <span class="footer-line"></span>
+    </footer>
+  </div>
+
+  <script src="https://lib.stillnessbyslowly.com/effects/reveal/auto_reveal.js"></script>
+  <script src="./index.js"></script>
+  <script src="./index_style.js"></script>
+</body>
+</html>
