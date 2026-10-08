@@ -1,4 +1,20 @@
-.leave-button { transition: transform .16s ease, background .16s ease, border-color .16s ease; }
-.leave-button:hover { background: rgba(255,255,255,.12); border-color: rgba(248,220,154,.9); }
-.leave-button:active { transform: translateY(1px) scale(.98); }
-@media (prefers-reduced-motion: reduce) { .leave-button { transition: none; } }
+.leave-button {
+  transition: background .16s ease, border-color .16s ease;
+}
+
+.leave-button:hover,
+.leave-button:focus-visible {
+  border-color: rgba(248,220,154,.9);
+  background: rgba(255,255,255,.12);
+  outline: none;
+}
+
+.history-topic-card:hover,
+.history-topic-card:focus-within {
+  border-color: #c08b3d;
+  box-shadow: 0 14px 24px rgba(78, 48, 21, .16), inset 0 0 0 2px rgba(255,255,255,.62);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .leave-button { transition: none; }
+}

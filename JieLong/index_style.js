@@ -221,6 +221,7 @@
   const freecellIframe = document.querySelector("[data-freecell-iframe]");
   let lastFreecellOpener = freecellEnter;
   let currentFreecellUrl = "";
+  let currentFreecellMode = "";
 
   function normalizeFreecellUrl(url) {
     try {
@@ -230,11 +231,11 @@
     }
   }
 
-  function enterFreecell(url, opener, { preserveCurrent = false } = {}) {
+  function enterFreecell(url, opener, { preserveCurrent = false, mode = "freecell" } = {}) {
     if (!freecellPage || !freecellEmbed || !freecellIframe || !url) return;
 
     const targetUrl = normalizeFreecellUrl(url);
-    const sameTarget = currentFreecellUrl === targetUrl;
+    const sameTarget = currentFreecellUrl === targetUrl && currentFreecellMode === mode;
     lastFreecellOpener = opener || freecellEnter;
 
     // 同一入口離境後再入境：保留 iframe 內目前狀態。
@@ -245,6 +246,7 @@
       }
       freecellIframe.src = targetUrl;
       currentFreecellUrl = targetUrl;
+      currentFreecellMode = mode;
     }
 
     freecellPage.classList.add("is-freecell-playing");
@@ -256,25 +258,25 @@
   freecellEnter?.addEventListener("click", (event) => {
     event.preventDefault();
     const targetUrl = normalizeFreecellUrl(freecellEnter.href);
-    enterFreecell(targetUrl, freecellEnter, { preserveCurrent: currentFreecellUrl === targetUrl });
+    enterFreecell(targetUrl, freecellEnter, { preserveCurrent: currentFreecellUrl === targetUrl && currentFreecellMode === "freecell", mode: "freecell" });
   });
 
   freecellMicrosoftEnter?.addEventListener("click", (event) => {
     event.preventDefault();
     const targetUrl = normalizeFreecellUrl(freecellMicrosoftEnter.href);
-    enterFreecell(targetUrl, freecellMicrosoftEnter, { preserveCurrent: currentFreecellUrl === targetUrl });
+    enterFreecell(targetUrl, freecellMicrosoftEnter, { preserveCurrent: currentFreecellUrl === targetUrl && currentFreecellMode === "microsoft", mode: "microsoft" });
   });
 
   freecellHistoryEnter?.addEventListener("click", (event) => {
     event.preventDefault();
     const targetUrl = normalizeFreecellUrl(freecellHistoryEnter.href);
-    enterFreecell(targetUrl, freecellHistoryEnter, { preserveCurrent: currentFreecellUrl === targetUrl });
+    enterFreecell(targetUrl, freecellHistoryEnter, { preserveCurrent: currentFreecellUrl === targetUrl && currentFreecellMode === "history", mode: "history" });
   });
 
   freecellClassicEnters.forEach((link) => {
     link.addEventListener("click", (event) => {
       event.preventDefault();
-      enterFreecell(link.href, link);
+      enterFreecell(link.href, link, { mode: "classic" });
     });
   });
 

@@ -1,27 +1,360 @@
 * { box-sizing: border-box; }
+
+:root {
+  --navy: #0f4567;
+  --navy-2: #0a2f48;
+  --gold: #dcb567;
+  --gold-soft: #f7d896;
+  --ink: #34291f;
+  --muted: #746451;
+  --line: rgba(140, 103, 59, .32);
+  --surface: #fffdf6;
+  --shadow: 0 14px 32px rgba(74, 48, 24, .12);
+}
+
 html { min-height: 100%; }
-body { margin: 0; min-height: 100vh; font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif; color: #34291f; background: #efe6cf; }
-button, a { font: inherit; }
-button { border: 0; }
-.history-shell { width: min(100%, 980px); min-height: 100vh; margin: 0 auto; background: #f8f1df; }
-.history-header { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 28px clamp(22px, 5vw, 52px); color: #f7e8bd; background: linear-gradient(135deg, #0c4664, #0a3650 68%, #082b42); border-bottom: 1px solid rgba(221,185,103,.55); }
-.history-title-group { display: flex; align-items: center; gap: 18px; min-width: 0; }
-.suit-seal { flex: 0 0 auto; width: 72px; height: 72px; display: grid; place-items: center; border: 2px solid #dcb867; border-radius: 50%; color: #f4d78f; font-size: 2.2rem; background: rgba(255,255,255,.03); }
-.eyebrow, .subtitle, h1, h2, h3, p { margin-top: 0; }
-.eyebrow { margin-bottom: 3px; color: #d8c493; letter-spacing: .14em; font-size: .9rem; }
-h1 { margin-bottom: 5px; font-family: Georgia, "Noto Serif TC", serif; font-size: clamp(2rem, 6vw, 3rem); line-height: 1; }
-.subtitle { margin-bottom: 0; color: #d8c9a6; font-size: .98rem; }
-.leave-button { flex: 0 0 auto; min-width: 76px; padding: 10px 14px; border: 1px solid rgba(235,207,143,.65); border-radius: 999px; color: #f8eac4; background: rgba(255,255,255,.07); cursor: pointer; }
-.history-hero { position: relative; overflow: hidden; min-height: 300px; display: grid; grid-template-columns: auto 1fr; align-items: center; gap: clamp(22px, 5vw, 56px); padding: clamp(38px, 8vw, 82px) clamp(24px, 7vw, 72px); background: radial-gradient(circle at 78% 32%, rgba(255,243,183,.8) 0 11%, transparent 12%), linear-gradient(180deg, #cfe8ea 0%, #e7dfbf 58%, #a9c7ad 100%); border-bottom: 1px solid #c7b98e; }
-.history-hero::after { content: ""; position: absolute; width: 210px; height: 150px; right: 10%; bottom: 0; opacity: .34; background: linear-gradient(90deg, #6d7f7b 0 29%, transparent 30% 36%, #7d8e86 37% 63%, transparent 64% 70%, #647974 71%); clip-path: polygon(0 100%, 0 43%, 16% 43%, 16% 16%, 32% 16%, 32% 0, 45% 16%, 58% 0, 58% 32%, 78% 32%, 78% 15%, 94% 15%, 94% 100%); }
-.history-hero-mark { position: relative; z-index: 1; width: clamp(90px, 18vw, 138px); aspect-ratio: 1; display: grid; place-items: center; border: 2px solid rgba(99,72,37,.55); border-radius: 26px; color: #4a3928; font-size: clamp(3rem, 10vw, 5.8rem); background: rgba(255,250,232,.48); box-shadow: inset 0 0 0 6px rgba(255,255,255,.18); }
-.history-hero-copy { position: relative; z-index: 1; }
-.history-kicker, .history-card-label { margin-bottom: 8px; color: #765d38; font-size: .78rem; font-weight: 800; letter-spacing: .18em; }
-h2 { margin-bottom: 12px; font-family: Georgia, "Noto Serif TC", serif; font-size: clamp(1.8rem, 6vw, 3rem); color: #3b2e22; }
-.history-hero-copy > p:last-child { margin-bottom: 0; color: #6b5a46; }
-.history-content { padding: clamp(24px, 5vw, 52px); }
-.history-card { display: grid; grid-template-columns: auto 1fr; gap: 18px; align-items: start; padding: clamp(20px, 4vw, 32px); border: 1px solid #d7c59d; border-radius: 24px; background: rgba(255,252,241,.82); box-shadow: 0 12px 30px rgba(79,57,29,.08); }
-.history-card-number { display: grid; place-items: center; width: 50px; height: 50px; border-radius: 50%; color: #f4dd9f; background: #173f52; font-family: Georgia, serif; }
-.history-card h3 { margin-bottom: 8px; font-size: 1.3rem; }
-.history-card p:last-child { margin-bottom: 0; color: #746451; line-height: 1.8; }
-@media (max-width: 620px) { .history-header { align-items: flex-start; } .suit-seal { width: 58px; height: 58px; font-size: 1.8rem; } .history-hero { grid-template-columns: 1fr; } .history-hero-mark { width: 96px; } }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  color: var(--ink);
+  background: #efe6cf;
+}
+
+button { font: inherit; }
+
+.history-shell {
+  width: min(100%, 1000px);
+  min-height: 100vh;
+  margin: 0 auto;
+  background: linear-gradient(180deg, #fbf5e8, #efe2c7);
+  border-inline: 1px solid rgba(140, 103, 59, .22);
+}
+
+/* History 橫幅：直接對齊主城「自由之都」territory-heading 的比例與字級。 */
+.history-header {
+  position: relative;
+  min-height: 88px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 16px;
+  align-items: center;
+  padding: 16px 24px;
+  color: #fbe5aa;
+  background: linear-gradient(105deg, var(--navy-2), var(--navy));
+  box-shadow: inset 0 -1px rgba(255,255,255,.14);
+}
+
+.suit-seal {
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--gold);
+  border-radius: 50%;
+  color: #f4d78f;
+  background: rgba(255,244,194,.1);
+  box-shadow: inset 0 0 0 4px rgba(0,0,0,.12);
+  font-size: 2rem;
+}
+
+.eyebrow,
+.history-header h1,
+.history-header-copy {
+  margin: 0;
+}
+
+.eyebrow {
+  margin: 0 0 2px;
+  color: rgba(255,234,177,.72);
+  font-size: .78rem;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+}
+
+.history-header h1 {
+  margin: 0;
+  font-size: clamp(1.35rem, 3vw, 2rem);
+  line-height: 1.12;
+}
+
+.history-header h1 span {
+  font-size: .78em;
+  opacity: .9;
+  font-weight: 600;
+}
+
+.history-header-copy {
+  margin: 0;
+  padding-right: 84px;
+  color: rgba(255,244,213,.78);
+  font-size: .95rem;
+  line-height: 1.45;
+  text-align: right;
+}
+
+.leave-button {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  min-width: 70px;
+  min-height: 38px;
+  padding: 8px 14px;
+  border: 1px solid rgba(235,207,143,.65);
+  border-radius: 999px;
+  color: #f8eac4;
+  background: rgba(255,255,255,.07);
+  cursor: pointer;
+  --slowly-press-scale: .98;
+  --slowly-press-y: 1px;
+}
+
+/* 主城自由之都同款：橫幅＋城堡共用同一張 territory 大卡。 */
+.history-territory {
+  width: min(1000px, calc(100% - 44px));
+  margin: 28px auto 0;
+  overflow: hidden;
+  border: 1px solid rgba(140, 103, 59, .32);
+  border-radius: 26px;
+  background: linear-gradient(180deg, #fbf5e8, #efe2c7);
+  box-shadow: 0 16px 40px rgba(73, 43, 17, .15), inset 0 0 0 4px rgba(255,255,255,.28);
+}
+
+.history-hero {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  min-height: 300px;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: linear-gradient(#b8d8e7 0%, #e6d8ad 63%, #93b5a2 100%);
+  box-shadow: none;
+}
+
+.sun {
+  position: absolute;
+  width: 88px;
+  height: 88px;
+  right: 26px;
+  top: 34px;
+  border-radius: 50%;
+  background: rgba(255,247,198,.85);
+  box-shadow: 0 0 34px rgba(255,229,133,.6);
+}
+
+.castle {
+  position: absolute;
+  left: 50%;
+  bottom: 24%;
+  width: 170px;
+  height: 120px;
+  transform: translateX(-50%);
+}
+
+.castle::before,
+.castle::after,
+.castle i {
+  content: "";
+  position: absolute;
+  bottom: 0;
+}
+
+.castle::before { left: 35px; width: 100px; height: 88px; }
+.castle::after { left: 65px; width: 42px; height: 120px; }
+.castle i:nth-child(1) { left: 0; width: 42px; height: 95px; }
+.castle i:nth-child(2) { right: 0; width: 42px; height: 95px; }
+.castle i:nth-child(3) {
+  left: 12px;
+  bottom: 90px;
+  width: 0;
+  height: 0;
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-bottom: 26px solid currentColor;
+}
+.castle i:nth-child(4) {
+  right: 12px;
+  bottom: 90px;
+  width: 0;
+  height: 0;
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-bottom: 26px solid currentColor;
+}
+
+.castle-blue,
+.castle-blue::before,
+.castle-blue::after,
+.castle-blue i {
+  color: #476f88;
+  background: #ece6d2;
+}
+
+.castle i:nth-child(3),
+.castle i:nth-child(4) {
+  background: transparent !important;
+}
+
+.fountain {
+  position: absolute;
+  left: 26px;
+  bottom: 74px;
+  color: #476f88;
+  font-size: 2.3rem;
+  opacity: .78;
+}
+
+/* 主城「歷史淵源」膠囊一比一視覺；History 頁只改文字為 FREECELL。 */
+.art-label.history-hero-label {
+  position: absolute;
+  left: 20px;
+  bottom: 18px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 16px;
+  border: 1px solid #d1a25c;
+  border-radius: 999px;
+  background: rgba(38,30,23,.9);
+  color: #f7d896;
+  box-shadow: 0 8px 18px rgba(29,21,14,.25);
+  font-weight: 700;
+  letter-spacing: .08em;
+}
+
+.art-label.history-hero-label strong {
+  font-size: 1.4rem;
+}
+
+/* 六個內容主題：主城同系的撲克牌入口語言，正文之後再填。 */
+.history-content {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  padding: clamp(22px, 5vw, 44px);
+}
+
+.history-topic-card {
+  min-height: 92px;
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr);
+  gap: 16px;
+  align-items: center;
+  padding: 14px 18px;
+  border: 1px solid rgba(139, 102, 61, .32);
+  border-radius: 18px;
+  background: linear-gradient(145deg, #fffdf6, #f1e8d7);
+  box-shadow: 0 8px 18px rgba(74, 48, 24, .08), inset 0 0 0 2px rgba(255,255,255,.5);
+  --slowly-lift-y: -3px;
+  --slowly-press-scale: .995;
+  --slowly-press-y: 0px;
+  --slowly-electric-speed: 9s;
+  --slowly-electric-width: 2px;
+  --slowly-electric-opacity: .72;
+  --slowly-electric-radius: 16px;
+}
+
+.history-topic-card h2 {
+  margin: 0;
+  color: #54331d;
+  font-size: 1.08rem;
+  letter-spacing: .04em;
+}
+
+.card-stack {
+  position: relative;
+  width: 46px;
+  height: 60px;
+  display: grid;
+  place-items: center;
+  border: 2px solid currentColor;
+  border-radius: 9px;
+  color: #3a2b20;
+  background: #fffaf0;
+  box-shadow: 0 5px 10px rgba(60,40,20,.1);
+  font-size: 1.8rem;
+  transform: rotate(-5deg);
+  z-index: 1;
+}
+
+.card-stack::before,
+.card-stack::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border: 1px solid currentColor;
+  border-radius: inherit;
+  background: #fff7e7;
+}
+
+.card-stack::before { transform: translate(-6px, 4px) rotate(-6deg); }
+.card-stack::after { transform: translate(5px, 2px) rotate(7deg); }
+
+@media (max-width: 720px) {
+  .history-header {
+    grid-template-columns: auto 1fr;
+    gap: 16px;
+    padding: 14px 16px;
+  }
+
+  .history-header-copy {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    padding-left: 72px;
+    padding-right: 86px;
+    margin-top: -10px;
+    text-align: left;
+  }
+
+  .leave-button {
+    top: auto;
+    bottom: 12px;
+    right: 16px;
+    transform: none;
+    font-size: .82rem;
+  }
+
+
+  .suit-seal {
+    width: 52px;
+    height: 52px;
+    font-size: 1.75rem;
+  }
+
+  .leave-button {
+    min-width: 62px;
+    padding-inline: 10px;
+  }
+
+  .history-content {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 430px) {
+  .history-territory { width: calc(100% - 20px); margin-top: 18px; }
+  .history-hero { width: 100%; min-height: 185px; margin: 0; }
+  .history-content { padding: 18px 14px 28px; }
+  .history-topic-card {
+    min-height: 82px;
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: 12px;
+    padding: 12px 14px;
+  }
+  .card-stack {
+    width: 39px;
+    height: 52px;
+    font-size: 1.55rem;
+  }
+}
+
+/* History 全頁內容收進同一張主城 territory 大卡：橫幅、城堡、六張主題牌共用外框。 */
+.history-content {
+  border-top: 1px solid rgba(135, 95, 48, .25);
+  background: transparent;
+}
