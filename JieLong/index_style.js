@@ -203,6 +203,7 @@
   // 自由之都｜入境後整頁交給遊戲本體；遊戲中隱藏帝國翻頁箭頭。
   const freecellPage = bookPages.find((page) => page.dataset.bookPage === "territory-freecell");
   const freecellEnter = document.querySelector("[data-freecell-enter]");
+  const freecellMicrosoftEnter = document.querySelector("[data-freecell-microsoft-enter]");
   const freecellClassicEnters = Array.from(document.querySelectorAll("[data-freecell-classic-enter]"));
   const freecellEmbed = document.querySelector("[data-freecell-embed]");
   const freecellIframe = document.querySelector("[data-freecell-iframe]");
@@ -225,6 +226,12 @@
     event.preventDefault();
     const isCurrentMainGame = freecellIframe?.src === freecellEnter.href;
     enterFreecell(freecellEnter.href, freecellEnter, { preserveCurrent: isCurrentMainGame });
+  });
+
+  freecellMicrosoftEnter?.addEventListener("click", (event) => {
+    event.preventDefault();
+    const isCurrentMicrosoftGame = freecellIframe?.src === freecellMicrosoftEnter.href;
+    enterFreecell(freecellMicrosoftEnter.href, freecellMicrosoftEnter, { preserveCurrent: isCurrentMicrosoftGame });
   });
 
   freecellClassicEnters.forEach((link) => {

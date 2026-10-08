@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>自由之都｜Microsoft 編號牌局</title>
+
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/typography/shine_text.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/celebration/confetti_burst.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/celebration/gold_rain.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/celebration/star_explosion.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/celebration/shockwave.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/celebration/flash_shake.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/celebration/jackpot_pop.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/celebration/card_rain.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/celebration/victory_beam.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/celebration/classic_fireworks.css">
+  <link rel="stylesheet" href="./freecell.css">
+  <link rel="stylesheet" href="./freecell_style.css">
+  <link rel="stylesheet" href="./microsoft_style.css">
+</head>
+<body>
+  <main id="gameShell" class="game-shell">
+    <header class="game-header">
+      <div class="empire-title-group">
+        <div class="suit-seal" aria-hidden="true">♣</div>
+        <div class="empire-title-copy">
+          <p class="eyebrow">自由之都 <span>FreeCell</span></p>
+          <h1>Microsoft 編號牌局</h1>
+          <p class="subtitle empire-status-line">
+            <span>步數：<strong id="moveCount">0</strong></span>
+            <span>本機已解：<strong id="solvedDealCount">0</strong></span>
+          </p>
+        </div>
+      </div>
+
+      <div class="empire-header-actions" aria-label="自由之都操作">
+        <button id="restartButton" class="restart-button" type="button">入境</button>
+        <button id="leaveFreeCellButton" class="leave-freecell-button" type="button">離境</button>
+      </div>
+    </header>
+
+    <span id="completedCount" hidden>0</span>
+    <span id="freeCellCount" hidden>0</span>
+
+    <section class="top-row" aria-label="自由寄放格與本位回收格">
+      <div class="slot-zone freecell-zone">
+        <div id="freeCellArea" class="completed-area freecell-area" aria-label="四個自由寄放格"></div>
+        <p class="slot-zone-label">自由寄放格</p>
+      </div>
+      <div class="slot-zone foundation-zone">
+        <p class="slot-zone-label">本位回收格</p>
+        <div id="completedArea" class="completed-area foundation-area" aria-label="四個本位回收格"></div>
+      </div>
+    </section>
+
+    <p id="notice" class="notice" hidden></p>
+
+    <div id="currentDealIdentity" class="deal-identity" hidden>
+      <span>牌局 <strong id="currentDealShortUid">#──────</strong></span>
+      <span id="currentDealBest" class="deal-best" hidden>最佳：<strong id="currentDealBestSteps">—</strong> 步</span>
+      <span id="currentDealClears" class="deal-clears" hidden>破關：<strong id="currentDealClearCount">—</strong> 次</span>
+      <button id="copyDealUidButton" type="button">複製編號</button>
+    </div>
+
+    <section id="tableau" class="tableau" aria-label="八欄牌區"></section>
+  </main>
+
+  <div id="bombOverlay" class="bom-overlay" aria-hidden="true">
+    <div id="victoryParticles" class="victory-particles" aria-hidden="true"></div>
+    <div class="bom-card">
+      <div id="bombText" class="bom-text slowly-shine-text">牌局完成</div>
+      <div id="bombPlus" class="bom-plus">CLEAR</div>
+      <p id="bombSubtext" class="bom-subtext">本機已解牌局 +1</p>
+    </div>
+  </div>
+
+  <div id="restartConfirm" class="dialog-overlay" hidden>
+    <div class="dialog-card" role="dialog" aria-modal="true" aria-labelledby="restartConfirmTitle">
+      <p id="restartConfirmTitle" class="dialog-title">要怎麼重新開始？</p>
+      <div class="dialog-actions">
+        <button id="restartCancelButton" type="button">取消</button>
+        <button id="restartCurrentButton" type="button">重新開始此局</button>
+      </div>
+      <button id="restartConfirmButton" class="dialog-back" type="button">選擇其他牌局</button>
+    </div>
+  </div>
+
+  <div id="microsoftPicker" class="dialog-overlay" hidden>
+    <div class="dialog-card microsoft-picker-card" role="dialog" aria-modal="true" aria-labelledby="microsoftPickerTitle">
+      <p id="microsoftPickerTitle" class="dialog-title">Microsoft 編號牌局</p>
+
+      <section class="microsoft-picker-tools" aria-label="Microsoft 牌局選擇">
+        <button id="randomMicrosoftButton" class="deal-button" type="button">隨機牌局</button>
+        <button id="solvedMicrosoftButton" class="deal-button" type="button">已解牌局</button>
+      </section>
+
+      <section class="microsoft-number-block" aria-label="輸入 Microsoft 牌局編號">
+        <label class="microsoft-number-label" for="microsoftDealInput">Microsoft百萬牌局</label>
+        <div class="microsoft-number-row">
+          <input id="microsoftDealInput" type="number" min="1" max="1000000" inputmode="numeric" placeholder="1～1000000">
+          <button id="loadMicrosoftButton" type="button">載入</button>
+        </div>
+      </section>
+
+      <section class="microsoft-hidden-block" aria-label="Microsoft 隱藏牌局">
+        <p class="microsoft-hidden-title">隱藏牌局</p>
+        <div class="microsoft-hidden-grid">
+          <button type="button" data-hidden-microsoft-deal="-1"><strong>#-1</strong><span>無解</span></button>
+          <button type="button" data-hidden-microsoft-deal="-2"><strong>#-2</strong><span>無解</span></button>
+          <button type="button" data-hidden-microsoft-deal="-3"><strong>#-3</strong><span>必勝</span></button>
+          <button type="button" data-hidden-microsoft-deal="-4"><strong>#-4</strong><span>必勝</span></button>
+        </div>
+      </section>
+
+      <section id="microsoftSolvedPanel" class="microsoft-solved-panel" hidden aria-label="本機已解牌局">
+        <div id="microsoftSolvedList" class="microsoft-solved-list"></div>
+        <div class="microsoft-solved-pager">
+          <button id="microsoftSolvedPrev" type="button">上一頁</button>
+          <span id="microsoftSolvedPageInfo">1 / 1</span>
+          <button id="microsoftSolvedNext" type="button">下一頁</button>
+        </div>
+      </section>
+
+      <button id="microsoftPickerBack" class="dialog-back" type="button">返回遊戲</button>
+    </div>
+  </div>
+
+  <div id="message" class="message" hidden>
+    <div class="message-card">
+      <p id="messageTitle" class="message-title">牌局完成</p>
+      <p id="messageText" class="message-text"></p>
+      <p id="messageBest" class="message-best" hidden></p>
+      <p id="messageClears" class="message-clears" hidden></p>
+      <div id="messageUidRow" class="message-uid-row" hidden>
+        <code id="messageUid" class="message-uid"></code>
+        <button id="messageCopyUidButton" type="button">複製編號</button>
+      </div>
+      <button id="playAgainButton" type="button">選擇下一局</button>
+    </div>
+  </div>
+
+  <script src="https://lib.stillnessbyslowly.com/game/card/deck.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/date/timestamp.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/data/random/random_id.js"></script>
+
+  <script src="https://lib.stillnessbyslowly.com/effects/celebration/confetti_burst.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/effects/celebration/gold_rain.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/effects/celebration/star_explosion.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/effects/celebration/shockwave.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/effects/celebration/flash_shake.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/effects/celebration/jackpot_pop.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/effects/celebration/card_rain.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/effects/celebration/victory_beam.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/effects/celebration/classic_fireworks.js"></script>
+
+  <script src="https://lib.stillnessbyslowly.com/audio/context/context.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/audio/note/frequency.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/audio/oscillator/oscillator.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/audio/gain/gain.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/audio/gain/envelope.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/audio/tone/tone.js"></script>
+
+  <script>window.FREECELL_ACTIVE_GAME_STORAGE_KEY = "freecell_microsoft_active_v1";</script>
+  <script src="./microsoft_data.js"></script>
+  <script src="./freecell.js"></script>
+  <script src="./microsoft_style.js"></script>
+  <script src="./microsoft.js"></script>
+</body>
+</html>
