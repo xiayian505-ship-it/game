@@ -209,6 +209,7 @@
   const freecellIframe = document.querySelector("[data-freecell-iframe]");
   let lastFreecellOpener = freecellEnter;
 
+
   function enterFreecell(url, opener, { preserveCurrent = false } = {}) {
     if (!freecellPage || !freecellEmbed || !freecellIframe || !url) return;
 

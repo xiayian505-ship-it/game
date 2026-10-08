@@ -946,3 +946,64 @@ body.quick-panel-open { overflow: hidden; }
     min-height: 600px;
   }
 }
+
+
+/* 自由之都｜歷史入口與兩個主要入口的慢速 Electric Border */
+.freecell-history-link {
+  text-decoration: none;
+  cursor: pointer;
+  --slowly-lift-y: -2px;
+  --slowly-press-scale: .985;
+  --slowly-press-y: 1px;
+}
+
+.freecell-history-link:focus-visible {
+  outline: 2px solid #f3d28a;
+  outline-offset: 3px;
+}
+
+.freecell-gate-list {
+  isolation: isolate;
+}
+
+.freecell-gate-list [data-freecell-enter],
+.freecell-gate-list [data-freecell-microsoft-enter] {
+  --slowly-electric-speed: 9s;
+  --slowly-electric-width: 2px;
+  --slowly-electric-opacity: .72;
+  --slowly-electric-radius: 16px;
+}
+
+.freecell-gate-list [data-freecell-enter] > *,
+.freecell-gate-list [data-freecell-microsoft-enter] > * {
+  position: relative;
+  z-index: 2;
+}
+
+
+/* 自由之都｜精選館藏 Electric Border 層級 */
+.freecell-gate-list .classic-tree-toggle,
+.freecell-gate-list .classic-group-toggle {
+  --slowly-electric-speed: 12s;
+  --slowly-electric-width: 1.5px;
+  --slowly-electric-opacity: .48;
+  --slowly-electric-radius: 16px;
+}
+
+.freecell-gate-list .classic-tree-toggle > *,
+.freecell-gate-list .classic-group-toggle > * {
+  position: relative;
+  z-index: 2;
+}
+
+.freecell-gate-list .classic-single-deal {
+  --slowly-electric-speed: 15s;
+  --slowly-electric-width: 1px;
+  --slowly-electric-opacity: .26;
+  --slowly-electric-radius: 13px;
+}
+
+.freecell-gate-list .classic-single-deal > * {
+  position: relative;
+  z-index: 2;
+}
