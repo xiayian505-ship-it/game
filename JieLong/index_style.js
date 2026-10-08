@@ -285,6 +285,13 @@
     if (!freecellPage || !freecellEmbed || !freecellIframe) return;
     if (event.origin !== window.location.origin) return;
     if (event.source !== freecellIframe.contentWindow) return;
+
+    if (event.data?.type === "slowly-freecell-open" && event.data?.mode === "freecell") {
+      const targetUrl = normalizeFreecellUrl(freecellEnter?.href);
+      enterFreecell(targetUrl, freecellEnter, { preserveCurrent: false, mode: "freecell" });
+      return;
+    }
+
     if (event.data?.type !== "slowly-freecell-leave") return;
 
     freecellPage.classList.remove("is-freecell-playing");

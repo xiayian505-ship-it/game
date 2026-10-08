@@ -1,4 +1,13 @@
 (() => {
+  const freeCellButton = document.querySelector("#historyFreeCellButton");
+  freeCellButton?.addEventListener("click", () => {
+    if (window.parent !== window) {
+      window.parent.postMessage({ type: "slowly-freecell-open", mode: "freecell" }, window.location.origin);
+      return;
+    }
+    window.location.href = "../freecell.html";
+  });
+
   const leaveButton = document.querySelector("#leaveHistoryButton");
   leaveButton?.addEventListener("click", () => {
     if (window.parent !== window) {

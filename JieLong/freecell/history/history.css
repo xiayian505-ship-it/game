@@ -209,6 +209,10 @@ button { font: inherit; }
 
 /* 主城「歷史淵源」膠囊一比一視覺；History 頁只改文字為 FREECELL。 */
 .art-label.history-hero-label {
+  appearance: none;
+  -webkit-appearance: none;
+  font: inherit;
+  cursor: pointer;
   position: absolute;
   left: 20px;
   bottom: 18px;
