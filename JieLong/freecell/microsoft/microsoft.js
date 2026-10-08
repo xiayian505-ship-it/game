@@ -238,8 +238,22 @@
 
   window.MicrosoftFreeCellUI = Object.freeze({ showPicker, hidePicker, startDeal });
 
+  function requestedDealFromUrl() {
+    const raw = new URLSearchParams(window.location.search).get("deal");
+    if (raw === null) return null;
+    return window.MicrosoftFreeCellLocal?.normalizeDealNumber?.(raw) || null;
+  }
+
   void window.FreeCellData?.initialize?.();
   syncCurrentFavorite();
   window.addEventListener("pageshow", syncCurrentFavorite);
-  if (!window.FreeCellGame?.hasGame?.()) showPicker({ canReturn: false });
+
+  // 主城「精選館藏」可用 ?deal= 指定開場牌局。
+  // 只把網址參數交給既有 startDeal()，不另外維護第二套發牌流程。
+  const requestedDeal = requestedDealFromUrl();
+  if (requestedDeal) {
+    startDeal(requestedDeal);
+  } else if (!window.FreeCellGame?.hasGame?.()) {
+    showPicker({ canReturn: false });
+  }
 })();

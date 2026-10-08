@@ -621,7 +621,7 @@
     currentDealBestSteps.textContent = currentDealBestValue > 0 ? String(currentDealBestValue) : "—";
     currentDealClears.hidden = !(currentDealClearValue > 0);
     currentDealClearCount.textContent = currentDealClearValue > 0 ? String(currentDealClearValue) : "—";
-    if (currentDealStats) currentDealStats.hidden = !(currentDealBestValue > 0 || currentDealClearValue > 0);
+    if (currentDealStats) currentDealStats.hidden = false;
   }
 
   function renderColumns() {

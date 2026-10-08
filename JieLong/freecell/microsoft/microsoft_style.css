@@ -664,13 +664,35 @@
 .game-header .header-deal-stats {
   gap: 4px 12px;
   margin-top: 1px;
-  font-size: .68rem;
+  font-size: .78rem;
   line-height: 1.25;
 }
 
 @media (max-width: 600px) {
   .game-header .eyebrow-with-stat { gap: 2px 7px; }
   .game-header .empire-status-line { gap: 6px; font-size: .68rem; }
-  .game-header .header-deal-stats { gap: 3px 10px; margin-top: 0; font-size: .62rem; }
+  .game-header .header-deal-stats { gap: 3px 10px; margin-top: 0; font-size: .68rem; }
   .game-header .deal-id-left { gap: 2px; }
+}
+
+
+/* 2026-10-08｜步數回到遊戲區：自由格／回收格與八欄牌區之間。 */
+.gameplay-step-row {
+  margin: -1px 0 6px;
+  padding-inline: 4px;
+  color: #0f4567;
+  font-size: .78rem;
+  line-height: 1.25;
+  letter-spacing: .01em;
+}
+
+.gameplay-step-row strong {
+  color: #0f4567;
+}
+
+@media (max-width: 600px) {
+  .gameplay-step-row {
+    margin-bottom: 5px;
+    font-size: .68rem;
+  }
 }
