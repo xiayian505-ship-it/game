@@ -294,3 +294,383 @@
 .favorite-star {
   margin-right: 4px;
 }
+
+
+/* 牌局資訊列改為融入遊戲背景；最愛按鈕只保留星號。 */
+.deal-identity {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+}
+
+.deal-identity .slowly-favorite {
+  min-width: 38px;
+  padding-inline: 9px;
+}
+
+.favorite-star {
+  margin-right: 0;
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+
+/* 與自由之都統一：最佳/破關靠左，牌局編號靠左，操作靠右。 */
+.deal-stats {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 18px;
+  min-height: 24px;
+  margin: -2px 2px 6px;
+  color: #5f6f78;
+  font-size: .86rem;
+  text-align: left;
+}
+
+.deal-stats[hidden] { display: none; }
+
+.deal-stats strong {
+  color: #0f4567;
+}
+
+.deal-identity {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+}
+
+.deal-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+  margin-left: auto;
+}
+
+
+/* 牌局資訊最終對齊：左側最愛星號＋牌局編號，右側複製編號。 */
+.deal-identity {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  box-sizing: border-box;
+}
+
+.deal-id-left {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 6px;
+}
+
+.deal-identity .slowly-favorite,
+.deal-identity .slowly-favorite.is-favorite {
+  min-width: 0;
+  min-height: 0;
+  width: auto;
+  height: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: #0f4567;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.deal-identity .slowly-favorite:hover,
+.deal-identity .slowly-favorite:focus-visible,
+.deal-identity .slowly-favorite:active,
+.deal-identity .slowly-favorite.is-favorite:hover,
+.deal-identity .slowly-favorite.is-favorite:focus-visible {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  transform: none;
+  color: #0f4567;
+}
+
+.copy-deal-id-button {
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+/* 牌局列：手機版也強制維持單行，不讓右側複製按鈕被擠落。 */
+.deal-identity {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  align-items: center;
+  column-gap: 10px;
+  width: 100%;
+  max-width: 100%;
+  margin-inline: 0;
+  box-sizing: border-box;
+}
+
+.deal-id-left {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.deal-id-left > span {
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.copy-deal-id-button {
+  justify-self: end;
+  flex: none;
+  width: auto;
+  max-width: none;
+  white-space: nowrap;
+  margin-left: 0;
+}
+
+
+/* 牌局快捷操作｜圖示化：複製與最愛都直接融入帝國背景。 */
+.copy-deal-id-button.copy-icon-button,
+.message-copy-icon-button {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  min-width: 36px;
+  height: 36px;
+  min-height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  box-shadow: none;
+  color: #0f4567;
+  line-height: 1;
+}
+
+.copy-deal-id-button.copy-icon-button:hover,
+.copy-deal-id-button.copy-icon-button:focus-visible,
+.message-copy-icon-button:hover,
+.message-copy-icon-button:focus-visible {
+  border: 0;
+  background: rgba(15, 69, 103, 0.08);
+  box-shadow: none;
+  transform: none;
+}
+
+.copy-deal-id-button.copy-icon-button:active,
+.message-copy-icon-button:active {
+  background: rgba(15, 69, 103, 0.13);
+  transform: scale(0.96);
+}
+
+.copy-icon-canvas {
+  display: block;
+  width: 24px;
+  height: 24px;
+  pointer-events: none;
+}
+
+/* 軍火庫 Toast 只管顯示行為，外觀由自由之都接成帝國樣式。 */
+.empire-copy-toast {
+  --slowly-toast-duration: 180ms;
+  position: fixed;
+  left: 50%;
+  bottom: max(26px, calc(env(safe-area-inset-bottom, 0px) + 18px));
+  z-index: 2500;
+  transform: translateX(-50%) translateY(8px);
+  max-width: min(82vw, 320px);
+  padding: 9px 16px;
+  border: 1px solid rgba(220, 183, 91, 0.78);
+  border-radius: 999px;
+  background: rgba(5, 54, 83, 0.94);
+  color: #f6dfa0;
+  box-shadow: 0 8px 24px rgba(3, 36, 58, 0.24);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: center;
+  white-space: nowrap;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition:
+    opacity var(--slowly-toast-duration) ease,
+    visibility var(--slowly-toast-duration) ease,
+    transform var(--slowly-toast-duration) ease;
+}
+
+.empire-copy-toast.show {
+  transform: translateX(-50%) translateY(0);
+}
+
+
+/* 牌局 HUD 收口：最佳/破關移入上方橫幅；複製圖示緊跟牌局編號。 */
+.game-header .header-deal-stats {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  min-height: 0;
+  margin: 5px 0 0;
+  color: rgba(255, 244, 213, .84);
+  font-size: .82rem;
+  line-height: 1.35;
+}
+
+.game-header .header-deal-stats[hidden] {
+  display: none;
+}
+
+.game-header .header-deal-stats strong {
+  color: #fbe5aa;
+}
+
+.deal-identity {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0;
+  margin: 0;
+}
+
+.deal-id-left {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  overflow: visible;
+}
+
+.deal-id-left > span {
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.copy-deal-id-button {
+  flex: 0 0 auto;
+  justify-self: auto;
+  margin-left: 0;
+}
+
+@media (max-width: 430px) {
+  .game-header .header-deal-stats {
+    gap: 4px 14px;
+    font-size: .78rem;
+  }
+
+  .deal-id-left {
+    gap: 5px;
+  }
+}
+
+/* 牌局識別組：星號＋編號＋複製圖示視為同一組；修正橫幅紀錄文字對比。 */
+.game-header .header-deal-stats .deal-best,
+.game-header .header-deal-stats .deal-clears {
+  color: rgba(255, 244, 213, .9);
+}
+
+.deal-id-left {
+  gap: 7px;
+}
+
+.deal-id-left > span {
+  color: #0f4567;
+}
+
+
+/* 2026-10-08｜百萬牌局同步自由之都橫幅 HUD。 */
+.game-header .eyebrow-with-stat {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 3px 10px;
+}
+
+.game-header .city-solved-stat {
+  color: rgba(255, 244, 213, .78);
+  font-size: 1em;
+  letter-spacing: .04em;
+  white-space: nowrap;
+}
+
+.game-header .city-solved-stat strong { color: #fbe5aa; }
+
+.game-header .empire-status-line {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 8px;
+  min-width: 0;
+  margin-top: 4px;
+  font-size: .78rem;
+}
+
+.game-header .empire-status-line > span:first-child {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.game-header .deal-identity {
+  width: auto;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: rgba(255, 244, 213, .84);
+  font-size: inherit;
+}
+
+.game-header .deal-id-left { gap: 3px; }
+
+.game-header .deal-id-left > span,
+.game-header .deal-id-left strong {
+  color: #fbe5aa;
+  letter-spacing: .04em;
+}
+
+.game-header .deal-identity .slowly-favorite,
+.game-header .deal-identity .slowly-favorite.is-favorite,
+.game-header .deal-identity .slowly-favorite:hover,
+.game-header .deal-identity .slowly-favorite:focus-visible,
+.game-header .deal-identity .slowly-favorite:active {
+  color: #fbe5aa;
+  font-size: 1rem;
+}
+
+.game-header .copy-deal-id-button.copy-icon-button {
+  width: 26px;
+  min-width: 26px;
+  height: 26px;
+  min-height: 26px;
+  margin-left: -1px;
+  color: #fbe5aa;
+  border-radius: 7px;
+}
+
+.game-header .header-deal-stats {
+  gap: 4px 12px;
+  margin-top: 1px;
+  font-size: .68rem;
+  line-height: 1.25;
+}
+
+@media (max-width: 600px) {
+  .game-header .eyebrow-with-stat { gap: 2px 7px; }
+  .game-header .empire-status-line { gap: 6px; font-size: .68rem; }
+  .game-header .header-deal-stats { gap: 3px 10px; margin-top: 0; font-size: .62rem; }
+  .game-header .deal-id-left { gap: 2px; }
+}

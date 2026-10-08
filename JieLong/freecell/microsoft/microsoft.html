@@ -16,9 +16,10 @@
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/celebration/victory_beam.css">
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/celebration/classic_fireworks.css">
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/ui/favorite.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/ui/toast.css">
   <link rel="stylesheet" href="./freecell.css">
-  <link rel="stylesheet" href="./freecell_style.css">
-  <link rel="stylesheet" href="./microsoft_style.css?v=20261008-favorite">
+  <link rel="stylesheet" href="./freecell_style.css?v=20261008-headerhud">
+  <link rel="stylesheet" href="./microsoft_style.css?v=20261008-headerhud">
 </head>
 <body>
   <main id="gameShell" class="game-shell">
@@ -26,12 +27,22 @@
       <div class="empire-title-group">
         <div class="suit-seal" aria-hidden="true">♣</div>
         <div class="empire-title-copy">
-          <p class="eyebrow">自由之都 <span>FreeCell</span></p>
+          <p class="eyebrow eyebrow-with-stat"><span>自由之都 <span>FreeCell</span></span><span class="city-solved-stat">本機已解：<strong id="solvedDealCount">0</strong></span></p>
           <h1>Microsoft 編號牌局</h1>
-          <p class="subtitle empire-status-line">
+          <div class="subtitle empire-status-line">
             <span>步數：<strong id="moveCount">0</strong></span>
-            <span>本機已解：<strong id="solvedDealCount">0</strong></span>
-          </p>
+            <div id="currentDealIdentity" class="deal-identity" hidden>
+              <div class="deal-id-left">
+                <button id="favoriteDealToggle" class="slowly-favorite" type="button" data-slowly-favorite aria-pressed="false" aria-label="最愛牌局" title="最愛牌局">☆</button>
+                <span><strong id="currentDealShortUid">#──────</strong></span>
+                <button id="copyDealUidButton" class="copy-deal-id-button copy-icon-button" type="button" aria-label="複製牌局編號" title="複製牌局編號"><canvas class="copy-icon-canvas" width="24" height="24" aria-hidden="true"></canvas></button>
+              </div>
+            </div>
+          </div>
+          <div id="currentDealStats" class="deal-stats header-deal-stats" hidden aria-live="polite">
+            <span id="currentDealBest" class="deal-best" hidden>最佳：<strong id="currentDealBestSteps">—</strong> 步</span>
+            <span id="currentDealClears" class="deal-clears" hidden>破關：<strong id="currentDealClearCount">—</strong> 次</span>
+          </div>
         </div>
       </div>
 
@@ -56,16 +67,6 @@
     </section>
 
     <p id="notice" class="notice" hidden></p>
-
-    <div id="currentDealIdentity" class="deal-identity" hidden>
-      <span>牌局 <strong id="currentDealShortUid">#──────</strong></span>
-      <span id="currentDealBest" class="deal-best" hidden>最佳：<strong id="currentDealBestSteps">—</strong> 步</span>
-      <span id="currentDealClears" class="deal-clears" hidden>破關：<strong id="currentDealClearCount">—</strong> 次</span>
-      <button id="copyDealUidButton" type="button">複製編號</button>
-      <button id="favoriteDealToggle" class="slowly-favorite" type="button" data-slowly-favorite aria-pressed="false">
-        <span class="favorite-star" aria-hidden="true">☆</span><span data-favorite-label>最愛</span>
-      </button>
-    </div>
 
     <section id="tableau" class="tableau" aria-label="八欄牌區"></section>
   </main>
@@ -139,16 +140,19 @@
       <p id="messageClears" class="message-clears" hidden></p>
       <div id="messageUidRow" class="message-uid-row" hidden>
         <code id="messageUid" class="message-uid"></code>
-        <button id="messageCopyUidButton" type="button">複製編號</button>
+        <button id="messageCopyUidButton" class="copy-icon-button message-copy-icon-button" type="button" aria-label="複製牌局編號" title="複製牌局編號"><canvas class="copy-icon-canvas" width="24" height="24" aria-hidden="true"></canvas></button>
       </div>
       <button id="playAgainButton" type="button">選擇下一局</button>
     </div>
   </div>
 
+  <div id="copyToast" class="slowly-toast empire-copy-toast" role="status" aria-live="polite"></div>
+
   <script src="https://lib.stillnessbyslowly.com/game/card/deck.js"></script>
   <script src="https://lib.stillnessbyslowly.com/date/timestamp.js"></script>
   <script src="https://lib.stillnessbyslowly.com/data/random/random_id.js"></script>
   <script src="https://lib.stillnessbyslowly.com/ui/favorite.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/ui/toast.js"></script>
 
   <script src="https://lib.stillnessbyslowly.com/effects/celebration/confetti_burst.js"></script>
   <script src="https://lib.stillnessbyslowly.com/effects/celebration/gold_rain.js"></script>
@@ -169,8 +173,8 @@
 
   <script>window.FREECELL_ACTIVE_GAME_STORAGE_KEY = "freecell_microsoft_active_v1";</script>
   <script src="./microsoft_data.js"></script>
-  <script src="./freecell.js?v=20261008-favorite"></script>
-  <script src="./microsoft_style.js"></script>
-  <script src="./microsoft.js?v=20261008-favorite"></script>
+  <script src="./freecell.js?v=20261008-identitygroup"></script>
+  <script src="./microsoft_style.js?v=20261008-identitygroup"></script>
+  <script src="./microsoft.js?v=20261008-identitygroup"></script>
 </body>
 </html>

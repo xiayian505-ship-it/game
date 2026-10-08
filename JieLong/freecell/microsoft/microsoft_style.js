@@ -133,7 +133,7 @@
   }
 
   messageCopyUidButton?.addEventListener("click", () => {
-    void window.FreeCellData?.copyUid?.(messageCopyUidButton.dataset.uid, messageCopyUidButton);
+    void window.FreeCellCopyFeedback?.copy?.(messageCopyUidButton.dataset.uid);
   });
 
   window.FreeCellUI = Object.freeze({ playVictory, showWinMessage });

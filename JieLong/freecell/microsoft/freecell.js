@@ -10,6 +10,7 @@
   const solvedDealCountElement = document.getElementById("solvedDealCount");
   const noticeElement = document.getElementById("notice");
   const restartButton = document.getElementById("restartButton");
+  const currentDealStats = document.getElementById("currentDealStats");
   const currentDealIdentity = document.getElementById("currentDealIdentity");
   const currentDealShortUid = document.getElementById("currentDealShortUid");
   const currentDealBest = document.getElementById("currentDealBest");
@@ -17,6 +18,58 @@
   const currentDealClears = document.getElementById("currentDealClears");
   const currentDealClearCount = document.getElementById("currentDealClearCount");
   const copyDealUidButton = document.getElementById("copyDealUidButton");
+  const copyToastElement = document.getElementById("copyToast");
+
+  const copyToast = copyToastElement && window.SlowlyToast?.create
+    ? window.SlowlyToast.create(copyToastElement, { duration: 1400 })
+    : null;
+
+  function drawCopyIcon(canvas) {
+    if (!(canvas instanceof HTMLCanvasElement)) return;
+    const context = canvas.getContext("2d");
+    if (!context) return;
+
+    const button = canvas.closest("button");
+    const color = button ? getComputedStyle(button).color : "#0f4567";
+    const scale = Math.max(1, Number(window.devicePixelRatio) || 1);
+    const cssSize = 24;
+
+    canvas.width = Math.round(cssSize * scale);
+    canvas.height = Math.round(cssSize * scale);
+    canvas.style.width = `${cssSize}px`;
+    canvas.style.height = `${cssSize}px`;
+
+    context.setTransform(scale, 0, 0, scale, 0, 0);
+    context.clearRect(0, 0, cssSize, cssSize);
+    context.strokeStyle = color;
+    context.lineWidth = 1.8;
+    context.lineJoin = "round";
+    context.lineCap = "round";
+    context.strokeRect(8.25, 4.75, 10, 11);
+    context.strokeRect(5.25, 8.25, 10, 11);
+  }
+
+  function drawCopyIcons() {
+    document.querySelectorAll(".copy-icon-canvas").forEach(drawCopyIcon);
+  }
+
+  async function copyDealIdentifier(uid) {
+    const value = String(uid || "").trim();
+    if (!value) return false;
+
+    let copied = false;
+    try {
+      copied = Boolean(await window.FreeCellData?.copyUid?.(value, null));
+    } catch {
+      copied = false;
+    }
+
+    copyToast?.show(copied ? "已複製牌局編號" : "複製失敗");
+    return copied;
+  }
+
+  window.FreeCellCopyFeedback = Object.freeze({ copy: copyDealIdentifier });
+  drawCopyIcons();
 
   const ACTIVE_GAME_STORAGE_KEY = String(globalThis.FREECELL_ACTIVE_GAME_STORAGE_KEY || "freecell_active_game_v1");
 
@@ -568,6 +621,7 @@
     currentDealBestSteps.textContent = currentDealBestValue > 0 ? String(currentDealBestValue) : "—";
     currentDealClears.hidden = !(currentDealClearValue > 0);
     currentDealClearCount.textContent = currentDealClearValue > 0 ? String(currentDealClearValue) : "—";
+    if (currentDealStats) currentDealStats.hidden = !(currentDealBestValue > 0 || currentDealClearValue > 0);
   }
 
   function renderColumns() {
@@ -1352,7 +1406,7 @@
   }
 
   copyDealUidButton.addEventListener("click", () => {
-    if (currentDealUid) void window.FreeCellData?.copyUid?.(currentDealUid, copyDealUidButton);
+    if (currentDealUid) void copyDealIdentifier(currentDealUid);
   });
 
   window.addEventListener("pagehide", () => {

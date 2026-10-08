@@ -68,11 +68,10 @@
 
   if (favoriteDealToggle && window.SlowlyFavorite?.create) {
     currentFavoriteControl = window.SlowlyFavorite.create(favoriteDealToggle, {
-      inactiveLabel: "最愛",
-      activeLabel: "已最愛",
+      inactiveLabel: "☆",
+      activeLabel: "★",
       render({ element, active }) {
-        const star = element.querySelector(".favorite-star");
-        if (star) star.textContent = active ? "★" : "☆";
+        element.textContent = active ? "★" : "☆";
       },
       onChange({ active }) {
         const number = currentMicrosoftDealNumber();
