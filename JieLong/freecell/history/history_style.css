@@ -1,0 +1,4 @@
+.leave-button { transition: transform .16s ease, background .16s ease, border-color .16s ease; }
+.leave-button:hover { background: rgba(255,255,255,.12); border-color: rgba(248,220,154,.9); }
+.leave-button:active { transform: translateY(1px) scale(.98); }
+@media (prefers-reduced-motion: reduce) { .leave-button { transition: none; } }

@@ -204,6 +204,7 @@
   const freecellPage = bookPages.find((page) => page.dataset.bookPage === "territory-freecell");
   const freecellEnter = document.querySelector("[data-freecell-enter]");
   const freecellMicrosoftEnter = document.querySelector("[data-freecell-microsoft-enter]");
+  const freecellHistoryEnter = document.querySelector("[data-freecell-history-enter]");
   const freecellClassicEnters = Array.from(document.querySelectorAll("[data-freecell-classic-enter]"));
   const freecellEmbed = document.querySelector("[data-freecell-embed]");
   const freecellIframe = document.querySelector("[data-freecell-iframe]");
@@ -233,6 +234,12 @@
     event.preventDefault();
     const isCurrentMicrosoftGame = freecellIframe?.src === freecellMicrosoftEnter.href;
     enterFreecell(freecellMicrosoftEnter.href, freecellMicrosoftEnter, { preserveCurrent: isCurrentMicrosoftGame });
+  });
+
+  freecellHistoryEnter?.addEventListener("click", (event) => {
+    event.preventDefault();
+    const isCurrentHistory = freecellIframe?.src === freecellHistoryEnter.href;
+    enterFreecell(freecellHistoryEnter.href, freecellHistoryEnter, { preserveCurrent: isCurrentHistory });
   });
 
   freecellClassicEnters.forEach((link) => {
