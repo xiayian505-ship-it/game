@@ -25,8 +25,67 @@
   const message = document.getElementById("message");
   const leaveButton = document.getElementById("leaveFreeCellButton");
   const hiddenDealButtons = Array.from(document.querySelectorAll("[data-hidden-microsoft-deal]"));
+  const favoriteDealToggle = document.getElementById("favoriteDealToggle");
 
   let solvedPage = 1;
+  const FAVORITE_STORAGE_KEY = "freecell_microsoft_favorites_v1";
+
+  function readFavoriteNumbers() {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(FAVORITE_STORAGE_KEY) || "[]");
+      return Array.isArray(parsed)
+        ? parsed.map(Number).filter(number => window.MicrosoftFreeCellLocal?.normalizeDealNumber?.(number))
+        : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function writeFavoriteNumbers(numbers) {
+    try {
+      localStorage.setItem(FAVORITE_STORAGE_KEY, JSON.stringify(Array.from(new Set(numbers))));
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  function currentMicrosoftDealNumber() {
+    const record = window.FreeCellGame?.getCurrentDealRecord?.();
+    return window.MicrosoftFreeCellLocal?.numberFromUid?.(record?.uid || "") || null;
+  }
+
+  let currentFavoriteControl = null;
+
+  function syncCurrentFavorite() {
+    if (!favoriteDealToggle) return;
+    const number = currentMicrosoftDealNumber();
+    favoriteDealToggle.hidden = !number;
+    if (!number) return;
+    favoriteDealToggle.dataset.favoriteId = `microsoft-deal-${number}`;
+    currentFavoriteControl?.set(readFavoriteNumbers().includes(number), { silent: true });
+  }
+
+  if (favoriteDealToggle && window.SlowlyFavorite?.create) {
+    currentFavoriteControl = window.SlowlyFavorite.create(favoriteDealToggle, {
+      inactiveLabel: "最愛",
+      activeLabel: "已最愛",
+      render({ element, active }) {
+        const star = element.querySelector(".favorite-star");
+        if (star) star.textContent = active ? "★" : "☆";
+      },
+      onChange({ active }) {
+        const number = currentMicrosoftDealNumber();
+        if (!number) {
+          currentFavoriteControl?.set(false, { silent: true });
+          return;
+        }
+        const numbers = readFavoriteNumbers().filter(item => item !== number);
+        if (active) numbers.unshift(number);
+        writeFavoriteNumbers(numbers);
+      }
+    });
+  }
 
   function showPicker({ canReturn = true } = {}) {
     if (restartConfirm) restartConfirm.hidden = true;
@@ -88,6 +147,7 @@
     });
 
     if (started) {
+      syncCurrentFavorite();
       const hidden = window.FreeCellGame?.classicHiddenDeals?.().find(record => record.dealNumber === number);
       const isKnownUnsolvable = window.FreeCellGame?.classicDealNumbers?.().includes(number);
 
@@ -180,5 +240,7 @@
   window.MicrosoftFreeCellUI = Object.freeze({ showPicker, hidePicker, startDeal });
 
   void window.FreeCellData?.initialize?.();
+  syncCurrentFavorite();
+  window.addEventListener("pageshow", syncCurrentFavorite);
   if (!window.FreeCellGame?.hasGame?.()) showPicker({ canReturn: false });
 })();

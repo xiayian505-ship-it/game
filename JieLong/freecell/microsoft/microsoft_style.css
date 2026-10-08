@@ -283,3 +283,14 @@
 @media (max-width: 430px) {
   .microsoft-hidden-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* Microsoft 編號牌局｜目前牌局最愛按鈕。 */
+.deal-identity .slowly-favorite.is-favorite {
+  border-color: #c7933c;
+  background: linear-gradient(135deg, #6f1718 0%, #8f2627 100%);
+  color: #fff0be;
+}
+
+.favorite-star {
+  margin-right: 4px;
+}

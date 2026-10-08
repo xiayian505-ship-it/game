@@ -13,6 +13,7 @@
   const solvedDealButton = document.getElementById("solvedDealButton");
   const pendingDealButton = document.getElementById("pendingDealButton");
   const classicDealButton = document.getElementById("classicDealButton");
+  const favoriteDealButton = document.getElementById("favoriteDealButton");
   const contributedPanel = document.getElementById("contributedPanel");
   const classicListTitle = document.getElementById("classicListTitle");
   const randomContributedButton = document.getElementById("randomContributedButton");
@@ -25,6 +26,7 @@
   const uidSearchPanel = document.getElementById("uidSearchPanel");
   const uidInput = document.getElementById("uidInput");
   const uidSearchButton = document.getElementById("uidSearchButton");
+  const favoriteDealToggle = document.getElementById("favoriteDealToggle");
 
   const restartConfirm = document.getElementById("restartConfirm");
   const restartCancelButton = document.getElementById("restartCancelButton");
@@ -81,6 +83,7 @@
   let contributedTotalPages = 1;
   let contributedLoading = false;
   let contributedMode = "solved";
+  const FAVORITE_DEALS_STORAGE_KEY = "freecell_favorite_deals_v1";
   let lastVictoryEffectSignature = "";
   let lastVictoryEffects = (() => {
     try {
@@ -106,36 +109,154 @@
     dealPickerNotice.textContent = String(text || "");
   }
 
+  function scrollPickerTop() {
+    dealPicker?.scrollTo?.({ top: 0, behavior: "smooth" });
+  }
+
+  function setPickerButtonState(button, expanded) {
+    button?.setAttribute("aria-expanded", String(Boolean(expanded)));
+  }
+
+  function closePickerSections({ keep = "" } = {}) {
+    const keepContributed = ["solved", "pending", "classic", "favorite"].includes(keep);
+    if (!keepContributed) contributedPanel.hidden = true;
+    if (keep !== "uid") uidSearchPanel.hidden = true;
+
+    setPickerButtonState(solvedDealButton, keep === "solved");
+    setPickerButtonState(pendingDealButton, keep === "pending");
+    setPickerButtonState(classicDealButton, keep === "classic");
+    setPickerButtonState(favoriteDealButton, keep === "favorite");
+    setPickerButtonState(uidDealButton, keep === "uid");
+
+    if (!keep) {
+      uidInput.value = "";
+      scrollPickerTop();
+    }
+  }
+
   function showDealPicker(options = {}) {
     const canReturn = options.canReturn !== false;
     restartConfirm.hidden = true;
     message.hidden = true;
     dealPickerBackButton.hidden = !canReturn;
-    contributedPanel.hidden = true;
+    closePickerSections();
     classicListTitle.hidden = true;
     randomContributedButton.hidden = false;
     if (contributedPager) contributedPager.hidden = false;
-    uidDealButton.hidden = false;
-    uidSearchPanel.hidden = true;
-    uidDealButton.setAttribute("aria-expanded", "false");
-    uidInput.value = "";
     setPickerNotice("");
     dealPicker.hidden = false;
+    requestAnimationFrame(scrollPickerTop);
   }
 
   function hideDealPicker() {
     dealPicker.hidden = true;
-    contributedPanel.hidden = true;
-    uidSearchPanel.hidden = true;
-    uidDealButton.setAttribute("aria-expanded", "false");
+    closePickerSections();
     setPickerNotice("");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   function toggleUidSearch() {
     const willOpen = uidSearchPanel.hidden;
-    uidSearchPanel.hidden = !willOpen;
-    uidDealButton.setAttribute("aria-expanded", String(willOpen));
-    if (willOpen) uidInput.focus();
+    if (!willOpen) {
+      closePickerSections();
+      return;
+    }
+    closePickerSections({ keep: "uid" });
+    uidSearchPanel.hidden = false;
+    setPickerButtonState(uidDealButton, true);
+    uidInput.value = "";
+    requestAnimationFrame(() => {
+      uidInput.focus();
+      uidSearchPanel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    });
+  }
+
+  function favoriteDealKey(deal) {
+    if (!Array.isArray(deal) || deal.length !== 52) return "";
+    return deal.map(card => `${Number(card.rank)}:${String(card.suit)}`).join("|");
+  }
+
+  function readFavoriteDeals() {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(FAVORITE_DEALS_STORAGE_KEY) || "[]");
+      return Array.isArray(parsed)
+        ? parsed.filter(record => record?.uid && favoriteDealKey(record.deal))
+        : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function writeFavoriteDeals(records) {
+    try {
+      localStorage.setItem(FAVORITE_DEALS_STORAGE_KEY, JSON.stringify(records));
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  function findFavoriteForRecord(record) {
+    if (!record?.uid) return null;
+    const key = favoriteDealKey(record.deal);
+    return readFavoriteDeals().find(item => item.uid === record.uid || (key && favoriteDealKey(item.deal) === key)) || null;
+  }
+
+  function saveFavoriteRecord(record) {
+    if (!record?.uid || !favoriteDealKey(record.deal)) return false;
+    const key = favoriteDealKey(record.deal);
+    const records = readFavoriteDeals().filter(item => item.uid !== record.uid && favoriteDealKey(item.deal) !== key);
+    records.unshift({
+      uid: record.uid,
+      deal: record.deal.map(card => ({ rank: Number(card.rank), suit: String(card.suit) })),
+      bestSteps: Number(record.bestSteps) > 0 ? Number(record.bestSteps) : null,
+      clearCount: Math.max(0, Number(record.clearCount) || 0),
+      addedAt: Date.now()
+    });
+    return writeFavoriteDeals(records);
+  }
+
+  function removeFavoriteRecord(record) {
+    if (!record?.uid) return false;
+    const key = favoriteDealKey(record.deal);
+    const records = readFavoriteDeals();
+    const next = records.filter(item => item.uid !== record.uid && (!key || favoriteDealKey(item.deal) !== key));
+    return next.length !== records.length ? writeFavoriteDeals(next) : false;
+  }
+
+  let currentFavoriteControl = null;
+
+  function syncCurrentFavorite() {
+    if (!favoriteDealToggle) return;
+    const record = window.FreeCellGame?.getCurrentDealRecord?.();
+    const available = Boolean(record?.uid && favoriteDealKey(record.deal));
+    favoriteDealToggle.hidden = !available;
+    if (!available) return;
+
+    const existing = findFavoriteForRecord(record);
+    if (existing && existing.uid !== record.uid) saveFavoriteRecord(record);
+    favoriteDealToggle.dataset.favoriteId = record.uid;
+    currentFavoriteControl?.set(Boolean(existing), { silent: true });
+  }
+
+  if (favoriteDealToggle && window.SlowlyFavorite?.create) {
+    currentFavoriteControl = window.SlowlyFavorite.create(favoriteDealToggle, {
+      inactiveLabel: "最愛",
+      activeLabel: "已最愛",
+      render({ element, active }) {
+        const star = element.querySelector(".favorite-star");
+        if (star) star.textContent = active ? "★" : "☆";
+      },
+      onChange({ active }) {
+        const record = window.FreeCellGame?.getCurrentDealRecord?.();
+        if (!record) {
+          currentFavoriteControl?.set(false, { silent: true });
+          return;
+        }
+        if (active) saveFavoriteRecord(record);
+        else removeFavoriteRecord(record);
+      }
+    });
   }
 
   function isPendingMode() {
@@ -146,8 +267,13 @@
     return contributedMode === "classic";
   }
 
+  function isFavoriteMode() {
+    return contributedMode === "favorite";
+  }
+
   function currentPoolLabel() {
     if (isClassicMode()) return "經典牌局";
+    if (isFavoriteMode()) return "最愛牌局";
     return isPendingMode() ? "待破解牌局" : "玩家已解牌局";
   }
 
@@ -160,7 +286,7 @@
     if (!records.length) {
       const empty = document.createElement("p");
       empty.className = "contributed-empty";
-      empty.textContent = isPendingMode() ? "目前還沒有待破解牌局。" : "目前還沒有玩家已解牌局。";
+      empty.textContent = isPendingMode() ? "目前還沒有待破解牌局。" : (isFavoriteMode() ? "目前還沒有最愛牌局。" : "目前還沒有玩家已解牌局。");
       contributedList.appendChild(empty);
     } else {
       records.forEach(record => {
@@ -187,6 +313,7 @@
           window.FreeCellGame?.abandonCurrentDeal?.();
           if (window.FreeCellGame?.startKnownGame(record)) {
             if (isPendingMode()) void window.FreeCellData?.markPendingAttempt?.(record);
+            syncCurrentFavorite();
             hideDealPicker();
           }
         });
@@ -207,9 +334,23 @@
     const label = currentPoolLabel();
     setPickerNotice(`正在讀取${label}…`);
     try {
-      const result = isPendingMode()
-        ? await window.FreeCellData.listPendingPage(page, 4)
-        : await window.FreeCellData.listPage(page, 4);
+      let result;
+      if (isFavoriteMode()) {
+        const records = readFavoriteDeals();
+        const totalCount = records.length;
+        const totalPages = Math.max(1, Math.ceil(totalCount / 4));
+        const currentPage = Math.min(Math.max(1, Math.trunc(Number(page)) || 1), totalPages);
+        result = {
+          records: records.slice((currentPage - 1) * 4, currentPage * 4),
+          page: currentPage,
+          totalPages,
+          totalCount
+        };
+      } else {
+        result = isPendingMode()
+          ? await window.FreeCellData.listPendingPage(page, 4)
+          : await window.FreeCellData.listPage(page, 4);
+      }
       renderContributedPage(result);
       setPickerNotice(result.totalCount > 0 ? `共有 ${result.totalCount} 副${label}。` : `目前還沒有${label}。`);
     } catch (error) {
@@ -223,19 +364,26 @@
   }
 
   async function openContributedPanel(mode = "solved") {
-    contributedMode = mode === "pending" ? "pending" : "solved";
+    const key = ["pending", "favorite"].includes(mode) ? mode : "solved";
+    const button = key === "pending" ? pendingDealButton : (key === "favorite" ? favoriteDealButton : solvedDealButton);
+    const alreadyOpen = !contributedPanel.hidden && contributedMode === key;
+    if (alreadyOpen) {
+      closePickerSections();
+      return;
+    }
+
+    contributedMode = key;
+    closePickerSections({ keep: key });
     contributedPanel.hidden = false;
     contributedPanel.setAttribute("aria-label", currentPoolLabel());
     classicListTitle.hidden = true;
-    randomContributedButton.hidden = false;
+    randomContributedButton.hidden = isFavoriteMode();
     randomContributedButton.textContent = isPendingMode()
       ? "從待破解牌局隨機抽一局"
       : "從已解牌局隨機抽一局";
     if (contributedPager) contributedPager.hidden = false;
-    uidDealButton.hidden = false;
-    uidSearchPanel.hidden = true;
-    uidDealButton.setAttribute("aria-expanded", "false");
-    uidInput.value = "";
+    setPickerButtonState(button, true);
+    requestAnimationFrame(scrollPickerTop);
     await loadContributedPage(1);
   }
 
@@ -259,6 +407,7 @@
     button.addEventListener("click", () => {
       window.FreeCellGame?.abandonCurrentDeal?.();
       if (window.FreeCellGame?.startClassicGame?.(dealNumber)) {
+        syncCurrentFavorite();
         hideDealPicker();
       }
     });
@@ -298,16 +447,20 @@
   }
 
   function openClassicPanel() {
+    const alreadyOpen = !contributedPanel.hidden && contributedMode === "classic";
+    if (alreadyOpen) {
+      closePickerSections();
+      return;
+    }
     contributedMode = "classic";
+    closePickerSections({ keep: "classic" });
     contributedPanel.hidden = false;
     contributedPanel.setAttribute("aria-label", "經典牌局");
     classicListTitle.hidden = false;
     randomContributedButton.hidden = true;
     if (contributedPager) contributedPager.hidden = false;
-    uidDealButton.hidden = true;
-    uidSearchPanel.hidden = true;
-    uidDealButton.setAttribute("aria-expanded", "false");
-    uidInput.value = "";
+    setPickerButtonState(classicDealButton, true);
+    requestAnimationFrame(scrollPickerTop);
     renderClassicPage(1);
   }
 
@@ -327,6 +480,7 @@
       window.FreeCellGame?.abandonCurrentDeal?.();
       if (window.FreeCellGame?.startKnownGame(record)) {
         if (isPendingMode()) void window.FreeCellData?.markPendingAttempt?.(record);
+        syncCurrentFavorite();
         hideDealPicker();
       }
     } catch (error) {
@@ -344,16 +498,20 @@
       return;
     }
     setPickerNotice("正在查詢 UID…");
-    const record = isPendingMode()
-      ? await window.FreeCellData.findPendingByUid(q)
-      : await window.FreeCellData.findByUid(q);
+    let record = await window.FreeCellData.findByUid(q);
+    let fromPending = false;
+    if (!record) {
+      record = await window.FreeCellData.findPendingByUid(q);
+      fromPending = Boolean(record);
+    }
     if (!record) {
       setPickerNotice("找不到這個完整 UID。");
       return;
     }
     window.FreeCellGame?.abandonCurrentDeal?.();
     if (window.FreeCellGame?.startKnownGame(record)) {
-      if (isPendingMode()) void window.FreeCellData?.markPendingAttempt?.(record);
+      if (fromPending) void window.FreeCellData?.markPendingAttempt?.(record);
+      syncCurrentFavorite();
       hideDealPicker();
     }
   }
@@ -524,6 +682,7 @@
     messageUidRow.hidden = !uid;
     messageUid.textContent = uid ? (window.FreeCellData?.shortUid?.(uid) || uid) : "";
     messageCopyUidButton.dataset.uid = uid;
+    syncCurrentFavorite();
     message.hidden = false;
   }
 
@@ -552,6 +711,7 @@
     try {
       window.FreeCellGame?.abandonCurrentDeal?.();
       window.FreeCellGame?.startRandomGame();
+      syncCurrentFavorite();
       hideDealPicker();
     } catch (error) {
       console.error(error);
@@ -560,6 +720,7 @@
   });
 
   solvedDealButton.addEventListener("click", () => void openContributedPanel("solved"));
+  favoriteDealButton.addEventListener("click", () => void openContributedPanel("favorite"));
   pendingDealButton.addEventListener("click", () => void openContributedPanel("pending"));
   classicDealButton.addEventListener("click", openClassicPanel);
   randomContributedButton.addEventListener("click", () => void loadRandomSolvedDeal());
@@ -603,6 +764,9 @@
   });
 
   void window.FreeCellData?.initialize?.();
+  syncCurrentFavorite();
+  window.addEventListener("pageshow", syncCurrentFavorite);
+  window.addEventListener("freecelldealchange", syncCurrentFavorite);
 
   if (!window.FreeCellGame?.hasGame()) {
     showDealPicker({ canReturn: false });

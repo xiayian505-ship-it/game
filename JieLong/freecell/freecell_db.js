@@ -859,6 +859,7 @@
     findByUid,
     findPendingByUid,
     copyUid,
-    shortUid
+    shortUid,
+    createUid
   });
 })();

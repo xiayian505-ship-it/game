@@ -16,8 +16,9 @@
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/celebration/card_rain.css">
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/celebration/victory_beam.css">
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/celebration/classic_fireworks.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/ui/favorite.css">
   <link rel="stylesheet" href="freecell.css">
-  <link rel="stylesheet" href="freecell_style.css">
+  <link rel="stylesheet" href="freecell_style.css?v=20261008-favorite">
 </head>
 <body>
   <main id="gameShell" class="game-shell">
@@ -61,6 +62,9 @@
       <span id="currentDealBest" class="deal-best" hidden>最佳：<strong id="currentDealBestSteps">—</strong> 步</span>
       <span id="currentDealClears" class="deal-clears" hidden>破關：<strong id="currentDealClearCount">—</strong> 次</span>
       <button id="copyDealUidButton" type="button">複製 UID</button>
+      <button id="favoriteDealToggle" class="slowly-favorite" type="button" data-slowly-favorite aria-pressed="false">
+        <span class="favorite-star" aria-hidden="true">☆</span><span data-favorite-label>最愛</span>
+      </button>
     </div>
 
     <section id="tableau" class="tableau" aria-label="八欄牌區"></section>
@@ -95,9 +99,14 @@
 
       <section class="deal-tools deal-tools-main" aria-label="牌局選擇">
         <button id="randomDealButton" class="deal-button" type="button">隨機牌局</button>
-        <button id="solvedDealButton" class="deal-button" type="button">玩家已解牌局</button>
-        <button id="pendingDealButton" class="deal-button" type="button">待破解牌局</button>
-        <button id="classicDealButton" class="deal-button" type="button">經典牌局</button>
+        <button id="solvedDealButton" class="deal-button" type="button" aria-expanded="false" aria-controls="contributedPanel">玩家已解牌局</button>
+        <button id="pendingDealButton" class="deal-button" type="button" aria-expanded="false" aria-controls="contributedPanel">待破解牌局</button>
+        <button id="classicDealButton" class="deal-button" type="button" aria-expanded="false" aria-controls="contributedPanel">經典牌局</button>
+      </section>
+
+      <section class="deal-tools deal-tools-secondary" aria-label="其他牌局選擇">
+        <button id="favoriteDealButton" class="deal-button" type="button" aria-expanded="false" aria-controls="contributedPanel">最愛牌局</button>
+        <button id="uidDealButton" class="deal-button" type="button" aria-expanded="false" aria-controls="uidSearchPanel">輸入 UID</button>
       </section>
 
       <section id="contributedPanel" class="contributed-panel" hidden aria-label="玩家已解牌局">
@@ -113,16 +122,14 @@
           <span id="contributedPageInfo">1 / 1</span>
           <button id="contributedNextButton" type="button" disabled>下一頁</button>
         </div>
+      </section>
 
-        <button id="uidDealButton" class="uid-paste-toggle" type="button" aria-expanded="false">有完整 UID？貼上載入</button>
-
-        <section id="uidSearchPanel" class="uid-search" hidden>
-          <label class="uid-search-label" for="uidInput">完整牌局 UID</label>
-          <div class="uid-search-row">
-            <input id="uidInput" type="search" autocomplete="off" spellcheck="false" placeholder="貼上 freecell-...">
-            <button id="uidSearchButton" type="button">載入</button>
-          </div>
-        </section>
+      <section id="uidSearchPanel" class="uid-search" hidden>
+        <label class="uid-search-label" for="uidInput">完整牌局 UID</label>
+        <div class="uid-search-row">
+          <input id="uidInput" type="search" autocomplete="off" spellcheck="false" placeholder="貼上 freecell-...">
+          <button id="uidSearchButton" type="button">載入</button>
+        </div>
       </section>
 
       <p id="dealPickerNotice" class="picker-notice" aria-live="polite"></p>
@@ -148,6 +155,7 @@
   <script src="https://lib.stillnessbyslowly.com/game/card/deck.js"></script>
   <script src="https://lib.stillnessbyslowly.com/date/timestamp.js"></script>
   <script src="https://lib.stillnessbyslowly.com/data/random/random_id.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/ui/favorite.js"></script>
 
   <!-- 慢慢軍火庫｜Celebration FX（只在勝利時播放） -->
   <script src="https://lib.stillnessbyslowly.com/effects/celebration/confetti_burst.js"></script>
@@ -169,8 +177,8 @@
   <script src="https://lib.stillnessbyslowly.com/audio/tone/tone.js"></script>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.min.js"></script>
-  <script src="freecell_db.js"></script>
-  <script src="freecell.js"></script>
-  <script src="freecell_style.js"></script>
+  <script src="freecell_db.js?v=20261008-uid"></script>
+  <script src="freecell.js?v=20261008-favorite"></script>
+  <script src="freecell_style.js?v=20261008-favorite"></script>
 </body>
 </html>

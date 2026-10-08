@@ -15,9 +15,10 @@
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/celebration/card_rain.css">
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/celebration/victory_beam.css">
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/celebration/classic_fireworks.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/ui/favorite.css">
   <link rel="stylesheet" href="./freecell.css">
   <link rel="stylesheet" href="./freecell_style.css">
-  <link rel="stylesheet" href="./microsoft_style.css">
+  <link rel="stylesheet" href="./microsoft_style.css?v=20261008-favorite">
 </head>
 <body>
   <main id="gameShell" class="game-shell">
@@ -61,6 +62,9 @@
       <span id="currentDealBest" class="deal-best" hidden>最佳：<strong id="currentDealBestSteps">—</strong> 步</span>
       <span id="currentDealClears" class="deal-clears" hidden>破關：<strong id="currentDealClearCount">—</strong> 次</span>
       <button id="copyDealUidButton" type="button">複製編號</button>
+      <button id="favoriteDealToggle" class="slowly-favorite" type="button" data-slowly-favorite aria-pressed="false">
+        <span class="favorite-star" aria-hidden="true">☆</span><span data-favorite-label>最愛</span>
+      </button>
     </div>
 
     <section id="tableau" class="tableau" aria-label="八欄牌區"></section>
@@ -144,6 +148,7 @@
   <script src="https://lib.stillnessbyslowly.com/game/card/deck.js"></script>
   <script src="https://lib.stillnessbyslowly.com/date/timestamp.js"></script>
   <script src="https://lib.stillnessbyslowly.com/data/random/random_id.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/ui/favorite.js"></script>
 
   <script src="https://lib.stillnessbyslowly.com/effects/celebration/confetti_burst.js"></script>
   <script src="https://lib.stillnessbyslowly.com/effects/celebration/gold_rain.js"></script>
@@ -164,8 +169,8 @@
 
   <script>window.FREECELL_ACTIVE_GAME_STORAGE_KEY = "freecell_microsoft_active_v1";</script>
   <script src="./microsoft_data.js"></script>
-  <script src="./freecell.js"></script>
+  <script src="./freecell.js?v=20261008-favorite"></script>
   <script src="./microsoft_style.js"></script>
-  <script src="./microsoft.js"></script>
+  <script src="./microsoft.js?v=20261008-favorite"></script>
 </body>
 </html>

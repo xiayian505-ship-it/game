@@ -641,3 +641,30 @@ body {
   color: rgba(15,69,103,.62);
 }
 
+
+/* 自由之都｜第二排入口與最愛狀態。 */
+#dealPicker .deal-tools-secondary {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 2px;
+}
+
+.deal-identity .slowly-favorite.is-favorite {
+  border-color: #c7933c;
+  background: linear-gradient(135deg, #6f1718 0%, #8f2627 100%);
+  color: #fff0be;
+}
+
+.favorite-star {
+  margin-right: 4px;
+}
+
+#dealPicker .deal-button[aria-expanded="true"] {
+  border-color: #f0cf83;
+  background: linear-gradient(135deg, #15577f 0%, #0d3b59 100%);
+}
+
+/* 選牌內容較長時由彈窗層自己捲動，不把遊戲頁面留在底部。 */
+#dealPicker {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}

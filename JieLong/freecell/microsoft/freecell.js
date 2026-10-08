@@ -1396,6 +1396,17 @@
     },
     hasGame() { return hasStartedGame; },
     isBusy() { return busy; },
+    getCurrentDealRecord() {
+      if (!hasStartedGame || originalDeal.length !== 52 || !currentDealUid) return null;
+      return {
+        uid: currentDealUid,
+        deal: cloneDeal(originalDeal),
+        source: currentDealSource,
+        classicDealNumber: currentClassicDealNumber,
+        bestSteps: currentDealBestValue,
+        clearCount: currentDealClearValue
+      };
+    },
     setNotice(text) { setNotice(String(text || "")); },
     restartCurrentDeal,
     abandonCurrentDeal,

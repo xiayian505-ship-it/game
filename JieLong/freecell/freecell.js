@@ -450,6 +450,12 @@
     return `freecell-classic-${Math.trunc(Number(dealNumber))}`;
   }
 
+  function createCurrentDealUid() {
+    if (window.FreeCellData?.createUid) return window.FreeCellData.createUid();
+    if (window.RandomId?.create) return window.RandomId.create({ prefix: "freecell-" });
+    return `freecell-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+  }
+
   function startGame(options = {}) {
     assertDependencies();
 
@@ -476,8 +482,11 @@
     selection = null;
     busy = false;
     hasStartedGame = true;
-    currentDealUid = String(options.uid || "").trim() || null;
     currentDealSource = String(options.source || (options.classicDealNumber ? "classic" : "random"));
+    currentDealUid = String(options.uid || "").trim() || null;
+    if (!currentDealUid && currentDealSource !== "classic") {
+      currentDealUid = createCurrentDealUid();
+    }
     currentClassicDealNumber = Number.isInteger(Number(options.classicDealNumber))
       ? Number(options.classicDealNumber)
       : null;
@@ -496,14 +505,15 @@
       : (currentDealUid ? `已載入牌局 ${window.FreeCellData?.shortUid?.(currentDealUid) || currentDealUid}。` : "點一張牌或牌串開始。"));
     render();
     saveActiveGame();
-    if (!currentDealUid && window.FreeCellData?.resolveDeal) {
+    if (currentDealSource === "random" && window.FreeCellData?.resolveDeal) {
       void window.FreeCellData.resolveDeal(originalDeal).then(record => {
-        if (!record || currentDealUid) return;
+        if (!record) return;
         currentDealUid = record.uid;
         currentDealBestValue = record.bestSteps || null;
         currentDealClearValue = Number(record.clearCount || 0);
         render();
         saveActiveGame();
+        window.dispatchEvent(new CustomEvent("freecelldealchange", { detail: { uid: currentDealUid } }));
         setNotice(`這副隨機牌局已在玩家已解牌庫：${window.FreeCellData.shortUid(record.uid)}`);
       }).catch(() => {});
     }
@@ -1377,6 +1387,17 @@
     },
     hasGame() { return hasStartedGame; },
     isBusy() { return busy; },
+    getCurrentDealRecord() {
+      if (!hasStartedGame || originalDeal.length !== 52 || !currentDealUid) return null;
+      return {
+        uid: currentDealUid,
+        deal: cloneDeal(originalDeal),
+        source: currentDealSource,
+        classicDealNumber: currentClassicDealNumber,
+        bestSteps: currentDealBestValue,
+        clearCount: currentDealClearValue
+      };
+    },
     restartCurrentDeal,
     abandonCurrentDeal,
     clearSelection() { selection = null; render(); }
