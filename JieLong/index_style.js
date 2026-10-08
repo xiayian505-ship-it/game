@@ -176,7 +176,7 @@
     requestAnimationFrame(() => syncBookHeight());
   });
 
-  // 自由之都｜入境後整頁交給遊戲本體，只留下帝國翻頁箭頭與頁尾。
+  // 自由之都｜入境後整頁交給遊戲本體；遊戲中隱藏帝國翻頁箭頭。
   const freecellPage = bookPages.find((page) => page.dataset.bookPage === "territory-freecell");
   const freecellEnter = document.querySelector("[data-freecell-enter]");
   const freecellEmbed = document.querySelector("[data-freecell-embed]");
@@ -188,6 +188,7 @@
 
     if (!freecellIframe.getAttribute("src")) freecellIframe.src = freecellEnter.href;
     freecellPage.classList.add("is-freecell-playing");
+    book?.classList.add("is-freecell-playing");
     freecellEmbed.hidden = false;
     requestAnimationFrame(() => syncBookHeight());
   });
@@ -200,6 +201,7 @@
     if (event.data?.type !== "slowly-freecell-leave") return;
 
     freecellPage.classList.remove("is-freecell-playing");
+    book?.classList.remove("is-freecell-playing");
     freecellEmbed.hidden = true;
     requestAnimationFrame(() => {
       syncBookHeight();

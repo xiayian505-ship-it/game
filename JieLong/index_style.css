@@ -601,6 +601,12 @@ body.quick-panel-open { overflow: hidden; }
 
 .empire-book.is-turning .book-turn { pointer-events: none; }
 
+/* 自由之都遊戲模式：避免帝國翻頁箭頭遮住 iframe 牌面。 */
+.empire-book.is-freecell-playing .book-turn {
+  opacity: 0;
+  pointer-events: none;
+}
+
 @keyframes empireCurtainLeft {
   0%   { opacity: 0; transform: translateX(-102%) scaleX(1); }
   8%   { opacity: 1; }
