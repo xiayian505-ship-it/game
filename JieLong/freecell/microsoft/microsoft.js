@@ -108,7 +108,7 @@
   }
 
   function renderSolvedPage(page = 1) {
-    const result = window.MicrosoftFreeCellLocal?.listPage?.(page, 5);
+    const result = window.MicrosoftFreeCellLocal?.listPage?.(page, 4);
     if (!result || !solvedList) return;
     solvedPage = result.page;
     solvedList.innerHTML = "";

@@ -208,8 +208,8 @@
     setPickerNotice(`正在讀取${label}…`);
     try {
       const result = isPendingMode()
-        ? await window.FreeCellData.listPendingPage(page, 5)
-        : await window.FreeCellData.listPage(page, 5);
+        ? await window.FreeCellData.listPendingPage(page, 4)
+        : await window.FreeCellData.listPage(page, 4);
       renderContributedPage(result);
       setPickerNotice(result.totalCount > 0 ? `共有 ${result.totalCount} 副${label}。` : `目前還沒有${label}。`);
     } catch (error) {
@@ -267,14 +267,15 @@
   }
 
   function renderClassicPage(page = 1) {
-    contributedPage = page === 2 ? 2 : 1;
-    contributedTotalPages = 2;
+    contributedPage = Math.min(3, Math.max(1, Math.trunc(Number(page)) || 1));
+    contributedTotalPages = 3;
     contributedList.innerHTML = "";
 
-    if (contributedPage === 1) {
+    if (contributedPage <= 2) {
       classicListTitle.textContent = "經典無解牌局";
       const dealNumbers = window.FreeCellGame?.classicDealNumbers?.() || [];
-      dealNumbers.forEach(dealNumber => appendClassicDealRow(dealNumber));
+      const start = (contributedPage - 1) * 4;
+      dealNumbers.slice(start, start + 4).forEach(dealNumber => appendClassicDealRow(dealNumber));
     } else {
       classicListTitle.textContent = "經典隱藏牌局";
 
@@ -285,7 +286,7 @@
       contributedList.appendChild(hiddenNotice);
 
       const hiddenDeals = window.FreeCellGame?.classicHiddenDeals?.() || [];
-      hiddenDeals.forEach(record => {
+      hiddenDeals.slice(0, 4).forEach(record => {
         appendClassicDealRow(record.dealNumber, record.result);
       });
     }

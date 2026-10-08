@@ -74,10 +74,10 @@
   const SELECT_FIELDS = "uid,deal,client_solved_at,solved_at,best_steps,clear_count";
   const PENDING_SELECT_FIELDS = "uid,deal,client_added_at,added_at,attempt_count";
 
-  async function listPage(page = 1, pageSize = 5) {
+  async function listPage(page = 1, pageSize = 4) {
     if (!client) throw new Error("Supabase client 尚未載入。");
 
-    const size = Math.min(50, Math.max(1, Math.trunc(Number(pageSize)) || 5));
+    const size = Math.min(50, Math.max(1, Math.trunc(Number(pageSize)) || 4));
     const requestedPage = Math.max(1, Math.trunc(Number(page)) || 1);
     const from = (requestedPage - 1) * size;
     const to = from + size - 1;
@@ -211,10 +211,10 @@
     return Number(total || 0);
   }
 
-  async function pendingListPage(page = 1, pageSize = 5) {
+  async function pendingListPage(page = 1, pageSize = 4) {
     if (!client) throw new Error("Supabase client 尚未載入。");
 
-    const size = Math.min(50, Math.max(1, Math.trunc(Number(pageSize)) || 5));
+    const size = Math.min(50, Math.max(1, Math.trunc(Number(pageSize)) || 4));
     const requestedPage = Math.max(1, Math.trunc(Number(page)) || 1);
     const from = (requestedPage - 1) * size;
     const to = from + size - 1;
@@ -718,7 +718,7 @@
     return { uid: record.uid, bestSteps, clearCount, isNew: wasNew, totalCount };
   }
 
-  async function listPage(page = 1, pageSize = 5) {
+  async function listPage(page = 1, pageSize = 4) {
     if (window.FreeCellSolvedDealsDB?.listPage) {
       try {
         const result = await window.FreeCellSolvedDealsDB.listPage(page, pageSize);
@@ -731,7 +731,7 @@
     }
 
     const records = readLocal().slice().sort((a, b) => String(b.solvedAt || "").localeCompare(String(a.solvedAt || "")));
-    const size = Math.max(1, Number(pageSize) || 5);
+    const size = Math.max(1, Number(pageSize) || 4);
     const totalCount = records.length;
     const totalPages = Math.max(1, Math.ceil(totalCount / size));
     const safePage = Math.min(Math.max(1, Number(page) || 1), totalPages);
@@ -767,7 +767,7 @@
     return record;
   }
 
-  async function listPendingPage(page = 1, pageSize = 5) {
+  async function listPendingPage(page = 1, pageSize = 4) {
     if (window.FreeCellPendingDealsDB?.listPage) {
       try {
         const result = await window.FreeCellPendingDealsDB.listPage(page, pageSize);
@@ -779,7 +779,7 @@
     }
 
     const records = readPendingLocal().slice().sort((a, b) => String(b.addedAt || "").localeCompare(String(a.addedAt || "")));
-    const size = Math.max(1, Number(pageSize) || 5);
+    const size = Math.max(1, Number(pageSize) || 4);
     const totalCount = records.length;
     const totalPages = Math.max(1, Math.ceil(totalCount / size));
     const safePage = Math.min(Math.max(1, Number(page) || 1), totalPages);

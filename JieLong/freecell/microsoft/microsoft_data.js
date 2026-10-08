@@ -63,9 +63,9 @@
     return readRecords().length;
   }
 
-  function listPage(page = 1, pageSize = 5) {
+  function listPage(page = 1, pageSize = 4) {
     const records = readRecords();
-    const size = Math.max(1, Math.trunc(Number(pageSize)) || 5);
+    const size = Math.max(1, Math.trunc(Number(pageSize)) || 4);
     const totalCount = records.length;
     const totalPages = Math.max(1, Math.ceil(totalCount / size));
     const currentPage = Math.min(Math.max(1, Math.trunc(Number(page)) || 1), totalPages);
