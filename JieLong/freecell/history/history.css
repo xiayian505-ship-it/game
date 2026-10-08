@@ -202,7 +202,7 @@ button { font: inherit; }
   position: absolute;
   left: 26px;
   bottom: 74px;
-  color: #476f88;
+  color: #2e231a;
   font-size: 2.3rem;
   opacity: .78;
 }
@@ -357,4 +357,56 @@ button { font: inherit; }
 .history-content {
   border-top: 1px solid rgba(135, 95, 48, .25);
   background: transparent;
+}
+
+
+/* History 分頁：3 張主題牌一頁；分頁核心由軍火庫 FictionPaginate 提供。 */
+.history-topic-card[hidden] {
+  display: none !important;
+}
+
+.history-pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 0 clamp(22px, 5vw, 44px) clamp(22px, 5vw, 36px);
+}
+
+.history-page-button {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  padding: 0 0 2px;
+  border: 1px solid rgba(177, 130, 68, .5);
+  border-radius: 999px;
+  background: rgba(255, 250, 236, .72);
+  color: #7b4d22;
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,.45);
+  font-size: 1.55rem;
+  line-height: 1;
+  cursor: pointer;
+  --slowly-press-scale: .96;
+  --slowly-press-y: 1px;
+}
+
+.history-page-button:disabled {
+  opacity: .32;
+  cursor: default;
+}
+
+.history-page-info {
+  min-width: 52px;
+  color: #6d4a2b;
+  font-size: .82rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-align: center;
+}
+
+@media (max-width: 430px) {
+  .history-pager {
+    padding: 0 14px 24px;
+  }
 }
