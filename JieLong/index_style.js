@@ -66,7 +66,10 @@
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   let activeBookIndex = Math.max(0, bookPages.findIndex((page) => page.classList.contains("is-active")));
   let bookTurning = false;
-  let bookTimer = null;
+  const curtainTransition = window.SlowlyCurtainTransition?.create?.(book, {
+    surface: bookStage,
+    duration: 1720
+  });
 
   function revealPageContent(page) {
     page?.querySelectorAll("[data-slowly-reveal]").forEach((element) => {
@@ -100,13 +103,11 @@
   }
 
   function finishBookTurn(fromPage, toPage, targetIndex) {
-    window.clearTimeout(bookTimer);
-    fromPage?.classList.remove("is-active", "is-stage-exit");
-    toPage?.classList.remove("is-book-reveal");
+    fromPage?.classList.remove("is-active");
     toPage?.classList.add("is-active");
     activeBookIndex = targetIndex;
     bookTurning = false;
-    book?.classList.remove("is-turning", "is-turning-next", "is-turning-prev", "is-curtain-transition");
+    book?.classList.remove("is-turning", "is-turning-next", "is-turning-prev");
     syncBookControls();
     syncBookHeight();
   }
@@ -126,14 +127,13 @@
     revealPageContent(toPage);
 
     if (options.instant || reduceMotion) {
-      window.clearTimeout(bookTimer);
+      curtainTransition?.clear?.();
       bookPages.forEach((page, index) => {
         page.classList.toggle("is-active", index === targetIndex);
-        page.classList.remove("is-book-reveal", "is-stage-exit", "is-book-flip-next", "is-book-flip-prev");
       });
       activeBookIndex = targetIndex;
       bookTurning = false;
-      book?.classList.remove("is-turning", "is-turning-next", "is-turning-prev", "is-curtain-transition");
+      book?.classList.remove("is-turning", "is-turning-next", "is-turning-prev");
       syncBookControls();
       requestAnimationFrame(() => syncBookHeight());
       return;
@@ -142,11 +142,8 @@
     bookTurning = true;
     book?.classList.add(
       "is-turning",
-      "is-curtain-transition",
       direction === "next" ? "is-turning-next" : "is-turning-prev"
     );
-    toPage.classList.add("is-book-reveal");
-    fromPage.classList.add("is-stage-exit");
     syncBookHeight(targetIndex);
 
     const done = () => {
@@ -154,7 +151,21 @@
       finishBookTurn(fromPage, toPage, targetIndex);
     };
 
-    bookTimer = window.setTimeout(done, 1740);
+    if (!curtainTransition) {
+      done();
+      return;
+    }
+
+    void curtainTransition.play({
+      outgoing: fromPage,
+      incoming: toPage,
+      duration: 1720,
+      onFinish: done
+    }).catch((error) => {
+      console.warn("[JieLong] Curtain Transition 播放失敗：", error);
+      curtainTransition.clear();
+      done();
+    });
   }
 
   bookPrev?.addEventListener("click", () => turnBookTo(activeBookIndex - 1, { direction: "prev" }));
