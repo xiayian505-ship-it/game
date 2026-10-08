@@ -18,7 +18,7 @@
   const currentDealClearCount = document.getElementById("currentDealClearCount");
   const copyDealUidButton = document.getElementById("copyDealUidButton");
 
-  const ACTIVE_GAME_STORAGE_KEY = "freecell_active_game_v1";
+  const ACTIVE_GAME_STORAGE_KEY = String(globalThis.FREECELL_ACTIVE_GAME_STORAGE_KEY || "freecell_active_game_v1");
 
   const CARD_PEEK_DELAY_MS = 220;
 

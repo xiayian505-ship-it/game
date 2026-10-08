@@ -136,14 +136,36 @@
                 <span class="classic-tree-arrow" aria-hidden="true">⌄</span>
               </button>
               <div class="classic-tree-panel" id="freecell-classic-panel" data-classic-tree-panel hidden>
-                <button class="classic-deal-button slowly-lift slowly-press" type="button">
-                  <strong>微軟無解牌局</strong>
-                  <span>8 局</span>
-                </button>
-                <button class="classic-deal-button slowly-lift slowly-press" type="button">
-                  <strong>微軟隱藏牌局</strong>
-                  <span>4 局</span>
-                </button>
+                <div class="classic-category-row" aria-label="經典牌局分類">
+                  <button class="classic-deal-button classic-group-toggle slowly-lift slowly-press" type="button" data-classic-group-toggle="unsolvable" aria-expanded="false" aria-controls="classic-unsolvable-panel">
+                    <strong>微軟無解牌局</strong>
+                    <span>8 局</span>
+                    <span class="classic-group-arrow" aria-hidden="true">⌄</span>
+                  </button>
+                  <button class="classic-deal-button classic-group-toggle slowly-lift slowly-press" type="button" data-classic-group-toggle="hidden" aria-expanded="false" aria-controls="classic-hidden-panel">
+                    <strong>微軟隱藏牌局</strong>
+                    <span>4 局</span>
+                    <span class="classic-group-arrow" aria-hidden="true">⌄</span>
+                  </button>
+                </div>
+
+                <div class="classic-single-panel" id="classic-unsolvable-panel" data-classic-group-panel="unsolvable" hidden>
+                  <a class="classic-single-deal slowly-lift slowly-press" data-freecell-classic-enter href="./freecell/classic/deal_11982.html"><span>♣</span><strong>#11982</strong></a>
+                  <a class="classic-single-deal slowly-lift slowly-press" data-freecell-classic-enter href="./freecell/classic/deal_146692.html"><span>♣</span><strong>#146692</strong></a>
+                  <a class="classic-single-deal slowly-lift slowly-press" data-freecell-classic-enter href="./freecell/classic/deal_186216.html"><span>♣</span><strong>#186216</strong></a>
+                  <a class="classic-single-deal slowly-lift slowly-press" data-freecell-classic-enter href="./freecell/classic/deal_455889.html"><span>♣</span><strong>#455889</strong></a>
+                  <a class="classic-single-deal slowly-lift slowly-press" data-freecell-classic-enter href="./freecell/classic/deal_495505.html"><span>♣</span><strong>#495505</strong></a>
+                  <a class="classic-single-deal slowly-lift slowly-press" data-freecell-classic-enter href="./freecell/classic/deal_512118.html"><span>♣</span><strong>#512118</strong></a>
+                  <a class="classic-single-deal slowly-lift slowly-press" data-freecell-classic-enter href="./freecell/classic/deal_517776.html"><span>♣</span><strong>#517776</strong></a>
+                  <a class="classic-single-deal slowly-lift slowly-press" data-freecell-classic-enter href="./freecell/classic/deal_781948.html"><span>♣</span><strong>#781948</strong></a>
+                </div>
+
+                <div class="classic-single-panel" id="classic-hidden-panel" data-classic-group-panel="hidden" hidden>
+                  <a class="classic-single-deal slowly-lift slowly-press" data-freecell-classic-enter href="./freecell/classic/deal_-1.html"><span>♣</span><strong>#-1</strong><small>無解</small></a>
+                  <a class="classic-single-deal slowly-lift slowly-press" data-freecell-classic-enter href="./freecell/classic/deal_-2.html"><span>♣</span><strong>#-2</strong><small>無解</small></a>
+                  <a class="classic-single-deal slowly-lift slowly-press" data-freecell-classic-enter href="./freecell/classic/deal_-3.html"><span>♣</span><strong>#-3</strong><small>必勝</small></a>
+                  <a class="classic-single-deal slowly-lift slowly-press" data-freecell-classic-enter href="./freecell/classic/deal_-4.html"><span>♣</span><strong>#-4</strong><small>必勝</small></a>
+                </div>
               </div>
             </div>
 

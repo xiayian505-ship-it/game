@@ -176,21 +176,62 @@
     requestAnimationFrame(() => syncBookHeight());
   });
 
+  // 自由之都｜經典牌局第二層收合。一次只展開一組。
+  const classicGroupToggles = Array.from(document.querySelectorAll("[data-classic-group-toggle]"));
+  const classicGroupPanels = Array.from(document.querySelectorAll("[data-classic-group-panel]"));
+  const classicGroupTree = window.TreeSelection?.create?.({ expansion: "single" });
+
+  classicGroupToggles.forEach((button) => {
+    button.addEventListener("click", () => {
+      const key = button.dataset.classicGroupToggle;
+      if (!key) return;
+
+      const expanded = classicGroupTree
+        ? classicGroupTree.toggleExpanded(key)
+        : button.getAttribute("aria-expanded") !== "true";
+
+      classicGroupToggles.forEach((item) => {
+        item.setAttribute("aria-expanded", String(item === button && expanded));
+      });
+      classicGroupPanels.forEach((panel) => {
+        panel.hidden = !(panel.dataset.classicGroupPanel === key && expanded);
+      });
+      requestAnimationFrame(() => syncBookHeight());
+    });
+  });
+
   // 自由之都｜入境後整頁交給遊戲本體；遊戲中隱藏帝國翻頁箭頭。
   const freecellPage = bookPages.find((page) => page.dataset.bookPage === "territory-freecell");
   const freecellEnter = document.querySelector("[data-freecell-enter]");
+  const freecellClassicEnters = Array.from(document.querySelectorAll("[data-freecell-classic-enter]"));
   const freecellEmbed = document.querySelector("[data-freecell-embed]");
   const freecellIframe = document.querySelector("[data-freecell-iframe]");
+  let lastFreecellOpener = freecellEnter;
 
-  freecellEnter?.addEventListener("click", (event) => {
-    event.preventDefault();
-    if (!freecellPage || !freecellEmbed || !freecellIframe) return;
+  function enterFreecell(url, opener, { preserveCurrent = false } = {}) {
+    if (!freecellPage || !freecellEmbed || !freecellIframe || !url) return;
 
-    if (!freecellIframe.getAttribute("src")) freecellIframe.src = freecellEnter.href;
+    lastFreecellOpener = opener || freecellEnter;
+    if (!preserveCurrent || !freecellIframe.getAttribute("src")) {
+      freecellIframe.src = url;
+    }
     freecellPage.classList.add("is-freecell-playing");
     book?.classList.add("is-freecell-playing");
     freecellEmbed.hidden = false;
     requestAnimationFrame(() => syncBookHeight());
+  }
+
+  freecellEnter?.addEventListener("click", (event) => {
+    event.preventDefault();
+    const isCurrentMainGame = freecellIframe?.src === freecellEnter.href;
+    enterFreecell(freecellEnter.href, freecellEnter, { preserveCurrent: isCurrentMainGame });
+  });
+
+  freecellClassicEnters.forEach((link) => {
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+      enterFreecell(link.href, link);
+    });
   });
 
   // 自由之都遊戲本體通知「離開」時，只收起 iframe；不清 src，保留目前牌局。
@@ -205,7 +246,7 @@
     freecellEmbed.hidden = true;
     requestAnimationFrame(() => {
       syncBookHeight();
-      freecellEnter?.focus?.();
+      lastFreecellOpener?.focus?.();
     });
   });
 
