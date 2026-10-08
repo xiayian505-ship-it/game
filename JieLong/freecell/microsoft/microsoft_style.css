@@ -12,6 +12,19 @@
   width: min(560px, calc(100vw - 28px));
 }
 
+
+.microsoft-picker-question {
+  margin: 6px 0 4px;
+  color: #6f675b;
+  text-align: center;
+  font-size: .95rem;
+}
+
+.microsoft-number-block[hidden],
+.microsoft-hidden-block[hidden],
+.microsoft-solved-panel[hidden] {
+  display: none !important;
+}
 .microsoft-picker-tools {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -107,7 +120,7 @@
 }
 
 @media (max-width: 600px) {
-  .microsoft-picker-tools { grid-template-columns: 1fr; }
+  .microsoft-picker-tools { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .microsoft-number-row { grid-template-columns: 1fr; }
   .microsoft-number-row button { width: 100%; }
 }
@@ -243,25 +256,17 @@
 }
 
 #microsoftPicker .microsoft-hidden-grid button {
-  min-height: 54px;
-  display: grid;
-  gap: 2px;
-  place-items: center;
+  min-height: 44px;
+  display: block;
+  padding: 8px 10px;
   border: 1px solid #dcb567;
   border-radius: 10px;
   background: linear-gradient(135deg, #0a2f48 0%, #0f4567 100%);
   color: #fbe5aa;
   box-shadow: inset 0 0 0 1px rgba(255,239,186,.10), 0 3px 8px rgba(29,47,58,.14);
   cursor: pointer;
-}
-
-#microsoftPicker .microsoft-hidden-grid button strong {
-  font-size: .98rem;
-}
-
-#microsoftPicker .microsoft-hidden-grid button span {
-  color: rgba(255,234,177,.76);
-  font-size: .72rem;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 #microsoftPicker .microsoft-hidden-grid button:hover,

@@ -3,6 +3,10 @@
 
   const randomButton = document.getElementById("randomMicrosoftButton");
   const solvedButton = document.getElementById("solvedMicrosoftButton");
+  const numberButton = document.getElementById("numberMicrosoftButton");
+  const hiddenButton = document.getElementById("hiddenMicrosoftButton");
+  const numberPanel = document.getElementById("microsoftNumberPanel");
+  const hiddenPanel = document.getElementById("microsoftHiddenPanel");
   const numberInput = document.getElementById("microsoftDealInput");
   const loadButton = document.getElementById("loadMicrosoftButton");
   const picker = document.getElementById("microsoftPicker");
@@ -28,14 +32,43 @@
     if (restartConfirm) restartConfirm.hidden = true;
     if (message) message.hidden = true;
     if (pickerBack) pickerBack.hidden = !canReturn;
-    if (solvedPanel) solvedPanel.hidden = true;
+    closePickerSections();
     if (numberInput) numberInput.value = "";
     if (picker) picker.hidden = false;
   }
 
+  function setSectionState(button, panel, expanded) {
+    button?.setAttribute("aria-expanded", String(expanded));
+    if (panel) panel.hidden = !expanded;
+  }
+
+  function closePickerSections(except = null) {
+    const sections = [
+      { key: "solved", button: solvedButton, panel: solvedPanel },
+      { key: "number", button: numberButton, panel: numberPanel },
+      { key: "hidden", button: hiddenButton, panel: hiddenPanel }
+    ];
+
+    sections.forEach(section => {
+      if (section.key !== except) setSectionState(section.button, section.panel, false);
+    });
+  }
+
+  function togglePickerSection(key, button, panel) {
+    const willOpen = panel?.hidden !== false;
+    closePickerSections(key);
+    setSectionState(button, panel, willOpen);
+
+    if (willOpen && key === "solved") renderSolvedPage(1);
+    if (willOpen && key === "number") {
+      if (numberInput) numberInput.value = "";
+      requestAnimationFrame(() => numberInput?.focus?.());
+    }
+  }
+
   function hidePicker() {
     if (picker) picker.hidden = true;
-    if (solvedPanel) solvedPanel.hidden = true;
+    closePickerSections();
   }
 
   function startDeal(dealNumber) {
@@ -110,16 +143,13 @@
     if (solvedNext) solvedNext.disabled = result.page >= result.totalPages;
   }
 
-  function openSolvedPanel() {
-    if (solvedPanel) solvedPanel.hidden = false;
-    renderSolvedPage(1);
-  }
-
   randomButton?.addEventListener("click", () => startDeal(randomDealNumber()));
   hiddenDealButtons.forEach(button => {
     button.addEventListener("click", () => startDeal(button.dataset.hiddenMicrosoftDeal));
   });
-  solvedButton?.addEventListener("click", openSolvedPanel);
+  solvedButton?.addEventListener("click", () => togglePickerSection("solved", solvedButton, solvedPanel));
+  numberButton?.addEventListener("click", () => togglePickerSection("number", numberButton, numberPanel));
+  hiddenButton?.addEventListener("click", () => togglePickerSection("hidden", hiddenButton, hiddenPanel));
   loadButton?.addEventListener("click", () => startDeal(numberInput?.value));
   numberInput?.addEventListener("keydown", event => {
     if (event.key === "Enter") startDeal(numberInput.value);

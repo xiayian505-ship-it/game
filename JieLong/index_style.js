@@ -220,15 +220,33 @@
   const freecellEmbed = document.querySelector("[data-freecell-embed]");
   const freecellIframe = document.querySelector("[data-freecell-iframe]");
   let lastFreecellOpener = freecellEnter;
+  let currentFreecellUrl = "";
 
+  function normalizeFreecellUrl(url) {
+    try {
+      return new URL(url, window.location.href).href;
+    } catch {
+      return String(url || "");
+    }
+  }
 
   function enterFreecell(url, opener, { preserveCurrent = false } = {}) {
     if (!freecellPage || !freecellEmbed || !freecellIframe || !url) return;
 
+    const targetUrl = normalizeFreecellUrl(url);
+    const sameTarget = currentFreecellUrl === targetUrl;
     lastFreecellOpener = opener || freecellEnter;
-    if (!preserveCurrent || !freecellIframe.getAttribute("src")) {
-      freecellIframe.src = url;
+
+    // 同一入口離境後再入境：保留 iframe 內目前狀態。
+    // 切換到另一個入口：明確重新指定 src，不依賴瀏覽器回報的 iframe.src 狀態。
+    if (!preserveCurrent || !sameTarget || !freecellIframe.getAttribute("src")) {
+      if (!sameTarget && freecellIframe.getAttribute("src")) {
+        freecellIframe.removeAttribute("src");
+      }
+      freecellIframe.src = targetUrl;
+      currentFreecellUrl = targetUrl;
     }
+
     freecellPage.classList.add("is-freecell-playing");
     book?.classList.add("is-freecell-playing");
     freecellEmbed.hidden = false;
@@ -237,20 +255,20 @@
 
   freecellEnter?.addEventListener("click", (event) => {
     event.preventDefault();
-    const isCurrentMainGame = freecellIframe?.src === freecellEnter.href;
-    enterFreecell(freecellEnter.href, freecellEnter, { preserveCurrent: isCurrentMainGame });
+    const targetUrl = normalizeFreecellUrl(freecellEnter.href);
+    enterFreecell(targetUrl, freecellEnter, { preserveCurrent: currentFreecellUrl === targetUrl });
   });
 
   freecellMicrosoftEnter?.addEventListener("click", (event) => {
     event.preventDefault();
-    const isCurrentMicrosoftGame = freecellIframe?.src === freecellMicrosoftEnter.href;
-    enterFreecell(freecellMicrosoftEnter.href, freecellMicrosoftEnter, { preserveCurrent: isCurrentMicrosoftGame });
+    const targetUrl = normalizeFreecellUrl(freecellMicrosoftEnter.href);
+    enterFreecell(targetUrl, freecellMicrosoftEnter, { preserveCurrent: currentFreecellUrl === targetUrl });
   });
 
   freecellHistoryEnter?.addEventListener("click", (event) => {
     event.preventDefault();
-    const isCurrentHistory = freecellIframe?.src === freecellHistoryEnter.href;
-    enterFreecell(freecellHistoryEnter.href, freecellHistoryEnter, { preserveCurrent: isCurrentHistory });
+    const targetUrl = normalizeFreecellUrl(freecellHistoryEnter.href);
+    enterFreecell(targetUrl, freecellHistoryEnter, { preserveCurrent: currentFreecellUrl === targetUrl });
   });
 
   freecellClassicEnters.forEach((link) => {

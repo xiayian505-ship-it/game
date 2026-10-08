@@ -77,7 +77,7 @@
 
   <div id="restartConfirm" class="dialog-overlay" hidden>
     <div class="dialog-card" role="dialog" aria-modal="true" aria-labelledby="restartConfirmTitle">
-      <p id="restartConfirmTitle" class="dialog-title">要怎麼重新開始？</p>
+      <p id="restartConfirmTitle" class="dialog-title">選擇牌局</p>
       <div class="dialog-actions">
         <button id="restartCancelButton" type="button">取消</button>
         <button id="restartCurrentButton" type="button">重新開始此局</button>
@@ -88,28 +88,29 @@
 
   <div id="microsoftPicker" class="dialog-overlay" hidden>
     <div class="dialog-card microsoft-picker-card" role="dialog" aria-modal="true" aria-labelledby="microsoftPickerTitle">
-      <p id="microsoftPickerTitle" class="dialog-title">Microsoft 編號牌局</p>
+      <p id="microsoftPickerTitle" class="dialog-title">選擇牌局</p>
+      <p class="microsoft-picker-question">要玩哪一種？</p>
 
       <section class="microsoft-picker-tools" aria-label="Microsoft 牌局選擇">
         <button id="randomMicrosoftButton" class="deal-button" type="button">隨機牌局</button>
-        <button id="solvedMicrosoftButton" class="deal-button" type="button">已解牌局</button>
+        <button id="solvedMicrosoftButton" class="deal-button" type="button" aria-expanded="false" aria-controls="microsoftSolvedPanel">已解牌局</button>
+        <button id="numberMicrosoftButton" class="deal-button" type="button" aria-expanded="false" aria-controls="microsoftNumberPanel">百萬牌局</button>
+        <button id="hiddenMicrosoftButton" class="deal-button" type="button" aria-expanded="false" aria-controls="microsoftHiddenPanel">隱藏牌局</button>
       </section>
 
-      <section class="microsoft-number-block" aria-label="輸入 Microsoft 牌局編號">
-        <label class="microsoft-number-label" for="microsoftDealInput">Microsoft百萬牌局</label>
+      <section id="microsoftNumberPanel" class="microsoft-number-block" hidden aria-label="輸入 Microsoft 牌局編號">
         <div class="microsoft-number-row">
-          <input id="microsoftDealInput" type="number" min="1" max="1000000" inputmode="numeric" placeholder="1～1000000">
+          <input id="microsoftDealInput" type="number" min="1" max="1000000" inputmode="numeric" placeholder="1～1000000" aria-label="Microsoft 百萬牌局編號">
           <button id="loadMicrosoftButton" type="button">載入</button>
         </div>
       </section>
 
-      <section class="microsoft-hidden-block" aria-label="Microsoft 隱藏牌局">
-        <p class="microsoft-hidden-title">隱藏牌局</p>
+      <section id="microsoftHiddenPanel" class="microsoft-hidden-block" hidden aria-label="Microsoft 隱藏牌局">
         <div class="microsoft-hidden-grid">
-          <button type="button" data-hidden-microsoft-deal="-1"><strong>#-1</strong><span>無解</span></button>
-          <button type="button" data-hidden-microsoft-deal="-2"><strong>#-2</strong><span>無解</span></button>
-          <button type="button" data-hidden-microsoft-deal="-3"><strong>#-3</strong><span>必勝</span></button>
-          <button type="button" data-hidden-microsoft-deal="-4"><strong>#-4</strong><span>必勝</span></button>
+          <button type="button" data-hidden-microsoft-deal="-1">#-1 無解</button>
+          <button type="button" data-hidden-microsoft-deal="-2">#-2 無解</button>
+          <button type="button" data-hidden-microsoft-deal="-3">#-3 必勝</button>
+          <button type="button" data-hidden-microsoft-deal="-4">#-4 必勝</button>
         </div>
       </section>
 
