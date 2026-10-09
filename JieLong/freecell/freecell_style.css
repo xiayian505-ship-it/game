@@ -1085,3 +1085,114 @@ body {
     font-size: .68rem;
   }
 }
+
+
+/* 待破解牌局前端分組與旗幟預覽（不寫資料庫、不更動存檔）。 */
+#dealPicker .picker-subpanel {
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid rgba(214,165,77,.58);
+  border-radius: 12px;
+  background: rgba(255,250,240,.62);
+}
+#dealPicker .picker-subpanel[hidden],
+#dealPicker .picker-choice-row[hidden],
+#dealPicker .pending-preview-note[hidden] { display: none !important; }
+#dealPicker .picker-choice-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+  margin-bottom: 9px;
+}
+#dealPicker #randomChoicePanel .picker-choice-row { margin-bottom: 0; }
+#dealPicker .picker-choice-row button {
+  min-height: 39px;
+  border: 1px solid #dcb567;
+  border-radius: 9px;
+  padding: 6px;
+  color: #fbe5aa;
+  background: linear-gradient(135deg, #0a2f48 0%, #0f4567 100%);
+  box-shadow: 0 3px 8px rgba(29,47,58,.14);
+  font: inherit;
+  font-size: .83rem;
+  cursor: pointer;
+}
+#dealPicker .picker-choice-row button[aria-pressed="true"] {
+  background: linear-gradient(135deg, #15577f, #0d3b59);
+  border-color: #f0cf83;
+  box-shadow: inset 0 0 0 2px rgba(255,239,186,.25);
+}
+#dealPicker .picker-choice-row button:focus-visible,
+#dealPicker .pending-flag-button:focus-visible {
+  outline: 2px solid #d6a54d;
+  outline-offset: 2px;
+}
+#dealPicker .pending-preview-note {
+  margin: 0 0 9px;
+  font-size: .75rem;
+  line-height: 1.5;
+  color: #715f42;
+}
+#dealPicker .pending-row-wrap {
+  display: flex;
+  align-items: stretch;
+  min-width: 0;
+  border: 1px solid #dcb567;
+  border-radius: 9px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #0a2f48 0%, #0f4567 100%);
+  box-shadow: 0 3px 8px rgba(29,47,58,.14);
+}
+#dealPicker .pending-row-wrap .pending-play-button {
+  min-width: 0;
+  flex: 1 1 auto;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  gap: 7px;
+}
+#dealPicker .pending-row-wrap .pending-play-button::after { content: none; }
+#dealPicker .pending-row-wrap .pending-play-button:hover,
+#dealPicker .pending-row-wrap .pending-play-button:focus-visible,
+#dealPicker .pending-row-wrap .pending-attempt-button:hover,
+#dealPicker .pending-row-wrap .pending-attempt-button:focus-visible {
+  background: rgba(255,255,255,.1);
+}
+#dealPicker .pending-row-wrap .pending-attempt-button {
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: 0;
+  padding: 6px 9px 6px 4px;
+  background: transparent;
+  color: rgba(255,234,177,.76);
+  font: inherit;
+  font-size: .82rem;
+  white-space: nowrap;
+  cursor: pointer;
+}
+#dealPicker .pending-flag-button {
+  flex: 0 0 39px;
+  width: 39px;
+  border: 0;
+  border-left: 1px solid rgba(255,234,177,.35);
+  padding: 0;
+  background: transparent;
+  color: #fbe5aa;
+  font-size: 1.3rem;
+  cursor: pointer;
+}
+#dealPicker .pending-flag-button:hover:not(:disabled) { background: rgba(255,255,255,.12); }
+#dealPicker .pending-flag-button.is-marked {
+  color: #ffd16a;
+  background: rgba(255,200,80,.12);
+  cursor: default;
+  opacity: 1;
+}
+@media (max-width: 380px) {
+  #dealPicker .pending-row-wrap .pending-play-button { gap: 4px; padding-inline: 6px; }
+  #dealPicker .pending-row-wrap .contributed-code { font-size: .74rem; }
+  #dealPicker .pending-row-wrap .pending-attempt-button { font-size: .72rem; padding-inline: 4px; }
+  #dealPicker .pending-flag-button { flex-basis: 33px; width: 33px; }
+  #dealPicker .picker-choice-row button { font-size: .75rem; }
+}

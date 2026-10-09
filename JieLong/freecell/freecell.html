@@ -98,7 +98,7 @@
       <p class="dialog-text">要玩哪一種？</p>
 
       <section class="deal-tools deal-tools-main" aria-label="牌局選擇">
-        <button id="randomDealButton" class="deal-button" type="button">隨機牌局</button>
+        <button id="randomDealButton" class="deal-button" type="button" aria-expanded="false" aria-controls="randomChoicePanel">隨機牌局</button>
         <button id="solvedDealButton" class="deal-button" type="button" aria-expanded="false" aria-controls="contributedPanel">玩家已解牌局</button>
         <button id="pendingDealButton" class="deal-button" type="button" aria-expanded="false" aria-controls="contributedPanel">待破解牌局</button>
         <button id="classicDealButton" class="deal-button" type="button" aria-expanded="false" aria-controls="contributedPanel">經典牌局</button>
@@ -109,7 +109,19 @@
         <button id="uidDealButton" class="deal-button" type="button" aria-expanded="false" aria-controls="uidSearchPanel">輸入 UID</button>
       </section>
 
+      <section id="randomChoicePanel" class="picker-subpanel" hidden aria-label="隨機牌局選擇">
+        <div class="picker-choice-row">
+          <button id="randomNewDealButton" type="button">隨機開新局</button>
+          <button id="randomPendingDealButton" type="button">抽取未解局</button>
+        </div>
+      </section>
+
       <section id="contributedPanel" class="contributed-panel" hidden aria-label="玩家已解牌局">
+        <div id="pendingChoiceTabs" class="picker-choice-row" role="group" aria-label="待破解牌局分類" hidden>
+          <button id="pendingAllTab" type="button" aria-pressed="true">待破解牌局</button>
+          <button id="possibleUnsolvedTab" type="button" aria-pressed="false">可能無解局</button>
+        </div>
+        <p id="pendingPreviewNote" class="pending-preview-note" hidden>前端預覽：旗幟標記只在此次開啟頁面有效，尚未同步資料庫。</p>
         <button id="randomContributedButton" class="contributed-random" type="button">從已解牌局隨機抽一局</button>
         <p id="classicListTitle" class="classic-list-title" hidden>經典無解牌局</p>
 

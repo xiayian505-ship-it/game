@@ -10,6 +10,9 @@
   const dealPickerNotice = document.getElementById("dealPickerNotice");
   const dealPickerBackButton = document.getElementById("dealPickerBackButton");
   const randomDealButton = document.getElementById("randomDealButton");
+  const randomChoicePanel = document.getElementById("randomChoicePanel");
+  const randomNewDealButton = document.getElementById("randomNewDealButton");
+  const randomPendingDealButton = document.getElementById("randomPendingDealButton");
   const solvedDealButton = document.getElementById("solvedDealButton");
   const pendingDealButton = document.getElementById("pendingDealButton");
   const classicDealButton = document.getElementById("classicDealButton");
@@ -17,6 +20,10 @@
   const contributedPanel = document.getElementById("contributedPanel");
   const classicListTitle = document.getElementById("classicListTitle");
   const randomContributedButton = document.getElementById("randomContributedButton");
+  const pendingChoiceTabs = document.getElementById("pendingChoiceTabs");
+  const pendingAllTab = document.getElementById("pendingAllTab");
+  const possibleUnsolvedTab = document.getElementById("possibleUnsolvedTab");
+  const pendingPreviewNote = document.getElementById("pendingPreviewNote");
   const contributedList = document.getElementById("contributedList");
   const contributedPrevButton = document.getElementById("contributedPrevButton");
   const contributedNextButton = document.getElementById("contributedNextButton");
@@ -83,6 +90,10 @@
   let contributedTotalPages = 1;
   let contributedLoading = false;
   let contributedMode = "solved";
+  let pendingListMode = "all";
+  let latestPendingPageResult = null;
+  // 純前端版：暫存在此分頁記憶體，不更動既有 localStorage 或正式資料庫。
+  const previewPossibleDeals = new Map();
   const FAVORITE_DEALS_STORAGE_KEY = "freecell_favorite_deals_v1";
   let lastVictoryEffectSignature = "";
   let lastVictoryEffects = (() => {
@@ -121,7 +132,13 @@
     const keepContributed = ["solved", "pending", "classic", "favorite"].includes(keep);
     if (!keepContributed) contributedPanel.hidden = true;
     if (keep !== "uid") uidSearchPanel.hidden = true;
+    randomChoicePanel.hidden = keep !== "random";
+    if (keep !== "pending") {
+      pendingChoiceTabs.hidden = true;
+      pendingPreviewNote.hidden = true;
+    }
 
+    setPickerButtonState(randomDealButton, keep === "random");
     setPickerButtonState(solvedDealButton, keep === "solved");
     setPickerButtonState(pendingDealButton, keep === "pending");
     setPickerButtonState(classicDealButton, keep === "classic");
@@ -258,6 +275,50 @@
     });
   }
 
+  function toggleRandomChoices() {
+    if (!randomChoicePanel.hidden) {
+      closePickerSections();
+      return;
+    }
+    closePickerSections({ keep: "random" });
+    randomChoicePanel.hidden = false;
+    setPickerButtonState(randomDealButton, true);
+    setPickerNotice("");
+  }
+
+  function updatePendingTabs() {
+    pendingAllTab.setAttribute("aria-pressed", String(pendingListMode === "all"));
+    possibleUnsolvedTab.setAttribute("aria-pressed", String(pendingListMode === "possible"));
+  }
+
+  function previewPossiblePage(page = 1) {
+    const records = Array.from(previewPossibleDeals.values());
+    const totalCount = records.length;
+    const totalPages = Math.max(1, Math.ceil(totalCount / 4));
+    const currentPage = Math.min(Math.max(1, Math.trunc(Number(page)) || 1), totalPages);
+    return {
+      records: records.slice((currentPage - 1) * 4, currentPage * 4),
+      totalCount, totalPages, page: currentPage
+    };
+  }
+
+  function markPreviewPossible(record) {
+    const uid = String(record?.uid || "").trim();
+    if (!uid || previewPossibleDeals.has(uid)) return;
+    if (!window.confirm(`確定要將 ${window.FreeCellData?.shortUid?.(uid) || uid} 暫時標記為「可能無解」嗎？\n\n目前是前端預覽，不會儲存到資料庫，重新整理後會消失。`)) return;
+    previewPossibleDeals.set(uid, record);
+    if (latestPendingPageResult) renderContributedPage(latestPendingPageResult);
+    setPickerNotice("已加入本頁的可能無解預覽清單；正式的跨玩家標記功能尚未開放。");
+  }
+
+  function switchPendingList(mode) {
+    if (!isPendingMode() || contributedLoading || contributedPanel.hidden) return;
+    if (pendingListMode === mode) return;
+    pendingListMode = mode;
+    updatePendingTabs();
+    void loadContributedPage(1);
+  }
+
   function isPendingMode() {
     return contributedMode === "pending";
   }
@@ -273,7 +334,9 @@
   function currentPoolLabel() {
     if (isClassicMode()) return "經典牌局";
     if (isFavoriteMode()) return "最愛牌局";
-    return isPendingMode() ? "待破解牌局" : "玩家已解牌局";
+    return isPendingMode()
+      ? (pendingListMode === "possible" ? "可能無解局（前端預覽）" : "待破解牌局")
+      : "玩家已解牌局";
   }
 
   function renderContributedPage(result) {
@@ -285,7 +348,9 @@
     if (!records.length) {
       const empty = document.createElement("p");
       empty.className = "contributed-empty";
-      empty.textContent = isPendingMode() ? "目前還沒有待破解牌局。" : (isFavoriteMode() ? "目前還沒有最愛牌局。" : "目前還沒有玩家已解牌局。");
+      empty.textContent = isPendingMode()
+        ? (pendingListMode === "possible" ? "此頁尚未暫時標記可能無解局。" : "目前還沒有待破解牌局。")
+        : (isFavoriteMode() ? "目前還沒有最愛牌局。" : "目前還沒有玩家已解牌局。");
       contributedList.appendChild(empty);
     } else {
       records.forEach(record => {
@@ -316,7 +381,35 @@
             hideDealPicker();
           }
         });
-        contributedList.appendChild(button);
+
+        if (isPendingMode() && pendingListMode === "all") {
+          // 兩個獨立按鈕，不在遊戲載入按鈕內巢狀放置標記按鈕。
+          const row = document.createElement("div");
+          row.className = "pending-row-wrap";
+          button.classList.add("pending-play-button");
+          const flag = document.createElement("button");
+          flag.type = "button";
+          flag.className = "pending-flag-button";
+          const marked = previewPossibleDeals.has(String(record.uid || "").trim());
+          flag.textContent = marked ? "⚑" : "⚐";
+          flag.disabled = marked;
+          flag.classList.toggle("is-marked", marked);
+          flag.setAttribute("aria-label", marked ? "已暫時標記可能無解" : `暫時標記 ${code.textContent} 可能無解`);
+          flag.title = marked ? "前端預覽：已標記（不可取消）" : "前端預覽：標記可能無解";
+          flag.addEventListener("click", () => markPreviewPossible(record));
+          // 把 UID、旗幟、挑戰次數排成同一列，旗幟獨立操作。
+          const attempts = document.createElement("button");
+          attempts.type = "button";
+          attempts.className = "pending-attempt-button";
+          attempts.textContent = `${info.textContent} ›`;
+          attempts.setAttribute("aria-label", `載入 ${code.textContent}，${info.textContent}`);
+          attempts.addEventListener("click", () => button.click());
+          info.remove();
+          row.append(button, flag, attempts);
+          contributedList.appendChild(row);
+        } else {
+          contributedList.appendChild(button);
+        }
       });
     }
 
@@ -334,7 +427,9 @@
     setPickerNotice(`正在讀取${label}…`);
     try {
       let result;
-      if (isFavoriteMode()) {
+      if (isPendingMode() && pendingListMode === "possible") {
+        result = previewPossiblePage(page);
+      } else if (isFavoriteMode()) {
         const records = readFavoriteDeals();
         const totalCount = records.length;
         const totalPages = Math.max(1, Math.ceil(totalCount / 4));
@@ -350,8 +445,11 @@
           ? await window.FreeCellData.listPendingPage(page, 4)
           : await window.FreeCellData.listPage(page, 4);
       }
+      if (isPendingMode() && pendingListMode === "all") latestPendingPageResult = result;
       renderContributedPage(result);
-      setPickerNotice(result.totalCount > 0 ? `共有 ${result.totalCount} 副${label}。` : `目前還沒有${label}。`);
+      setPickerNotice(isPendingMode() && pendingListMode === "possible"
+        ? "本頁暫時標記的 UID；目前不會儲存或同步至其他玩家。"
+        : (result.totalCount > 0 ? `共有 ${result.totalCount} 副${label}。` : `目前還沒有${label}。`));
     } catch (error) {
       console.warn(`讀取 FreeCell ${label}失敗。`, error);
       setPickerNotice(`${label}目前讀取失敗，請稍後再試。`);
@@ -372,14 +470,16 @@
     }
 
     contributedMode = key;
+    if (key === "pending") pendingListMode = "all";
     closePickerSections({ keep: key });
     contributedPanel.hidden = false;
     contributedPanel.setAttribute("aria-label", currentPoolLabel());
     classicListTitle.hidden = true;
-    randomContributedButton.hidden = isFavoriteMode();
-    randomContributedButton.textContent = isPendingMode()
-      ? "從待破解牌局隨機抽一局"
-      : "從已解牌局隨機抽一局";
+    pendingChoiceTabs.hidden = !isPendingMode();
+    pendingPreviewNote.hidden = !isPendingMode();
+    if (isPendingMode()) updatePendingTabs();
+    randomContributedButton.hidden = isFavoriteMode() || isPendingMode();
+    randomContributedButton.textContent = "從已解牌局隨機抽一局";
     if (contributedPager) contributedPager.hidden = false;
     setPickerButtonState(button, true);
     requestAnimationFrame(scrollPickerTop);
@@ -463,22 +563,23 @@
     renderClassicPage(1);
   }
 
-  async function loadRandomSolvedDeal() {
+  async function loadRandomSolvedDeal(poolMode = "solved") {
     if (contributedLoading) return;
     contributedLoading = true;
-    const label = currentPoolLabel();
+    const pending = poolMode === "pending";
+    const label = pending ? "待破解牌局" : "玩家已解牌局";
     setPickerNotice(`正在從${label}隨機抽一副…`);
     try {
-      const record = isPendingMode()
+      const record = pending
         ? await window.FreeCellData.randomPending()
         : await window.FreeCellData.randomSolved();
       if (!record) {
-        setPickerNotice(isPendingMode() ? "目前還沒有待破解牌局。" : "目前還沒有玩家已解牌局。先解出第一副吧。");
+        setPickerNotice(pending ? "目前還沒有待破解牌局。" : "目前還沒有玩家已解牌局。先解出第一副吧。");
         return;
       }
       window.FreeCellGame?.abandonCurrentDeal?.();
       if (window.FreeCellGame?.startKnownGame(record)) {
-        if (isPendingMode()) void window.FreeCellData?.markPendingAttempt?.(record);
+        if (pending) void window.FreeCellData?.markPendingAttempt?.(record);
         syncCurrentFavorite();
         hideDealPicker();
       }
@@ -705,7 +806,8 @@
     showDealPicker({ canReturn: true });
   });
 
-  randomDealButton.addEventListener("click", () => {
+  randomDealButton.addEventListener("click", toggleRandomChoices);
+  randomNewDealButton.addEventListener("click", () => {
     if (window.FreeCellGame?.isBusy()) return;
     try {
       window.FreeCellGame?.abandonCurrentDeal?.();
@@ -717,12 +819,15 @@
       setPickerNotice(error?.message || "無法開始牌局。");
     }
   });
+  randomPendingDealButton.addEventListener("click", () => void loadRandomSolvedDeal("pending"));
+  pendingAllTab.addEventListener("click", () => switchPendingList("all"));
+  possibleUnsolvedTab.addEventListener("click", () => switchPendingList("possible"));
 
   solvedDealButton.addEventListener("click", () => void openContributedPanel("solved"));
   favoriteDealButton.addEventListener("click", () => void openContributedPanel("favorite"));
   pendingDealButton.addEventListener("click", () => void openContributedPanel("pending"));
   classicDealButton.addEventListener("click", openClassicPanel);
-  randomContributedButton.addEventListener("click", () => void loadRandomSolvedDeal());
+  randomContributedButton.addEventListener("click", () => void loadRandomSolvedDeal("solved"));
   contributedPrevButton.addEventListener("click", () => {
     if (contributedPage <= 1) return;
     if (isClassicMode()) {

@@ -180,7 +180,7 @@ body {
   *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; }
 }
 
-/* 帝國快捷入口｜保留原首頁，只讓三個概況格成為傳送門 */
+/* 帝國快捷入口｜前三格中只有「大領地、遊戲入口」兩格開啟快捷視窗。 */
 .stat-gate {
   appearance: none;
   border: 0;
@@ -832,3 +832,12 @@ body.quick-panel-open { overflow: hidden; }
 .book-page.is-empire-playing { padding: 0; }
 .book-page.is-empire-playing > .territory { display: none; }
 .book-page.is-empire-playing > .empire-game-embed { display: block; }
+
+/* 主城三格統計維持同版型：前兩格不顯示花色，第三格用 ∞。 */
+.empire-stats .stat-card {
+  grid-template-columns: 1fr;
+  grid-template-rows: auto auto;
+  justify-items: center;
+  text-align: center;
+  align-content: center;
+}
