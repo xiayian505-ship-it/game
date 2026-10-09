@@ -84,6 +84,17 @@
     if (pageHeight > 0) bookStage.style.height = `${pageHeight}px`;
   }
 
+  // 布幕播放時鎖住前後兩頁的最大高度，避免頁面切換造成遮蓋範圍縮短。
+  // 不變更軍火庫的動畫、色碼與時長。
+  function lockBookStageForTurn(fromPage, toPage) {
+    if (!bookStage) return;
+    const stageHeight = Math.ceil(bookStage.getBoundingClientRect().height);
+    const fromHeight = Math.ceil(fromPage?.scrollHeight || 0);
+    const toHeight = Math.ceil(toPage?.scrollHeight || 0);
+    const curtainHeight = Math.max(stageHeight, fromHeight, toHeight);
+    if (curtainHeight > 0) bookStage.style.height = `${curtainHeight}px`;
+  }
+
   function syncBookControls() {
     const unavailable = bookPages.length <= 1;
     if (bookPrev) bookPrev.disabled = unavailable;
@@ -110,6 +121,9 @@
     bookTurning = false;
     book?.classList.remove("is-turning", "is-turning-next", "is-turning-prev");
     syncBookControls();
+    // 清掉播放時的暫時高度，再以新頁的真實內容高度恢復舞台。
+    // 避免 .book-page 的 min-height:100% 沿用上一頁較大的高度。
+    bookStage?.style.removeProperty("height");
     syncBookHeight();
   }
 
@@ -145,7 +159,7 @@
       "is-turning",
       direction === "next" ? "is-turning-next" : "is-turning-prev"
     );
-    syncBookHeight(targetIndex);
+    lockBookStageForTurn(fromPage, toPage);
 
     const done = () => {
       if (!bookTurning) return;
