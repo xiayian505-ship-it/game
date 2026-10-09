@@ -1,14 +1,75 @@
 /* 個人牌局館外觀：之後可獨立更換，核心版位不受影響。 */
-.collection-shell { background: linear-gradient(180deg, #fff9eb, #f0e1c0); }
-.collection-header { margin-bottom: 20px; color: #ffe9b8; background: linear-gradient(105deg, #71181b, #4d1013); border: 2px solid #d6a54d; border-radius: 22px; box-shadow: 0 12px 26px rgba(67,35,19,.13); }
-.collection-header h1 { font-size: clamp(1.5rem, 4vw, 2.2rem); }
-.collection-header p { color: #eed4a2; line-height: 1.6; }
-.collection-kicker { font-size: .83rem; letter-spacing: .14em; }
-.collection-link, .collection-group { border: 1px solid rgba(143,104,56,.26); border-radius: 17px; background: linear-gradient(145deg, #fffdf6, #f1e7d4); box-shadow: 0 8px 18px rgba(69,42,20,.08); }
-.collection-link { transition: transform .15s ease, box-shadow .15s ease; }
-.collection-link:hover { transform: translateY(-2px); box-shadow: 0 12px 22px rgba(69,42,20,.14); }
-.collection-link:focus-visible, .collection-return:focus-visible { outline: 3px solid #cda35d; outline-offset: 2px; }
-.collection-suit { flex: 0 0 42px; font-size: 1.7rem; color: #af3652; text-align: center; }
-.collection-return { text-decoration: none; color: #f9dc98; font-weight: 700; }
-.collection-note { margin: 16px 0; color: #735b46; font-size: .9rem; line-height: 1.6; }
-.collection-footer { text-align: center; margin-top: 30px; color: #745436; font-size: .85rem; }
+.collection-shell {
+  background: linear-gradient(180deg, #fff9eb, #f0e1c0);
+}
+
+.collection-header {
+  margin-bottom: 20px;
+  color: #ffe9b8;
+  background: linear-gradient(105deg, #71181b, #4d1013);
+  border: 2px solid #d6a54d;
+  border-radius: 22px;
+  box-shadow: 0 12px 26px rgba(67,35,19,.13);
+}
+
+.collection-header h1 {
+  font-size: clamp(1.5rem, 4vw, 2.2rem);
+}
+
+.collection-header p {
+  color: #eed4a2;
+  line-height: 1.6;
+}
+
+.collection-kicker {
+  font-size: .83rem;
+  letter-spacing: .14em;
+}
+
+.collection-link, .collection-group {
+  border: 1px solid rgba(143,104,56,.26);
+  border-radius: 17px;
+  background: linear-gradient(145deg, #fffdf6, #f1e7d4);
+  box-shadow: 0 8px 18px rgba(69,42,20,.08);
+}
+
+.collection-link {
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.collection-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 22px rgba(69,42,20,.14);
+}
+
+.collection-link:focus-visible, .collection-return:focus-visible {
+  outline: 3px solid #cda35d;
+  outline-offset: 2px;
+}
+
+.collection-suit {
+  flex: 0 0 42px;
+  font-size: 1.7rem;
+  color: #af3652;
+  text-align: center;
+}
+
+.collection-return {
+  text-decoration: none;
+  color: #f9dc98;
+  font-weight: 700;
+}
+
+.collection-note {
+  margin: 16px 0;
+  color: #735b46;
+  font-size: .9rem;
+  line-height: 1.6;
+}
+
+.collection-footer {
+  text-align: center;
+  margin-top: 30px;
+  color: #745436;
+  font-size: .85rem;
+}

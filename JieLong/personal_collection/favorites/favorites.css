@@ -1,20 +1,107 @@
 /* 個人牌局館核心結構：不依賴任何遊戲程式。 */
-:root { --paper: #f7f0df; --ink: #302418; --muted: #7b6753; --line: #c8a674; }
-* { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
-body { margin: 0; min-height: 100vh; font-family: "Noto Serif TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif; color: var(--ink); background: #e9dcc0; }
-a { color: inherit; }
-.collection-shell { width: min(980px, 100%); min-height: 100vh; margin: 0 auto; padding: 24px 16px 48px; }
-.collection-header { display: grid; gap: 12px; padding: 24px; }
-.collection-header h1, .collection-header p { margin: 0; }
-.collection-links { display: grid; gap: 14px; }
-.collection-link { display: flex; align-items: center; gap: 14px; min-height: 90px; padding: 18px; text-decoration: none; }
-.collection-link-text { display: grid; gap: 6px; }
-.collection-link-text strong { font-size: 1.1rem; }
-.collection-link-text small { font-size: .88rem; color: var(--muted); }
-.collection-return { display: inline-flex; min-height: 40px; align-items: center; }
-.collection-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-.collection-group { padding: 15px 18px; }
-.collection-group strong { display: block; }
-.collection-group p { margin: 7px 0 0; color: var(--muted); font-size: .86rem; }
-@media (max-width: 600px) { .collection-grid { grid-template-columns: 1fr; } .collection-shell { padding: 12px 10px 32px; } }
+:root {
+  --paper: #f7f0df;
+  --ink: #302418;
+  --muted: #7b6753;
+  --line: #c8a674;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Noto Serif TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+  color: var(--ink);
+  background: #e9dcc0;
+}
+
+a {
+  color: inherit;
+}
+
+.collection-shell {
+  width: min(980px, 100%);
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+.collection-header {
+  display: grid;
+  gap: 12px;
+  padding: 24px;
+}
+
+.collection-header h1, .collection-header p {
+  margin: 0;
+}
+
+.collection-links {
+  display: grid;
+  gap: 14px;
+}
+
+.collection-link {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 90px;
+  padding: 18px;
+  text-decoration: none;
+}
+
+.collection-link-text {
+  display: grid;
+  gap: 6px;
+}
+
+.collection-link-text strong {
+  font-size: 1.1rem;
+}
+
+.collection-link-text small {
+  font-size: .88rem;
+  color: var(--muted);
+}
+
+.collection-return {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+}
+
+.collection-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.collection-group {
+  padding: 15px 18px;
+}
+
+.collection-group strong {
+  display: block;
+}
+
+.collection-group p {
+  margin: 7px 0 0;
+  color: var(--muted);
+  font-size: .86rem;
+}
+
+@media (max-width: 600px) {
+  .collection-grid {
+    grid-template-columns: 1fr;
+  }
+  .collection-shell {
+    padding: 12px 10px 32px;
+  }
+}

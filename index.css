@@ -1,24 +1,124 @@
 /* 慢慢遊戲大廳｜基礎結構與可操作性。視覺外觀請修改 index_style.css。 */
 /* 重設與跨裝置安全規則由軍火庫 ui/responsive.css 提供。 */
-body{margin:0}
-a{color:inherit}
-button,a{-webkit-tap-highlight-color:transparent}
-.ambient{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
-.page{position:relative;isolation:isolate;min-height:100dvh;min-height:100svh}
-.site-header,main,.site-footer{position:relative;z-index:1}
-.brand{display:inline-flex;align-items:center;text-decoration:none}
-.hero{position:relative}
-.hero-ring{position:absolute;pointer-events:none}
-.game-list,.game-tags{list-style:none;margin:0;padding:0}
-.game-list{display:flex;flex-wrap:wrap;justify-content:center}
-.game-item{display:flex;min-width:0}
-.game-card{display:flex;flex:1;min-width:0;position:relative;isolation:isolate;text-decoration:none;cursor:pointer}
-.game-shell{display:flex;flex:1;min-width:0;flex-direction:column;overflow:hidden}
-.game-stage{position:relative;flex:none;display:grid;place-items:center}
-.game-info{display:flex;flex:1;flex-direction:column}
-.game-tags{display:flex;flex-wrap:wrap;justify-content:center}
-.game-go{margin-top:auto;align-self:center}
-.game-card[data-slowly-tilt]::before{z-index:1}
-.page>.sbs-click-burst-canvas,.page>.sbs-trail-canvas{z-index:4}
-.page.sbs-trail>canvas{z-index:4}
-.game-card:focus-visible,.brand:focus-visible{outline:3px solid currentColor;outline-offset:5px}
+body {
+  margin:0
+}
+
+a {
+  color:inherit
+}
+
+button,a {
+  -webkit-tap-highlight-color:transparent
+}
+
+.ambient {
+  position:fixed;
+  inset:0;
+  z-index:0;
+  overflow:hidden;
+  pointer-events:none
+}
+
+.page {
+  position:relative;
+  isolation:isolate;
+  min-height:100dvh;
+  min-height:100svh
+}
+
+.site-header,main,.site-footer {
+  position:relative;
+  z-index:1
+}
+
+.brand {
+  display:inline-flex;
+  align-items:center;
+  text-decoration:none
+}
+
+.hero {
+  position:relative
+}
+
+.hero-ring {
+  position:absolute;
+  pointer-events:none
+}
+
+.game-list,.game-tags {
+  list-style:none;
+  margin:0;
+  padding:0
+}
+
+.game-list {
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center
+}
+
+.game-item {
+  display:flex;
+  min-width:0
+}
+
+.game-card {
+  display:flex;
+  flex:1;
+  min-width:0;
+  position:relative;
+  isolation:isolate;
+  text-decoration:none;
+  cursor:pointer
+}
+
+.game-shell {
+  display:flex;
+  flex:1;
+  min-width:0;
+  flex-direction:column;
+  overflow:hidden
+}
+
+.game-stage {
+  position:relative;
+  flex:none;
+  display:grid;
+  place-items:center
+}
+
+.game-info {
+  display:flex;
+  flex:1;
+  flex-direction:column
+}
+
+.game-tags {
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center
+}
+
+.game-go {
+  margin-top:auto;
+  align-self:center
+}
+
+.game-card[data-slowly-tilt]::before {
+  z-index:1
+}
+
+.page>.sbs-click-burst-canvas,.page>.sbs-trail-canvas {
+  z-index:4
+}
+
+.page.sbs-trail>canvas {
+  z-index:4
+}
+
+.game-card:focus-visible,.brand:focus-visible {
+  outline:3px solid currentColor;
+  outline-offset:5px
+}
