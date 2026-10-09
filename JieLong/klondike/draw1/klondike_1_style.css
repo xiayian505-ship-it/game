@@ -193,3 +193,238 @@
     font-size: .8rem;
   }
 }
+
+
+/* ================================================================
+   接龍帝國｜經典之境（Klondike）
+   色彩直接對應主城 JieLong/index_style.css 中的 territory-klondike。
+   僅調整帝國版外觀，牌局邏輯、儲存、資料庫和原始玩法不變。
+   ================================================================ */
+:root {
+  --empire-klondike-green-dark: #063c35;
+  --empire-klondike-green: #0d594d;
+  --empire-klondike-gold: #fbe5aa;
+  --empire-klondike-line: #d6a54d;
+  --empire-klondike-sky: linear-gradient(180deg, #8ec5df 0%, #f1d59e 55%, #86a05f 100%);
+  --empire-klondike-back:
+    radial-gradient(circle at 50% 50%, rgba(246,226,166,.13) 0 18%, transparent 19%),
+    repeating-linear-gradient(45deg, rgba(214,165,77,.10) 0 2px, transparent 2px 10px),
+    linear-gradient(135deg, #063c35 0%, #0d594d 52%, #063c35 100%);
+}
+
+body {
+  background: var(--empire-klondike-sky);
+}
+
+/* 領地橫幅：標題、紋章與主城「經典之境」完全同色系。 */
+.game-header {
+  align-items: center;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: linear-gradient(105deg, #063c35, #0d594d);
+  color: #fbe5aa;
+  box-shadow: inset 0 -1px rgba(255,255,255,.14), 0 8px 18px rgba(15,60,50,.14);
+}
+
+.empire-title-group {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.game-header .suit-seal {
+  flex: 0 0 auto;
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  border: 2px solid #dcb567;
+  border-radius: 50%;
+  background: rgba(255,244,194,.1);
+  color: #fbe5aa;
+  box-shadow: inset 0 0 0 4px rgba(0,0,0,.12);
+  font-size: 2rem;
+}
+
+.empire-title-copy { min-width: 0; }
+.game-header .eyebrow {
+  margin: 0 0 2px;
+  color: rgba(255,234,177,.72);
+  font-size: .78rem;
+  letter-spacing: .14em;
+}
+.game-header h1 {
+  margin: 0;
+  color: #fbe5aa;
+  font-size: clamp(1.35rem, 3vw, 2rem);
+}
+.game-header h1 span {
+  font-size: .78em;
+  font-weight: 600;
+  opacity: .9;
+}
+.game-header .subtitle {
+  margin-top: 5px;
+  color: rgba(255,244,213,.78);
+}
+
+/* 入境、離境按鈕與 FreeCell 相同語言，改為經典之境深綠。 */
+.game-header .empire-header-actions .restart-button,
+.game-header .empire-header-actions .leave-empire-button,
+#restartConfirm .dialog-actions button,
+#restartConfirm .dialog-back,
+#dealPicker .deal-button,
+#dealPicker .contributed-random,
+#dealPicker .uid-paste-toggle,
+#dealPicker .contributed-pager button,
+#dealPicker .contributed-deal-row,
+#dealPicker .uid-search button,
+#dealPicker .dialog-back,
+.deal-identity button,
+.message-card button {
+  border: 1px solid #dcb567;
+  background: linear-gradient(135deg, #063c35 0%, #0d594d 100%);
+  color: #fbe5aa;
+  box-shadow: inset 0 0 0 1px rgba(255,239,186,.10), 0 3px 8px rgba(8,48,40,.15);
+  font-weight: 700;
+}
+.game-header .empire-header-actions .restart-button:hover,
+.game-header .empire-header-actions .leave-empire-button:hover,
+#restartConfirm .dialog-actions button:hover,
+#restartConfirm .dialog-back:hover,
+#dealPicker .deal-button:hover,
+#dealPicker .contributed-random:hover,
+#dealPicker .uid-paste-toggle:hover,
+#dealPicker .contributed-pager button:hover:not(:disabled),
+#dealPicker .contributed-deal-row:hover,
+#dealPicker .uid-search button:hover,
+#dealPicker .dialog-back:hover,
+.deal-identity button:hover,
+.message-card button:hover,
+.game-header .empire-header-actions button:focus-visible,
+#restartConfirm button:focus-visible,
+#dealPicker button:focus-visible,
+.deal-identity button:focus-visible,
+.message-card button:focus-visible {
+  border-color: #f0cf83;
+  background: linear-gradient(135deg, #0a4c42, #187466);
+  outline-color: #f0cf83;
+}
+.game-header .empire-header-actions button:active,
+#restartConfirm button:active,
+#dealPicker button:active,
+.deal-identity button:active,
+.message-card button:active {
+  transform: translateY(1px);
+}
+#dealPicker button:disabled,
+#restartConfirm button:disabled,
+.message-card button:disabled,
+.game-header .empire-header-actions button:disabled {
+  opacity: .42;
+  cursor: default;
+}
+
+/* 原 HUD 數字與牌局編號仍原地顯示，只換領地配色。 */
+.status-row {
+  padding: 7px 10px;
+  border: 1px solid rgba(214,165,77,.62);
+  border-radius: 10px;
+  background: rgba(255,250,235,.66);
+  color: #33594f;
+}
+.status-row strong,
+.deal-identity strong { color: #0d594d; }
+.deal-identity {
+  border-color: rgba(214,165,77,.72);
+  background: rgba(255,250,240,.76);
+  color: #33594f;
+}
+.notice { color: #275c50; }
+.hint { color: rgba(6,60,53,.76); }
+
+/* 主城插畫漸層延伸至牌桌，金色細邊與 FreeCell 一致。 */
+.tableau {
+  background: var(--empire-klondike-sky);
+  border-color: #d6a54d;
+  box-shadow: inset 0 0 0 2px rgba(255,239,186,.12);
+}
+
+/* 蓋牌、牌庫與尚未填入的回收格使用同一款領地牌背。 */
+.card.face-down,
+.stock-slot.has-cards,
+.foundation-slot:not(.occupied) {
+  border: 1px solid #d6a54d;
+  background: var(--empire-klondike-back);
+  box-shadow: inset 0 0 0 2px rgba(255,239,186,.16), 0 1px 2px rgba(0,0,0,.10);
+}
+.foundation-slot:not(.occupied) { color: #f1d28b; }
+/* Draw 3 的空棄牌占位符獨立保留，不影響三張錯位展示。 */
+.waste-slot.empty-waste::before {
+  border-color: rgba(214,165,77,.72);
+  background: rgba(255,250,235,.62);
+}
+
+/* 選局／重開／勝利視窗沿用帝國羊皮紙與深綠金色。 */
+.dialog-overlay,
+.message {
+  background: rgba(6,44,38,.62);
+  backdrop-filter: blur(1px);
+  -webkit-backdrop-filter: blur(1px);
+}
+#restartConfirm .dialog-card,
+#dealPicker .dialog-card,
+.message-card {
+  border: 1px solid rgba(214,165,77,.82);
+  background: linear-gradient(180deg, #fffaf0 0%, #f5ead0 100%);
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,.42), 0 22px 60px rgba(6,44,38,.27);
+}
+#restartConfirm .dialog-title,
+#dealPicker .dialog-title,
+.message-title { color: #0d594d; }
+#restartConfirm .dialog-text,
+#dealPicker .dialog-text,
+#dealPicker .picker-notice,
+#dealPicker #contributedPageInfo,
+#dealPicker .contributed-empty,
+#dealPicker .uid-search-label,
+.message-text,
+.message-best,
+.message-clears { color: #6f675b; }
+#dealPicker .contributed-panel,
+#dealPicker .uid-search {
+  border-color: rgba(214,165,77,.58);
+  background: rgba(255,250,240,.65);
+}
+#dealPicker .contributed-deal-row::after { color: rgba(255,234,177,.76); }
+#dealPicker .uid-search input,
+.message-uid {
+  border: 1px solid rgba(214,165,77,.58);
+  background: #fffaf0;
+  color: #0d594d;
+}
+
+.bom-overlay {
+  background: radial-gradient(circle at center, rgba(142,197,223,.19) 0%, rgba(13,89,77,.38) 46%, rgba(6,44,38,.70) 100%);
+}
+.bom-card {
+  border-color: rgba(220,181,103,.88);
+  background: linear-gradient(145deg, rgba(6,60,53,.96), rgba(13,89,77,.94));
+  color: #fff8df;
+  box-shadow: 0 16px 46px rgba(6,44,38,.34), inset 0 0 0 1px rgba(255,239,186,.16);
+}
+.bom-card::before { background: rgba(220,181,103,.62); }
+.bom-card::after { background: rgba(142,197,223,.34); }
+.bom-plus { color: #fbe5aa; }
+.bom-subtext { color: rgba(255,244,213,.88); }
+
+@media (max-width: 600px) {
+  .game-header { padding: 12px 10px; align-items: center; flex-wrap: nowrap; }
+  .empire-title-group { gap: 9px; }
+  .game-header .suit-seal { width: 46px; height: 46px; font-size: 1.6rem; }
+  .game-header .eyebrow { font-size: .66rem; }
+  .game-header h1 { font-size: 1.3rem; }
+  .game-header .subtitle { font-size: .72rem; }
+  .status-row { padding: 6px 8px; }
+}
