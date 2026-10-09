@@ -99,6 +99,13 @@ body {
 .stat-card + .stat-card { border-left: 1px solid rgba(143, 104, 56, .25); }
 .stat-icon { color: #b37b2d; }
 .stat-card strong { color: #54331d; }
+/* 第三格暫不提供操作；保留三欄布局，僅展示待破解牌局文字。 */
+.stat-placeholder {
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr 1fr;
+  justify-items: center;
+  text-align: center;
+}
 
 .territory {
   background: linear-gradient(180deg, #fbf5e8, #efe2c7);

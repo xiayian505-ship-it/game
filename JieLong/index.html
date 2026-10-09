@@ -49,20 +49,19 @@
     </header>
       <section class="empire-stats slowly-fade-up" data-slowly-reveal aria-label="帝國概況">
         <button class="stat-card stat-gate slowly-lift slowly-press" type="button" data-quick-panel="territories" aria-haspopup="dialog">
-          <span class="stat-icon">♛</span>
+          <span class="stat-icon">♠</span>
           <strong>3</strong>
           <span>大領地</span>
         </button>
         <button class="stat-card stat-gate slowly-lift slowly-press" type="button" data-quick-panel="games" aria-haspopup="dialog">
-          <span class="stat-icon">♠</span>
-          <strong>6</strong>
+          <span class="stat-icon">♥</span>
+          <strong>7</strong>
           <span>遊戲入口</span>
         </button>
-        <button class="stat-card stat-gate slowly-lift slowly-press" type="button" data-quick-panel="classics" aria-haspopup="dialog">
-          <span class="stat-icon">♣</span>
-          <strong>8</strong>
-          <span>經典無解局</span>
-        </button>
+        <div class="stat-card stat-placeholder" aria-label="待破解牌局，數量尚待確認">
+          <strong>？？</strong>
+          <span>待破解牌局</span>
+        </div>
       </section>
         </div>
 
@@ -91,17 +90,17 @@
           <nav class="game-list" aria-label="連環新接龍難度">
             <a class="game-link slowly-lift slowly-press" data-empire-game-enter="territory-spider" href="./spider/easy/spider_easy.html">
               <span class="card-stack spade">♠</span>
-              <span class="game-text"><strong>連環新接龍 v7</strong><small>初階・單一花色</small></span>
+              <span class="game-text"><strong>進入 秩序之城 初階</strong><small>單一花色</small></span>
               <span class="arrow">›</span>
             </a>
             <a class="game-link slowly-lift slowly-press" data-empire-game-enter="territory-spider" href="./spider/medium/spider_medium.html">
               <span class="card-stack spade">♠</span>
-              <span class="game-text"><strong>連環新接龍・中階 v7</strong><small>雙花色挑戰</small></span>
+              <span class="game-text"><strong>進入 秩序之城 中階</strong><small>雙花色挑戰</small></span>
               <span class="arrow">›</span>
             </a>
             <a class="game-link slowly-lift slowly-press" data-empire-game-enter="territory-spider" href="./spider/hard/spider_hard.html">
               <span class="card-stack spade">♠</span>
-              <span class="game-text"><strong>連環新接龍・高階 v7</strong><small>四花色戰場</small></span>
+              <span class="game-text"><strong>進入 秩序之城 高階</strong><small>四花色戰場</small></span>
               <span class="arrow">›</span>
             </a>
           </nav>
@@ -219,12 +218,12 @@
           <nav class="game-list" aria-label="接龍玩法">
             <a class="game-link slowly-lift slowly-press" data-empire-game-enter="territory-klondike" href="./klondike/draw1/klondike_1.html">
               <span class="card-stack diamond">♦</span>
-              <span class="game-text"><strong>慢 慢｜接龍・翻 1 張</strong><small>經典牌庫・每次翻 1 張</small></span>
+              <span class="game-text"><strong>進入 經典之境 一張牌</strong></span>
               <span class="arrow">›</span>
             </a>
             <a class="game-link slowly-lift slowly-press" data-empire-game-enter="territory-klondike" href="./klondike/draw3/klondike_3.html">
               <span class="card-stack diamond">♦</span>
-              <span class="game-text"><strong>慢 慢｜接龍・翻 3 張</strong><small>傳統挑戰・每次翻 3 張</small></span>
+              <span class="game-text"><strong>進入 經典之境 三張牌</strong></span>
               <span class="arrow">›</span>
             </a>
           </nav>
@@ -280,25 +279,25 @@
         </div>
 
         <div class="quick-panel-view" data-panel-view="games" hidden>
-          <p class="quick-panel-intro">帝國版遊戲尚未動工，現階段先通往既有乾淨版。</p>
-          <nav class="quick-game-list" aria-label="六個遊戲入口">
+          <p class="quick-panel-intro">選擇帝國版遊戲，前往各領地繼續挑戰。</p>
+          <nav class="quick-game-list" aria-label="帝國遊戲入口">
             <a class="quick-game-entry slowly-lift slowly-press" data-empire-game-enter="territory-spider" href="./spider/easy/spider_easy.html">
-              <span class="mini-card mini-spade">♠</span><span><strong>連環新接龍 v7</strong><small>初階・單一花色</small></span><b>›</b>
+              <span class="mini-card mini-spade">♠</span><span><strong>進入 秩序之城 初階</strong><small>單一花色</small></span><b>›</b>
             </a>
             <a class="quick-game-entry slowly-lift slowly-press" data-empire-game-enter="territory-spider" href="./spider/medium/spider_medium.html">
-              <span class="mini-card mini-spade">♠</span><span><strong>連環新接龍・中階 v7</strong><small>雙花色挑戰</small></span><b>›</b>
+              <span class="mini-card mini-spade">♠</span><span><strong>進入 秩序之城 中階</strong><small>雙花色挑戰</small></span><b>›</b>
             </a>
             <a class="quick-game-entry slowly-lift slowly-press" data-empire-game-enter="territory-spider" href="./spider/hard/spider_hard.html">
-              <span class="mini-card mini-spade">♠</span><span><strong>連環新接龍・高階 v7</strong><small>四花色戰場</small></span><b>›</b>
+              <span class="mini-card mini-spade">♠</span><span><strong>進入 秩序之城 高階</strong><small>四花色戰場</small></span><b>›</b>
             </a>
             <a class="quick-game-entry slowly-lift slowly-press" data-empire-freecell-quick href="https://game.stillnessbyslowly.com/JieLong/freecell/freecell.html">
               <span class="mini-card mini-club">♣</span><span><strong>慢 慢｜新接龍</strong><small>FreeCell・全明牌策略</small></span><b>›</b>
             </a>
             <a class="quick-game-entry slowly-lift slowly-press" data-empire-game-enter="territory-klondike" href="./klondike/draw1/klondike_1.html">
-              <span class="mini-card mini-diamond">♦</span><span><strong>慢 慢｜接龍・翻 1 張</strong><small>Klondike・翻 1 張</small></span><b>›</b>
+              <span class="mini-card mini-diamond">♦</span><span><strong>進入 經典之境 一張牌</strong></span><b>›</b>
             </a>
             <a class="quick-game-entry slowly-lift slowly-press" data-empire-game-enter="territory-klondike" href="./klondike/draw3/klondike_3.html">
-              <span class="mini-card mini-diamond">♦</span><span><strong>慢 慢｜接龍・翻 3 張</strong><small>Klondike・翻 3 張</small></span><b>›</b>
+              <span class="mini-card mini-diamond">♦</span><span><strong>進入 經典之境 三張牌</strong></span><b>›</b>
             </a>
           </nav>
         </div>
@@ -323,7 +322,7 @@
     <footer class="empire-footer">
       <span class="footer-line"></span>
       <span class="footer-crown">♛</span>
-      <p>慢慢｜Stillness by Slowly.com</p>
+      <p>慢 慢 | Stillness by Slowly</p>
       <span class="footer-line"></span>
     </footer>
   </div>
