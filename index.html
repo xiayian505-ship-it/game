@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0d1c">
+<title>慢慢遊戲大廳｜Stillness by Slowly</title>
+<meta name="description" content="慢慢遊戲大廳：朕的接龍帝國、慢慢元素實驗室、慢慢消消樂，挑一個入口，慢慢玩。">
+<meta property="og:title" content="慢慢遊戲大廳｜Stillness by Slowly">
+<meta property="og:description" content="接龍、元素合成、消消樂，挑一個入口，慢慢玩。">
+<meta property="og:url" content="https://game.stillnessbyslowly.com/">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐢</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700;900&display=swap" rel="stylesheet">
+<style>
+@property --a{syntax:'<angle>';inherits:false;initial-value:0deg}
+:root{--ink:#0b0d1c;--moon:#f6efe0;--serif:"Noto Serif TC","Songti TC","PMingLiU",serif;--sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;color-scheme:dark}
+*{box-sizing:border-box;margin:0}
+html{background:var(--ink)}
+body{min-height:100dvh;font-family:var(--sans);color:var(--moon);background:radial-gradient(120% 80% at 50% 0,#171a38,var(--ink) 62%);overflow-x:hidden;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+#bg,.aur{position:fixed;inset:0;z-index:0;pointer-events:none}
+.aur{overflow:hidden}
+.aur i{position:absolute;width:70vmax;height:70vmax;border-radius:50%;opacity:.27;animation:drift 32s ease-in-out infinite alternate}
+.aur i:nth-child(1){background:radial-gradient(circle,#c8282f,transparent 65%);left:-25vmax;top:-20vmax}
+.aur i:nth-child(2){background:radial-gradient(circle,#1fc9b0,transparent 65%);right:-30vmax;top:20vh;animation-duration:41s}
+.aur i:nth-child(3){background:radial-gradient(circle,#e0489a,transparent 65%);left:10vw;bottom:-45vmax;animation-duration:37s}
+@keyframes drift{to{transform:translate(8vmax,6vmax) scale(1.15)}}
+@keyframes spin{to{rotate:360deg}}
+@keyframes float{50%{translate:0 -9px}}
+@keyframes bob{50%{translate:0 -7px}}
+@keyframes pulse{50%{opacity:.35}}
+@keyframes fade{from{opacity:0}}
+@keyframes rot{to{--a:360deg}}
+header,main,footer{position:relative;z-index:1}
+header{display:flex;align-items:center;gap:12px;padding:20px clamp(16px,4vw,48px)}
+.seal{width:36px;height:36px;display:grid;place-items:center;background:#b3202a;border-radius:6px;font:900 21px/1 var(--serif);rotate:-6deg;box-shadow:0 0 18px #b3202a99}
+header b{font-weight:500;font-size:14px;letter-spacing:.08em;opacity:.8}
+
+/* hero */
+.hero{position:relative;text-align:center;padding:clamp(28px,7vh,72px) 16px clamp(34px,6vh,64px)}
+.enso{position:absolute;left:50%;top:50%;width:min(620px,110vw);aspect-ratio:1;translate:-50% -50%;pointer-events:none}
+.enso svg{width:100%;height:100%;overflow:visible;animation:spin 90s linear infinite}
+.enso circle{fill:none;stroke:url(#g);stroke-linecap:round;stroke-dasharray:628;stroke-dashoffset:628;animation:draw 3.4s .2s cubic-bezier(.3,.6,.2,1) forwards}
+.enso circle+circle{opacity:.55;animation-delay:.7s}
+@keyframes draw{to{stroke-dashoffset:92}}
+h1{position:relative;font:900 clamp(40px,9.5vw,88px)/1.1 var(--serif);letter-spacing:.14em;text-indent:.14em;text-shadow:0 0 18px #e8c56a55;animation:fade 1.4s 1s both,breathe 6s 2.4s ease-in-out infinite}
+@keyframes breathe{50%{text-shadow:0 0 38px #e8c56acc,0 0 90px #e8c56a55}}
+.hero p{position:relative;margin-top:14px;opacity:.78;letter-spacing:.22em;text-indent:.22em;animation:fade 1.4s 1.5s both}
+
+/* doors */
+.doors{list-style:none;padding:0 clamp(16px,4vw,48px) 44px;margin:0 auto;max-width:1240px;display:flex;flex-wrap:wrap;justify-content:center;gap:clamp(22px,3vw,38px);perspective:1200px}
+.doors li{flex:1 1 300px;max-width:400px;display:flex;animation:up .9s cubic-bezier(.2,.8,.2,1) both}
+.doors li:nth-child(1){animation-delay:1.7s}.doors li:nth-child(2){animation-delay:1.9s}.doors li:nth-child(3){animation-delay:2.1s}
+@keyframes up{from{opacity:0;transform:translateY(44px) scale(.95)}}
+.card{--c:#e8c56a;--bg1:#6a1519;--bg2:#2a0709;flex:1;display:flex;padding:2px;color:inherit;text-decoration:none;border-radius:50% 50% 30px 30px/170px 170px 30px 30px;background:conic-gradient(from var(--a),#ffffff14 0,var(--c) 12%,#ffffff14 30%,#ffffff14 60%,var(--c) 72%,#ffffff14 90%);animation:rot 7s linear infinite;transition:transform .25s ease-out,box-shadow .35s;box-shadow:0 22px 60px -24px #000}
+.card:hover{box-shadow:0 34px 90px -26px var(--c)}
+.card:focus-visible{outline:3px solid var(--moon);outline-offset:6px}
+.k1{--c:#e8c56a;--bg1:#6a1519;--bg2:#2a0709}
+.k2{--c:#3fe0c5;--bg1:#0e4553;--bg2:#08172b}
+.k3{--c:#ff7eb6;--bg1:#64205a;--bg2:#2a0f3d}
+.in{position:relative;flex:1;display:flex;flex-direction:column;overflow:hidden;border-radius:inherit;background:radial-gradient(90% 60% at 50% 30%,var(--bg1),var(--bg2))}
+.in::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .3s;background:radial-gradient(340px circle at var(--mx,50%) var(--my,30%),#ffffff26,transparent 60%)}
+.card:hover .in::after{opacity:1}
+.stage{position:relative;height:260px;flex:none;display:grid;place-items:center}
+.info{flex:1;display:flex;flex-direction:column;gap:12px;padding:6px 24px 26px;text-align:center}
+h2{font:900 26px/1.2 var(--serif);letter-spacing:.06em}
+.info p{font-size:14.5px;line-height:1.75;opacity:.84}
+.tags{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.tags span{font-size:12.5px;padding:3px 11px;border:1px solid #ffffff3d;border-radius:99px;color:var(--c)}
+.go{margin-top:auto;align-self:center;position:relative;overflow:hidden;padding:11px 36px;border-radius:99px;font-weight:700;letter-spacing:.22em;text-indent:.22em;color:#16120a;background:var(--c);box-shadow:0 8px 24px -8px var(--c)}
+.go::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,#fffa 50%,transparent 70%);translate:-120% 0;transition:translate .7s}
+.card:hover .go::after,.card:focus-visible .go::after{translate:120% 0}
+.fl{position:absolute;font-size:20px;color:var(--c);opacity:.35;animation:float 5s ease-in-out infinite}
+
+/* k1: cards */
+.crown{position:absolute;top:66px;font-size:56px;line-height:1;color:var(--c);text-shadow:0 0 26px var(--c);animation:float 4s ease-in-out infinite}
+.fan{position:absolute;bottom:14px;left:50%;width:0;height:0}
+.pc{position:absolute;bottom:0;left:-31px;width:62px;height:88px;border-radius:7px;background:#fbf4e2;color:#1a1a1a;display:grid;place-items:center;font:900 32px/1 var(--serif);transform-origin:50% 130%;transition:transform .5s cubic-bezier(.3,1.4,.4,1);box-shadow:0 6px 16px #0009}
+.pc u{position:absolute;top:5px;left:7px;font-size:15px;text-decoration:none}
+.pc.r{color:#c0262d}
+.pc:nth-child(1){transform:rotate(-16deg)}.pc:nth-child(2){transform:translateY(-8px)}.pc:nth-child(3){transform:rotate(16deg)}
+.card:hover .pc:nth-child(1){transform:rotate(-30deg) translateY(-6px)}
+.card:hover .pc:nth-child(2){transform:translateY(-22px)}
+.card:hover .pc:nth-child(3){transform:rotate(30deg) translateY(-6px)}
+
+/* k2: molecule */
+.orb{position:absolute;width:214px;height:214px;top:50%;left:50%;translate:-50% -50%;border:1px dashed #3fe0c566;border-radius:50%;animation:spin 18s linear infinite}
+.orb em{position:absolute;top:-5px;left:50%;width:10px;height:10px;margin-left:-5px;border-radius:50%;background:var(--c);box-shadow:0 0 14px 3px var(--c)}
+.atoms{position:relative;display:flex;align-items:center;margin-top:-12px}
+.t{position:relative;width:56px;height:62px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px solid var(--tc);border-radius:10px;background:#ffffff10;color:var(--tc);font:700 25px/1 var(--sans);box-shadow:0 0 20px -4px var(--tc),inset 0 0 14px -6px var(--tc);animation:bob 3.6s ease-in-out infinite}
+.t u{position:absolute;top:3px;left:5px;font:500 10px/1 var(--sans);text-decoration:none}
+.t small{font:500 11px/1 var(--sans);margin-top:3px}
+.t.h{--tc:#7cc8ff}.t.o{--tc:#ff7a7a;width:68px;height:76px;font-size:32px;animation-delay:-1.2s}
+.t.h:last-child{animation-delay:-2.4s}
+.bond{width:16px;height:4px;border-radius:2px;background:var(--c);box-shadow:0 0 10px var(--c);animation:pulse 1.8s ease-in-out infinite}
+.fml{position:absolute;bottom:12px;font:700 15px var(--serif);letter-spacing:.2em;color:var(--c)}
+
+/* k3: candies */
+.g3{display:grid;grid-template-columns:repeat(3,50px);gap:9px;margin-top:22px}
+.g3 i{width:50px;height:50px;border-radius:16px;background:radial-gradient(circle at 32% 26%,#fffc 0,#fff0 24%),var(--k);box-shadow:inset 0 -7px 11px #0004,0 7px 14px -5px var(--k)}
+.g3 i:nth-child(even){border-radius:50%}
+.g3 i:nth-child(n+4):nth-child(-n+6){animation:pop 3.6s ease-in-out infinite}
+.g3 i:nth-child(5){animation-delay:.12s}.g3 i:nth-child(6){animation-delay:.24s}
+@keyframes pop{0%,56%{transform:scale(1);opacity:1}66%{transform:scale(1.28);filter:brightness(1.5)}78%,90%{transform:scale(0);opacity:0}100%{transform:scale(1);opacity:1}}
+
+footer{overflow:hidden;text-align:center;padding:26px 16px 46px;font-size:13px;letter-spacing:.12em;opacity:.8}
+footer small{display:block;margin-top:6px;opacity:.7}
+.turtle{position:absolute;left:0;bottom:8px;font-size:20px;animation:crawl 80s linear infinite}
+@keyframes crawl{from{translate:-40px 0}to{translate:calc(100vw + 40px) 0}}
+
+/* launch warp */
+.warp{position:fixed;inset:0;z-index:50;pointer-events:none;background:radial-gradient(circle at var(--x) var(--y),#fff 0,var(--c) 16%,#05060f 62%);clip-path:circle(0 at var(--x) var(--y));transition:clip-path .65s cubic-bezier(.6,0,.2,1)}
+.warp.on{clip-path:circle(150vmax at var(--x) var(--y));pointer-events:auto}
+
+@media (prefers-reduced-motion:reduce){*,::before,::after{animation:none!important;transition:none!important}.enso circle{stroke-dashoffset:92}}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<div class="aur" aria-hidden="true"><i></i><i></i><i></i></div>
+
+<header>
+  <span class="seal" aria-hidden="true">慢</span>
+  <b>Stillness by Slowly</b>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="enso" aria-hidden="true">
+      <svg viewBox="0 0 240 240"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6e2a0"/><stop offset="1" stop-color="#b8862b"/></linearGradient></defs>
+        <circle cx="120" cy="120" r="100" stroke-width="3"/><circle cx="120" cy="120" r="108" stroke-width="1"/></svg>
+    </div>
+    <h1>慢慢遊戲大廳</h1>
+    <p>挑一個入口，慢慢玩。</p>
+  </section>
+
+  <ul class="doors">
+    <li><a class="card k1" href="https://game.stillnessbyslowly.com/JieLong/" aria-label="進入朕的接龍帝國">
+      <div class="in">
+        <div class="stage">
+          <span class="fl" style="left:16%;top:56%">♣</span><span class="fl" style="right:15%;top:48%;animation-delay:-2s">♦</span><span class="fl" style="right:24%;top:76%;animation-delay:-3.4s">♠</span>
+          <span class="crown">♛</span>
+          <div class="fan"><b class="pc"><u>A</u>♠</b><b class="pc r"><u>K</u>♥</b><b class="pc r"><u>Q</u>♦</b></div>
+        </div>
+        <div class="info">
+          <h2>朕的接龍帝國</h2>
+          <p>三大領地，六個入口。連環新接龍、新接龍、經典接龍，任你巡覽。</p>
+          <div class="tags"><span>Spider</span><span>FreeCell</span><span>Klondike</span></div>
+          <span class="go">進入帝國</span>
+        </div>
+      </div>
+    </a></li>
+
+    <li><a class="card k2" href="https://game.stillnessbyslowly.com/match/periodic/" aria-label="進入慢慢元素實驗室">
+      <div class="in">
+        <div class="stage">
+          <div class="orb"><em></em></div>
+          <div class="atoms">
+            <b class="t h"><u>1</u>H<small>氫</small></b><span class="bond"></span>
+            <b class="t o"><u>8</u>O<small>氧</small></b><span class="bond"></span>
+            <b class="t h"><u>1</u>H<small>氫</small></b>
+          </div>
+          <span class="fml">H₂O</span>
+        </div>
+        <div class="info">
+          <h2>慢慢元素實驗室</h2>
+          <p>把元素放進格子，橫向或直向連成配方，就能合成分子。收集 16 款分子圖鑑。</p>
+          <div class="tags"><span>益智</span><span>合成</span><span>圖鑑</span></div>
+          <span class="go">進入實驗室</span>
+        </div>
+      </div>
+    </a></li>
+
+    <li><a class="card k3" href="https://game.stillnessbyslowly.com/match/match3_v1/match3_v1.html" aria-label="開始慢慢消消樂">
+      <div class="in">
+        <div class="stage">
+          <span class="fl" style="left:15%;top:50%">✦</span><span class="fl" style="right:14%;top:62%;animation-delay:-2.5s">✦</span>
+          <div class="g3">
+            <i style="--k:#4aa8ff"></i><i style="--k:#ffa63d"></i><i style="--k:#a56bff"></i>
+            <i style="--k:#ff4f9a"></i><i style="--k:#ff4f9a"></i><i style="--k:#ff4f9a"></i>
+            <i style="--k:#4ddc7b"></i><i style="--k:#ffe14d"></i><i style="--k:#4aa8ff"></i>
+          </div>
+        </div>
+        <div class="info">
+          <h2>慢慢消消樂</h2>
+          <p>交換相鄰糖果，連成 3 顆以上就能消除。做出條紋糖、包裝糖和彩球，一路連鎖。</p>
+          <div class="tags"><span>消除</span><span>連鎖</span><span>特殊糖</span></div>
+          <span class="go">開始遊戲</span>
+        </div>
+      </div>
+    </a></li>
+  </ul>
+</main>
+
+<footer>
+  慢慢｜Stillness by Slowly
+  <small>更多遊戲，慢慢上架。</small>
+  <span class="turtle" aria-hidden="true">🐢</span>
+</footer>
+
+<div class="warp" id="warp" aria-hidden="true"></div>
+
+<script>
+(()=>{
+const cv=document.getElementById('bg'),X=cv.getContext('2d'),warp=document.getElementById('warp'),
+reduce=matchMedia('(prefers-reduced-motion:reduce)').matches,
+R=(a,b)=>a+Math.random()*(b-a),
+COL=['#e8c56a','#ff7a82','#3fe0c5','#7cc8ff','#ff7eb6','#ffb347'],
+CH=['♠','♥','♦','♣','♛','H','O','C','N','S','●','◆'];
+let W,H,D,S=[],Gl=[],P=[],mx=0,my=0;
+const mk=f=>({x:R(0,W),y:f?R(0,H):H+60,t:CH[R(0,CH.length)|0],s:R(16,40),v:R(.12,.38),c:COL[R(0,COL.length)|0],a:R(.07,.2),r:R(-.5,.5),w:R(-.004,.004),z:R(.3,1)});
+function fit(){
+  D=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;
+  cv.width=W*D;cv.height=H*D;cv.style.width=W+'px';cv.style.height=H+'px';X.setTransform(D,0,0,D,0,0);
+  S=Array.from({length:W*H/9000|0},()=>({x:R(0,W),y:R(0,H),r:R(.4,1.4),p:R(0,6.3),s:R(.5,2),z:R(.2,1)}));
+  Gl=Array.from({length:W<700?9:16},()=>mk(1));
+  if(reduce)draw(0);
+}
+function spark(px,py,c,n,sp){
+  for(let i=0;i<n;i++){const a=R(0,6.283),v=R(.4,1)*sp;P.push({x:px,y:py,vx:Math.cos(a)*v,vy:Math.sin(a)*v,l:1,d:R(.012,.03),c,r:R(1,3)})}
+}
+function draw(t){
+  X.clearRect(0,0,W,H);
+  X.fillStyle='#fff';
+  for(const s of S){X.globalAlpha=.25+.75*Math.abs(Math.sin(t/1000*s.s+s.p));X.beginPath();X.arc(s.x+mx*30*s.z,s.y+my*20*s.z,s.r,0,6.283);X.fill()}
+  X.textAlign='center';
+  for(const g of Gl){
+    g.y-=g.v;g.r+=g.w;if(g.y<-60)Object.assign(g,mk(0));
+    X.save();X.translate(g.x+mx*50*g.z,g.y+my*35*g.z);X.rotate(g.r);X.globalAlpha=g.a;X.fillStyle=g.c;
+    X.font=`900 ${g.s}px "Noto Serif TC",serif`;X.fillText(g.t,0,0);X.restore();
+  }
+  X.globalCompositeOperation='lighter';
+  for(let i=P.length;i--;){
+    const p=P[i];p.x+=p.vx;p.y+=p.vy;p.vy+=.03;p.l-=p.d;
+    if(p.l<=0){P.splice(i,1);continue}
+    X.globalAlpha=p.l;X.fillStyle=p.c;X.beginPath();X.arc(p.x,p.y,p.r*p.l+.3,0,6.283);X.fill();
+  }
+  X.globalCompositeOperation='source-over';X.globalAlpha=1;
+}
+const loop=t=>{draw(t);requestAnimationFrame(loop)};
+addEventListener('resize',fit);fit();if(!reduce)requestAnimationFrame(loop);
+
+addEventListener('pointermove',e=>{
+  mx=e.clientX/W-.5;my=e.clientY/H-.5;
+  if(!reduce&&e.pointerType==='mouse'&&P.length<160&&Math.random()<.5)spark(e.clientX,e.clientY,COL[R(0,6)|0],1,.6);
+});
+
+document.querySelectorAll('.card').forEach(c=>{
+  c.addEventListener('pointermove',e=>{
+    if(e.pointerType!=='mouse'||reduce)return;
+    const r=c.getBoundingClientRect(),x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;
+    c.style.setProperty('--mx',x*100+'%');c.style.setProperty('--my',y*100+'%');
+    c.style.transform=`perspective(900px) translateY(-8px) rotateX(${(.5-y)*8}deg) rotateY(${(x-.5)*10}deg)`;
+  });
+  c.addEventListener('pointerleave',()=>c.style.transform='');
+  c.addEventListener('click',e=>{
+    if(e.button||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;
+    e.preventDefault();
+    if(reduce){location.href=c.href;return}
+    const r=c.getBoundingClientRect(),
+      px=e.clientX||r.left+r.width/2,py=e.clientY||r.top+r.height/2,
+      col=getComputedStyle(c).getPropertyValue('--c').trim();
+    spark(px,py,col,70,5);spark(px,py,'#ffffff',30,3);
+    warp.style.setProperty('--x',px+'px');warp.style.setProperty('--y',py+'px');warp.style.setProperty('--c',col);
+    warp.classList.add('on');
+    setTimeout(()=>location.href=c.href,650);
+  });
+});
+addEventListener('pageshow',()=>warp.classList.remove('on'));
+})();
+</script>
+</body>
+</html>
