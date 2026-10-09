@@ -1087,7 +1087,7 @@ body {
 }
 
 
-/* 待破解牌局前端分組與旗幟預覽（不寫資料庫、不更動存檔）。 */
+/* 待破解牌局分類與本機可能無解標記（不修改既有資料庫與牌局存檔）。 */
 #dealPicker .picker-subpanel {
   margin-top: 10px;
   padding: 10px;
@@ -1096,8 +1096,7 @@ body {
   background: rgba(255,250,240,.62);
 }
 #dealPicker .picker-subpanel[hidden],
-#dealPicker .picker-choice-row[hidden],
-#dealPicker .pending-preview-note[hidden] { display: none !important; }
+#dealPicker .picker-choice-row[hidden] { display: none !important; }
 #dealPicker .picker-choice-row {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1126,12 +1125,6 @@ body {
 #dealPicker .pending-flag-button:focus-visible {
   outline: 2px solid #d6a54d;
   outline-offset: 2px;
-}
-#dealPicker .pending-preview-note {
-  margin: 0 0 9px;
-  font-size: .75rem;
-  line-height: 1.5;
-  color: #715f42;
 }
 #dealPicker .pending-row-wrap {
   display: flex;
@@ -1195,4 +1188,42 @@ body {
   #dealPicker .pending-row-wrap .pending-attempt-button { font-size: .72rem; padding-inline: 4px; }
   #dealPicker .pending-flag-button { flex-basis: 33px; width: 33px; }
   #dealPicker .picker-choice-row button { font-size: .75rem; }
+}
+
+/* 自由之都｜個人可能無解標記確認視窗：沿用選牌彈窗的深藍金色設計。 */
+#possibleMarkConfirm .possible-mark-card {
+  max-width: min(100%, 420px);
+  border: 1px solid rgba(214,165,77,.82);
+  background: linear-gradient(180deg, #fffaf0 0%, #f5ead0 100%);
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,.42), 0 22px 60px rgba(17,45,61,.28);
+}
+#possibleMarkConfirm .dialog-title { color: #0f4567; }
+#possibleMarkConfirm .dialog-text { color: #5b5b55; }
+#possibleMarkConfirm .possible-mark-warning {
+  margin: 14px 0 0;
+  padding: 12px;
+  border: 1px solid rgba(214,165,77,.55);
+  border-radius: 10px;
+  background: rgba(255,247,223,.76);
+  color: #755526;
+  font-size: .88rem;
+  line-height: 1.65;
+  text-align: center;
+}
+#possibleMarkConfirm .dialog-actions button {
+  border: 1px solid #dcb567;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #0a2f48 0%, #0f4567 100%);
+  color: #fbe5aa;
+  font-weight: 700;
+  box-shadow: 0 3px 8px rgba(29,47,58,.14);
+}
+#possibleMarkConfirm .dialog-actions button:hover,
+#possibleMarkConfirm .dialog-actions button:focus-visible {
+  border-color: #f0cf83;
+  background: linear-gradient(135deg, #0d3b59 0%, #15577f 100%);
+}
+#possibleMarkConfirm .dialog-actions button:focus-visible {
+  outline: 2px solid #d6a54d;
+  outline-offset: 2px;
 }

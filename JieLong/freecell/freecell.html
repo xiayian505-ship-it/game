@@ -121,7 +121,6 @@
           <button id="pendingAllTab" type="button" aria-pressed="true">待破解牌局</button>
           <button id="possibleUnsolvedTab" type="button" aria-pressed="false">可能無解局</button>
         </div>
-        <p id="pendingPreviewNote" class="pending-preview-note" hidden>前端預覽：旗幟標記只在此次開啟頁面有效，尚未同步資料庫。</p>
         <button id="randomContributedButton" class="contributed-random" type="button">從已解牌局隨機抽一局</button>
         <p id="classicListTitle" class="classic-list-title" hidden>經典無解牌局</p>
 
@@ -146,6 +145,18 @@
 
       <p id="dealPickerNotice" class="picker-notice" aria-live="polite"></p>
       <button id="dealPickerBackButton" class="dialog-back" type="button">返回遊戲</button>
+    </div>
+  </div>
+
+  <div id="possibleMarkConfirm" class="dialog-overlay" hidden>
+    <div class="dialog-card possible-mark-card" role="alertdialog" aria-modal="true" aria-labelledby="possibleMarkTitle" aria-describedby="possibleMarkDescription">
+      <p id="possibleMarkTitle" class="dialog-title">標記可能無解局</p>
+      <p id="possibleMarkDescription" class="dialog-text">確定要標記此牌局嗎？</p>
+      <p class="possible-mark-warning">標記後無法手動取消；當有人成功破解並收錄為已解牌局時，才會自動移除。</p>
+      <div class="dialog-actions">
+        <button id="possibleMarkCancel" type="button">取消</button>
+        <button id="possibleMarkAccept" type="button">確認標記</button>
+      </div>
     </div>
   </div>
 

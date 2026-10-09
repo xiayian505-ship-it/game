@@ -281,6 +281,21 @@
   });
 
   // 自由之都遊戲本體通知「離開」時，只收起 iframe；不清 src，保留目前牌局。
+  // 第七個快捷入口沿用自由之都現有的微軟經典牌局 iframe。
+  document.querySelector("[data-empire-microsoft-quick]")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    const link = event.currentTarget;
+    closeQuickPanel({ restoreFocus: false });
+    hideOtherEmpireGames("territory-freecell");
+    const targetUrl = normalizeFreecellUrl(link.href);
+    enterFreecell(link.href, link, {
+      preserveCurrent: currentFreecellUrl === targetUrl && currentFreecellMode === "microsoft",
+      mode: "microsoft"
+    });
+    const index = bookPages.indexOf(freecellPage);
+    if (index !== activeBookIndex) turnBookTo(index);
+  });
+
   window.addEventListener("message", (event) => {
     if (!freecellPage || !freecellEmbed || !freecellIframe) return;
     if (event.origin !== window.location.origin) return;
