@@ -31,3 +31,226 @@
     font-size: .8rem;
   }
 }
+
+/* ================================================================
+   接龍帝國｜秩序之城（Spider）
+   色碼和版型直接對應主城的 territory-spider，與 FreeCell、Klondike
+   採相同的整塊領地橫幅。僅帝國版 UI，不更動遊戲邏輯或牌局資料。
+   ================================================================ */
+:root {
+  --empire-spider-burgundy-dark: #4d1013;
+  --empire-spider-burgundy: #71181b;
+  --empire-spider-gold: #fbe5aa;
+  --empire-spider-line: #d6a54d;
+  --empire-spider-land: linear-gradient(180deg, #7e98ad 0%, #d6a97d 48%, #514935 100%);
+  --empire-spider-back:
+    radial-gradient(circle at 50% 50%, rgba(246,226,166,.13) 0 18%, transparent 19%),
+    repeating-linear-gradient(45deg, rgba(214,165,77,.10) 0 2px, transparent 2px 10px),
+    linear-gradient(135deg, #4d1013 0%, #71181b 52%, #4d1013 100%);
+  --select: #d6a54d;
+}
+
+/* 與主城 Spider 插畫背景相同的領地底色。 */
+body { background: var(--empire-spider-land); }
+
+/* 完整橫幅：包含紋章、領地、標題、規則、入境／離境。 */
+.game-header {
+  align-items: center;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: linear-gradient(105deg, #4d1013, #71181b);
+  color: #fbe5aa;
+  box-shadow: inset 0 -1px rgba(255,255,255,.14), 0 8px 18px rgba(55,17,20,.18);
+}
+.empire-title-group {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.game-header .suit-seal {
+  flex: 0 0 auto;
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  border: 2px solid #dcb567;
+  border-radius: 50%;
+  background: rgba(255,244,194,.1);
+  color: #fbe5aa;
+  box-shadow: inset 0 0 0 4px rgba(0,0,0,.12);
+  font-size: 2rem;
+}
+.empire-title-copy { min-width: 0; }
+.game-header .eyebrow {
+  margin: 0 0 2px;
+  color: rgba(255,234,177,.72);
+  font-size: .78rem;
+  letter-spacing: .14em;
+}
+.game-header h1 {
+  margin: 0;
+  color: #fbe5aa;
+  font-size: clamp(1.35rem, 3vw, 2rem);
+}
+.game-header h1 span {
+  font-size: .78em;
+  font-weight: 600;
+  opacity: .9;
+}
+.game-header .subtitle {
+  margin-top: 5px;
+  color: rgba(255,244,213,.78);
+  line-height: 1.45;
+}
+
+/* 領地操作和選局視窗：深酒紅 × 金色。 */
+.game-header .empire-header-actions .restart-button,
+.game-header .empire-header-actions .leave-empire-button,
+#restartConfirm .dialog-actions button,
+#restartConfirm .dialog-back,
+#dealPicker .deal-button,
+#dealPicker .contributed-random,
+#dealPicker .uid-paste-toggle,
+#dealPicker .contributed-pager button,
+#dealPicker .contributed-deal-row,
+#dealPicker .uid-search button,
+#dealPicker .dialog-back,
+.deal-identity button,
+.message-card button {
+  border: 1px solid #dcb567;
+  background: linear-gradient(135deg, #4d1013 0%, #71181b 100%);
+  color: #fbe5aa;
+  box-shadow: inset 0 0 0 1px rgba(255,239,186,.10), 0 3px 8px rgba(60,18,20,.18);
+  font-weight: 700;
+}
+.game-header .empire-header-actions .restart-button:hover,
+.game-header .empire-header-actions .leave-empire-button:hover,
+#restartConfirm .dialog-actions button:hover,
+#restartConfirm .dialog-back:hover,
+#dealPicker .deal-button:hover,
+#dealPicker .contributed-random:hover,
+#dealPicker .uid-paste-toggle:hover,
+#dealPicker .contributed-pager button:hover:not(:disabled),
+#dealPicker .contributed-deal-row:hover,
+#dealPicker .uid-search button:hover,
+#dealPicker .dialog-back:hover,
+.deal-identity button:hover,
+.message-card button:hover,
+.game-header .empire-header-actions button:focus-visible,
+#restartConfirm button:focus-visible,
+#dealPicker button:focus-visible,
+.deal-identity button:focus-visible,
+.message-card button:focus-visible {
+  border-color: #f0cf83;
+  background: linear-gradient(135deg, #64171a, #8b292d);
+  outline-color: #f0cf83;
+}
+.game-header .empire-header-actions button:active,
+#restartConfirm button:active,
+#dealPicker button:active,
+.deal-identity button:active,
+.message-card button:active { transform: translateY(1px); }
+#dealPicker button:disabled,
+#restartConfirm button:disabled,
+.message-card button:disabled,
+.game-header .empire-header-actions button:disabled {
+  opacity: .42;
+  cursor: default;
+}
+
+/* 與前兩座城相同：統計為「一整條」，不是四個膠囊。 */
+.status-row {
+  padding: 7px 10px;
+  border: 1px solid rgba(214,165,77,.62);
+  border-radius: 10px;
+  background: rgba(255,250,235,.66);
+  color: #6a3034;
+}
+.status-row strong,
+.deal-identity strong { color: #71181b; }
+.deal-identity {
+  border-color: rgba(214,165,77,.72);
+  background: rgba(255,250,240,.76);
+  color: #6a3034;
+}
+.notice { color: #5e3033; }
+.hint { color: rgba(64,32,30,.82); }
+
+/* 牌桌與領地背景同色碼；牌面大小、位置、動畫維持原樣。 */
+.tableau {
+  background: var(--empire-spider-land);
+  border-color: #d6a54d;
+  box-shadow: inset 0 0 0 2px rgba(255,239,186,.12);
+}
+.card.face-down,
+.completed-slot:not(.done) {
+  border: 1px solid #d6a54d;
+  background: var(--empire-spider-back);
+  box-shadow: inset 0 0 0 2px rgba(255,239,186,.16), 0 1px 2px rgba(0,0,0,.10);
+}
+.completed-slot:not(.done) { color: #f1d28b; }
+.card.selected { outline-color: #d6a54d; }
+
+/* 選局／重開／勝利視窗的配色也與領地一致。 */
+.dialog-overlay,
+.message {
+  background: rgba(58,18,20,.62);
+  backdrop-filter: blur(1px);
+  -webkit-backdrop-filter: blur(1px);
+}
+#restartConfirm .dialog-card,
+#dealPicker .dialog-card,
+.message-card {
+  border: 1px solid rgba(214,165,77,.82);
+  background: linear-gradient(180deg, #fffaf0 0%, #f5ead0 100%);
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,.42), 0 22px 60px rgba(58,18,20,.27);
+}
+#restartConfirm .dialog-title,
+#dealPicker .dialog-title,
+.message-title { color: #71181b; }
+#restartConfirm .dialog-text,
+#dealPicker .dialog-text,
+#dealPicker .picker-notice,
+#dealPicker #contributedPageInfo,
+#dealPicker .contributed-empty,
+#dealPicker .uid-search-label,
+.message-text,
+.message-best,
+.message-clears { color: #6f675b; }
+#dealPicker .contributed-panel,
+#dealPicker .uid-search {
+  border-color: rgba(214,165,77,.58);
+  background: rgba(255,250,240,.65);
+}
+#dealPicker .contributed-deal-row::after { color: rgba(255,234,177,.76); }
+#dealPicker .uid-search input,
+.message-uid {
+  border: 1px solid rgba(214,165,77,.58);
+  background: #fffaf0;
+  color: #71181b;
+}
+.bom-overlay {
+  background: radial-gradient(circle at center, rgba(214,169,125,.18) 0%, rgba(113,24,27,.38) 46%, rgba(58,18,20,.70) 100%);
+}
+.bom-card {
+  border-color: rgba(220,181,103,.88);
+  background: linear-gradient(145deg, rgba(77,16,19,.96), rgba(113,24,27,.94));
+  color: #fff8df;
+  box-shadow: 0 16px 46px rgba(58,18,20,.34), inset 0 0 0 1px rgba(255,239,186,.16);
+}
+.bom-card::before { background: rgba(220,181,103,.62); }
+.bom-card::after { background: rgba(126,152,173,.34); }
+.bom-plus { color: #fbe5aa; }
+.bom-subtext { color: rgba(255,244,213,.88); }
+
+@media (max-width: 600px) {
+  .game-header { padding: 12px 10px; align-items: center; flex-wrap: nowrap; }
+  .empire-title-group { gap: 9px; }
+  .game-header .suit-seal { width: 46px; height: 46px; font-size: 1.6rem; }
+  .game-header .eyebrow { font-size: .66rem; }
+  .game-header h1 { font-size: 1.3rem; }
+  .game-header h1 span { font-size: .78em; }
+  .game-header .subtitle { font-size: .72rem; }
+  .status-row { padding: 6px 8px; }
+}
