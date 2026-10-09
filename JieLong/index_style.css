@@ -810,3 +810,18 @@ body.quick-panel-open { overflow: hidden; }
   position: relative;
   z-index: 2;
 }
+
+/* 新領地 iframe：FreeCell 同款進出與保留當前遊戲的行為。 */
+.empire-book.is-empire-playing .book-turn { opacity: 0; pointer-events: none; }
+.empire-game-embed[hidden] { display: none !important; }
+.empire-game-embed {
+  width: 100%;
+  height: calc(100dvh - 78px);
+  min-height: 620px;
+  overflow: hidden;
+  background: #f2eee5;
+}
+.empire-game-iframe { display: block; width: 100%; height: 100%; border: 0; background: #f2eee5; }
+.book-page.is-empire-playing { padding: 0; }
+.book-page.is-empire-playing > .territory { display: none; }
+.book-page.is-empire-playing > .empire-game-embed { display: block; }

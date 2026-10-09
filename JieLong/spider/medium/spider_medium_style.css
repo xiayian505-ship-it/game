@@ -1,0 +1,33 @@
+/* 帝國版限定：保留遊戲原有外觀，只增加入境／離境操作區。 */
+.game-header .empire-header-actions {
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+  align-items: stretch;
+}
+.game-header .empire-header-actions .restart-button,
+.game-header .empire-header-actions .leave-empire-button {
+  width: 100%;
+  min-height: 40px;
+  padding: 0 14px;
+  white-space: nowrap;
+  font: inherit;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+}
+.game-header .empire-header-actions button:focus-visible {
+  outline: 2px solid var(--select);
+  outline-offset: 2px;
+}
+@media (max-width: 600px) {
+  .game-header .empire-header-actions .restart-button,
+  .game-header .empire-header-actions .leave-empire-button {
+    min-height: 34px;
+    padding-inline: 10px;
+    font-size: .8rem;
+  }
+}

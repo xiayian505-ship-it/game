@@ -1,0 +1,195 @@
+/*
+  Klondike Draw 1 只補規則需要的版面差異。
+  主視覺沿用 solitaire/freecell 與 Spider v7 家族樣式。
+*/
+
+.tableau {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  min-height: 620px;
+}
+
+.column {
+  min-height: 600px;
+}
+
+.klondike-top-row {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 2px;
+  padding-inline: 6px;
+}
+
+.klondike-slot {
+  width: 100%;
+  aspect-ratio: 5 / 7;
+  padding: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.top-spacer {
+  min-width: 0;
+}
+
+.foundation-area {
+  grid-column: 4 / 8;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 2px;
+  min-width: 0;
+}
+
+.foundation-slot {
+  width: 100%;
+  aspect-ratio: 5 / 7;
+  padding: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  line-height: 1;
+  cursor: pointer;
+  font-size: clamp(1rem, 2.2vw, 1.18rem);
+}
+
+.waste-slot.occupied,
+.foundation-slot.occupied {
+  border-style: solid;
+  background: var(--card);
+  color: #252525;
+  font-weight: 700;
+}
+
+.waste-slot.selected,
+.foundation-slot.selected {
+  outline: 3px solid var(--select);
+  outline-offset: -3px;
+  background: #fff8e7;
+}
+
+.stock-slot.has-cards {
+  border-style: solid;
+  border-color: #625b53;
+  background:
+    repeating-linear-gradient(
+      45deg,
+      #6f6962 0,
+      #6f6962 6px,
+      #817a72 6px,
+      #817a72 12px
+    );
+  color: transparent;
+}
+
+.stock-slot.recycle-ready {
+  border-style: dashed;
+  background: #e7e0d5;
+  color: #70685e;
+  font-size: clamp(1.15rem, 3vw, 1.55rem);
+  font-weight: 800;
+}
+
+.stock-slot.empty-stock {
+  cursor: default;
+}
+
+.waste-slot.suit-heart,
+.waste-slot.suit-diamond,
+.foundation-slot.suit-heart,
+.foundation-slot.suit-diamond {
+  color: #b33434;
+}
+
+.card.suit-diamond .card-rank,
+.card.suit-diamond .card-suit,
+.card.suit-heart .card-rank,
+.card.suit-heart .card-suit {
+  color: #b33434;
+}
+
+.card.suit-club .card-rank,
+.card.suit-club .card-suit,
+.card.suit-spade .card-rank,
+.card.suit-spade .card-suit {
+  color: inherit;
+}
+
+/* 已公開、但被牌疊遮住的牌可按住查看完整牌面；蓋牌不提供查看。 */
+.card.peeking:not(.face-down) {
+  z-index: 40;
+  transform: translateY(-30px);
+  box-shadow: 0 6px 14px rgba(0,0,0,.18);
+}
+
+@media (max-width: 600px) {
+  .tableau {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    min-height: 600px;
+  }
+
+  .column {
+    min-height: 580px;
+  }
+
+  .klondike-top-row {
+    gap: 1px;
+    padding-inline: 4px;
+  }
+
+  .foundation-area {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1px;
+  }
+
+  .foundation-slot,
+  .waste-slot,
+  .stock-slot {
+    font-size: clamp(0.98rem, 4vw, 1.08rem);
+  }
+
+  .card.peeking:not(.face-down) {
+    transform: translateY(-26px);
+  }
+}
+
+
+/* 接龍末段自動收牌：沿用 Spider 的飛牌層級，不改牌桌尺寸。 */
+.card.is-flying-card {
+  z-index: 50;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+/* 帝國版限定：保留遊戲原有外觀，只增加入境／離境操作區。 */
+.game-header .empire-header-actions {
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+  align-items: stretch;
+}
+.game-header .empire-header-actions .restart-button,
+.game-header .empire-header-actions .leave-empire-button {
+  width: 100%;
+  min-height: 40px;
+  padding: 0 14px;
+  white-space: nowrap;
+  font: inherit;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+}
+.game-header .empire-header-actions button:focus-visible {
+  outline: 2px solid var(--select);
+  outline-offset: 2px;
+}
+@media (max-width: 600px) {
+  .game-header .empire-header-actions .restart-button,
+  .game-header .empire-header-actions .leave-empire-button {
+    min-height: 34px;
+    padding-inline: 10px;
+    font-size: .8rem;
+  }
+}

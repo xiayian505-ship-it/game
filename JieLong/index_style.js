@@ -303,6 +303,80 @@
     });
   });
 
+  // 秩序之城與經典之境｜比照 FreeCell 的 iframe 入境、離境及切換。
+  const empireEmbeds = new Map();
+  for (const territory of ["territory-spider", "territory-klondike"]) {
+    const page = bookPages.find((item) => item.dataset.bookPage === territory);
+    const embed = document.querySelector(`[data-empire-embed="${territory}"]`);
+    const iframe = document.querySelector(`[data-empire-iframe="${territory}"]`);
+    if (page && embed && iframe) empireEmbeds.set(territory, { page, embed, iframe, url: "", opener: null });
+  }
+
+  function hideOtherEmpireGames(except = "") {
+    for (const [territory, state] of empireEmbeds) {
+      if (territory === except) continue;
+      state.page.classList.remove("is-empire-playing");
+      state.embed.hidden = true; // src 不清除：同一局再入境可繼續。
+    }
+    if (except !== "territory-freecell") {
+      freecellPage?.classList.remove("is-freecell-playing");
+      if (freecellEmbed) freecellEmbed.hidden = true;
+      book?.classList.remove("is-freecell-playing");
+    }
+    book?.classList.toggle("is-empire-playing", [...empireEmbeds.values()].some(({ page }) => page.classList.contains("is-empire-playing")));
+  }
+
+  function enterEmpireGame(territory, url, opener) {
+    const state = empireEmbeds.get(territory);
+    if (!state || !url) return;
+    const targetUrl = normalizeFreecellUrl(url);
+    hideOtherEmpireGames(territory);
+    state.opener = opener;
+    // FreeCell 同款行為：同入口重進保留頁面；換難度重新載入 iframe。
+    if (state.url !== targetUrl || !state.iframe.getAttribute("src")) {
+      if (state.iframe.getAttribute("src")) state.iframe.removeAttribute("src");
+      state.iframe.src = targetUrl;
+      state.url = targetUrl;
+    }
+    state.page.classList.add("is-empire-playing");
+    book?.classList.add("is-empire-playing");
+    state.embed.hidden = false;
+    const targetIndex = bookPages.indexOf(state.page);
+    if (targetIndex !== activeBookIndex) turnBookTo(targetIndex);
+    requestAnimationFrame(() => syncBookHeight(targetIndex));
+  }
+
+  document.querySelectorAll("[data-empire-game-enter]").forEach((link) => {
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+      closeQuickPanel({ restoreFocus: false });
+      enterEmpireGame(link.dataset.empireGameEnter, link.href, link);
+    });
+  });
+
+  document.querySelector("[data-empire-freecell-quick]")?.addEventListener("click", (event) => {
+    event.preventDefault();
+    const link = event.currentTarget;
+    closeQuickPanel({ restoreFocus: false });
+    hideOtherEmpireGames("territory-freecell");
+    enterFreecell(link.href, link, { preserveCurrent: currentFreecellUrl === normalizeFreecellUrl(link.href) && currentFreecellMode === "freecell", mode: "freecell" });
+    const index = bookPages.indexOf(freecellPage);
+    if (index !== activeBookIndex) turnBookTo(index);
+  });
+
+  window.addEventListener("message", (event) => {
+    if (event.origin !== window.location.origin || event.data?.type !== "slowly-empire-leave") return;
+    const state = empireEmbeds.get(event.data?.territory);
+    if (!state || event.source !== state.iframe.contentWindow) return;
+    state.page.classList.remove("is-empire-playing");
+    state.embed.hidden = true;
+    book?.classList.remove("is-empire-playing");
+    requestAnimationFrame(() => {
+      syncBookHeight();
+      state.opener?.focus?.();
+    });
+  });
+
   document.querySelectorAll("[data-territory-jump]").forEach((link) => {
     link.addEventListener("click", (event) => {
       event.preventDefault();
