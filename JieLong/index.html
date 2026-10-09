@@ -56,10 +56,10 @@
           <strong>7</strong>
           <span>遊戲入口</span>
         </button>
-        <div class="stat-card stat-placeholder" aria-label="可能無解牌局，功能規劃中">
-          <strong>∞</strong>
-          <span>可能無解牌局</span>
-        </div>
+        <button class="stat-card stat-gate slowly-lift slowly-press" type="button" data-quick-panel="collection" aria-haspopup="dialog">
+          <strong class="collection-infinity">∞</strong>
+          <span>個人牌局館</span>
+        </button>
       </section>
         </div>
 
@@ -299,6 +299,20 @@
             </a>
             <a class="quick-game-entry slowly-lift slowly-press" data-empire-game-enter="territory-klondike" href="./klondike/draw3/klondike_3.html">
               <span class="mini-card mini-diamond">♦</span><span><strong>進入 經典之境 三張牌</strong></span><b>›</b>
+            </a>
+          </nav>
+        </div>
+
+        <div class="quick-panel-view" data-panel-view="collection" hidden>
+          <p class="quick-panel-intro">挑選你的私人館藏，查看收藏的牌局。</p>
+          <nav class="quick-game-list" aria-label="個人牌局館入口">
+            <a class="quick-game-entry slowly-lift slowly-press" href="./personal_collection/favorites/favorites.html">
+              <span class="collection-stamp-icon" aria-hidden="true"><span class="collection-stamp-seal">♥</span></span>
+              <span><strong>玩家最愛局</strong><small>個人收藏的牌局</small></span><b>›</b>
+            </a>
+            <a class="quick-game-entry slowly-lift slowly-press" href="./personal_collection/unsolvable/unsolvable.html">
+              <span class="collection-stamp-icon" aria-hidden="true"><span class="collection-stamp-seal">♥</span></span>
+              <span><strong>可能無解局</strong><small>個人標記的疑難牌局</small></span><b>›</b>
             </a>
           </nav>
         </div>
