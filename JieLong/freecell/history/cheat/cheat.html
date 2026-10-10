@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>自由之都｜作弊程式</title>
-  <link rel="stylesheet" href="cheat.css">
-  <link rel="stylesheet" href="cheat_style.css">
+  <link rel="stylesheet" href="cheat.css?v=20261011-fx-restored">
+  <link rel="stylesheet" href="cheat_style.css?v=20261011-fx-restored">
 </head>
 <body>
   <main class="game-shell">
@@ -82,11 +82,19 @@
             <div class="classic-dialog-actions" id="dialogActions"></div>
           </div>
         </div>
+
+        <!-- Claude 原版的勝利特效：彈跳飛牌與金色勝利字樣，限制在模擬器內。 -->
+        <canvas id="victoryCanvas" class="classic-celebration-canvas" aria-hidden="true" hidden></canvas>
+        <div id="victoryBanner" class="classic-victory-banner" aria-live="polite" hidden>
+          <h2>你贏了！</h2>
+          <p id="victorySubtitle"></p>
+          <button id="victoryPlayAgain" type="button">再玩一局</button>
+        </div>
       </div>
     </section>
   </main>
 
-  <script src="cheat.js"></script>
-  <script src="cheat_style.js"></script>
+  <script src="cheat.js?v=20261011-fx-restored"></script>
+  <script src="cheat_style.js?v=20261011-fx-restored"></script>
 </body>
 </html>

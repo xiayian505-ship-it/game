@@ -16,11 +16,167 @@
   const status = document.querySelector("#classicStatus");
   const dealNumberInput = document.querySelector("#dealNumber");
   const virtualKeys = Array.from(document.querySelectorAll("[data-shortcut-key]"));
+  const classicWindow = document.querySelector("#classicWindow");
+  const victoryCanvas = document.querySelector("#victoryCanvas");
+  const victoryBanner = document.querySelector("#victoryBanner");
+  const victorySubtitle = document.querySelector("#victorySubtitle");
+  const victoryPlayAgain = document.querySelector("#victoryPlayAgain");
 
   let held = { ctrl: false, shift: false, f10: false };
   let shortcutTriggered = false;
   let activeDialog = null;
   let lastFocusedElement = null;
+  let audioContext = null;
+  let victoryAnimationFrame = null;
+  let effectTimeouts = [];
+
+  // 經典密技的短音效；在使用者點擊／按鍵後建立 AudioContext。
+  function playTone(frequency, duration = .1, wave = "square", delay = 0) {
+    try {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextClass) return;
+      audioContext ??= new AudioContextClass();
+      if (audioContext.state === "suspended") audioContext.resume().catch(() => {});
+
+      const oscillator = audioContext.createOscillator();
+      const volume = audioContext.createGain();
+      const start = audioContext.currentTime + delay;
+      oscillator.type = wave;
+      oscillator.frequency.value = frequency;
+      volume.gain.setValueAtTime(.06, start);
+      volume.gain.exponentialRampToValueAtTime(.0001, start + duration);
+      oscillator.connect(volume).connect(audioContext.destination);
+      oscillator.start(start);
+      oscillator.stop(start + duration);
+    } catch (error) {
+      // 靜音模式／不支援 Web Audio 的瀏覽器仍能正常玩牌。
+    }
+  }
+
+  function triggerWindowEffect(className, duration) {
+    classicWindow.classList.remove(className);
+    // 允許短時間內重新觸發相同的 CSS 動畫。
+    void classicWindow.offsetWidth;
+    classicWindow.classList.add(className);
+    effectTimeouts.push(window.setTimeout(() => {
+      classicWindow.classList.remove(className);
+    }, duration));
+  }
+
+  function stopVictoryEffects() {
+    if (victoryAnimationFrame !== null) {
+      window.cancelAnimationFrame(victoryAnimationFrame);
+      victoryAnimationFrame = null;
+    }
+    for (const timeout of effectTimeouts) window.clearTimeout(timeout);
+    effectTimeouts = [];
+    classicWindow.classList.remove("is-debugging", "is-cheat-loss");
+    victoryCanvas.hidden = true;
+    victoryBanner.hidden = true;
+    // 重新發牌後釋放上一局 canvas 的影像記憶體。
+    victoryCanvas.width = 0;
+    victoryCanvas.height = 0;
+  }
+
+  // 還原 Claude 原版的勝利彈跳牌雨，而不是只顯示文字對話框。
+  // Canvas 只覆蓋本模擬器；不會跑出接龍帝國的 iframe。
+  function showVictoryEffects(cheated) {
+    stopVictoryEffects();
+    victorySubtitle.textContent = cheated ? "Ctrl＋Shift＋F10 的魔法" : "手氣不錯";
+    victoryBanner.hidden = false;
+    [523, 659, 784, 1047, 1319].forEach((frequency, index) => {
+      playTone(frequency, .25, "triangle", index * .11);
+    });
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const context = victoryCanvas.getContext("2d");
+    if (!context) return;
+    const width = classicWindow.clientWidth;
+    const height = classicWindow.clientHeight;
+    const ratio = Math.min(window.devicePixelRatio || 1, 2);
+    victoryCanvas.width = Math.round(width * ratio);
+    victoryCanvas.height = Math.round(height * ratio);
+    context.setTransform(ratio, 0, 0, ratio, 0, 0);
+    victoryCanvas.hidden = false;
+
+    const windowRect = classicWindow.getBoundingClientRect();
+    const foundationRects = Array.from(
+      classicWindow.querySelectorAll('.classic-slot[data-zone="foundation"]')
+    ).map((slot) => {
+      const rect = slot.getBoundingClientRect();
+      return { x: rect.left - windowRect.left, y: rect.top - windowRect.top };
+    });
+
+    const suitSymbols = ["♣", "♦", "♥", "♠"];
+    const rankSymbols = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
+    const cardWidth = Math.min(72, width / 8);
+    const cardHeight = cardWidth * 1.42;
+    const queue = [];
+    for (let rank = 12; rank >= 0; rank--) {
+      for (let suit = 0; suit < 4; suit++) queue.push(rank * 4 + suit);
+    }
+
+    let particles = [];
+    let frame = 0;
+
+    function drawFlyingCard(particle) {
+      const suit = particle.card & 3;
+      const rank = particle.card >> 2;
+      context.fillStyle = "#fffdf7";
+      context.strokeStyle = "#0007";
+      context.beginPath();
+      if (typeof context.roundRect === "function") {
+        context.roundRect(particle.x, particle.y, cardWidth, cardHeight, 5);
+      } else {
+        context.rect(particle.x, particle.y, cardWidth, cardHeight);
+      }
+      context.fill();
+      context.stroke();
+
+      context.fillStyle = suit === 1 || suit === 2 ? "#c1272d" : "#1a1a1a";
+      context.font = `700 ${cardWidth * .32}px Georgia`;
+      context.fillText(`${rankSymbols[rank]}${suitSymbols[suit]}`, particle.x + 4, particle.y + cardWidth * .36);
+      context.font = `${cardWidth * .6}px serif`;
+      context.fillText(suitSymbols[suit], particle.x + cardWidth * .28, particle.y + cardHeight * .88);
+    }
+
+    function drawFrame() {
+      context.clearRect(0, 0, width, height);
+      if (frame++ % 7 === 0 && queue.length) {
+        const card = queue.shift();
+        const start = foundationRects[card & 3];
+        if (start) {
+          particles.push({
+            card,
+            x: start.x,
+            y: start.y,
+            vx: (Math.random() < .5 ? -1 : 1) * (1.5 + Math.random() * 4),
+            vy: -Math.random() * 7
+          });
+        }
+      }
+
+      for (const particle of particles) {
+        particle.vy += .45;
+        particle.x += particle.vx;
+        particle.y += particle.vy;
+        if (particle.y + cardHeight > height) {
+          particle.y = height - cardHeight;
+          particle.vy *= -.82;
+        }
+        drawFlyingCard(particle);
+      }
+      particles = particles.filter((particle) => particle.x > -cardWidth && particle.x < width);
+      if (particles.length || queue.length) {
+        victoryAnimationFrame = window.requestAnimationFrame(drawFrame);
+      } else {
+        victoryAnimationFrame = null;
+      }
+    }
+
+    victoryAnimationFrame = window.requestAnimationFrame(drawFrame);
+  }
 
   function displayStatus(message) {
     status.textContent = message;
@@ -86,6 +242,9 @@
       return;
     }
 
+    triggerWindowEffect("is-debugging", 500);
+    playTone(440, .2);
+    playTone(330, .3, "square", .15);
     openDialog({
       title: "Microsoft Visual C++ Runtime Library",
       icon: "✖",
@@ -157,6 +316,7 @@
       const key = button.dataset.shortcutKey;
       held[key] = !held[key];
       syncShortcutButtons();
+      playTone(900, .03);
       evaluateShortcut();
     });
   }
@@ -206,6 +366,7 @@
   document.addEventListener("freecell-cheat:reset", () => {
     if (activeDialog) closeDialog();
     clearShortcut();
+    stopVictoryEffects();
     displayStatus("按 Ctrl + Shift + F10 試試經典密技");
   });
   document.addEventListener("freecell-cheat:mode", (event) => {
@@ -214,17 +375,37 @@
       lose: "已選擇「重試」：下一手成功移牌就會輸！"
     }[event.detail.mode] || "已選擇「略過」：恢復正常遊戲。";
     displayStatus(message);
+    if (event.detail.mode) playTone(event.detail.mode === "win" ? 880 : 200, .2);
+  });
+  document.addEventListener("freecell-cheat:moved", () => {
+    playTone(660, .05, "triangle");
+  });
+  document.addEventListener("freecell-cheat:cheat-card", (event) => {
+    playTone(400 + (52 - event.detail.remaining) * 9, .05, "triangle");
   });
   document.addEventListener("freecell-cheat:animating", () => {
     displayStatus("經典密技生效：撲克牌正在自動回收……");
   });
   document.addEventListener("freecell-cheat:finished", (event) => {
-    displayStatus(event.detail.result === "win" ? "本局獲勝！" : "本局結束。");
-    showResultDialog(event.detail.result, event.detail.cheated);
+    const { result, cheated } = event.detail;
+    displayStatus(result === "win" ? "本局獲勝！" : "本局結束。");
+    if (result === "win") {
+      showVictoryEffects(cheated);
+      return;
+    }
+
+    triggerWindowEffect("is-cheat-loss", 800);
+    [392, 330, 262, 196].forEach((frequency, index) => {
+      playTone(frequency, .3, "sawtooth", index * .16);
+    });
+    showResultDialog(result, cheated);
   });
   document.addEventListener("freecell-cheat:invalid-move", () => {
+    playTone(150, .1);
     displayStatus("只能移動符合紅黑相間、點數遞減的牌組。");
   });
+
+  victoryPlayAgain.addEventListener("click", () => simulator.newDeal(simulator.randomDeal()));
 
   // 和 history.html 相同的帝國訊息機制：不開新分頁，不直接碰正式遊戲狀態。
   function navigateWithinEmpire(mode, fallback) {

@@ -151,3 +151,90 @@ button, input { font: inherit; }
   .game-header .subtitle { font-size: .65rem; }
   .game-header .restart-button, .game-header .leave-freecell-button { padding-inline: 7px; font-size: .74rem; }
 }
+
+/* Claude 原版作弊特效：只在作弊模擬器內顯示，不改動帝國橫幅。 */
+.classic-celebration-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 22;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.classic-victory-banner {
+  position: absolute;
+  top: 38%;
+  left: 50%;
+  z-index: 24;
+  width: min(96%, 720px);
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none;
+}
+
+.classic-victory-banner h2 {
+  margin: 0;
+  font: 900 clamp(46px, 15vw, 100px)/1.1 "Noto Serif TC", "Songti TC", serif;
+  color: #ffd54a;
+  background: linear-gradient(100deg, #ffd54a 25%, #fff 45%, #ffd54a 65%) 0 / 250%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: cheat-gold-shine 2s linear infinite;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, .75));
+}
+
+.classic-victory-banner p {
+  margin: 6px 0 16px;
+  color: white;
+  text-shadow: 0 2px 6px black;
+}
+
+.classic-victory-banner button {
+  min-height: 46px;
+  padding: 0 26px;
+  border: 0;
+  border-radius: 23px;
+  color: #2a1d00;
+  background: #ffd54a;
+  font: 700 17px "Microsoft JhengHei", sans-serif;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.classic-window.is-debugging {
+  animation: cheat-debug-glitch .45s steps(6);
+}
+
+.classic-window.is-cheat-loss {
+  animation: cheat-loss-shake .6s, cheat-loss-red .8s;
+}
+
+@keyframes cheat-gold-shine {
+  to { background-position: -250% 0; }
+}
+
+@keyframes cheat-debug-glitch {
+  0% { filter: hue-rotate(90deg) saturate(3); transform: translateX(-7px) skewX(4deg); }
+  30% { filter: invert(1); transform: translateX(8px); }
+  60% { filter: hue-rotate(-60deg); transform: translateX(-3px) skewX(-3deg); }
+  100% { filter: none; transform: none; }
+}
+
+@keyframes cheat-loss-shake {
+  20% { transform: translateX(-9px) rotate(-1deg); }
+  45% { transform: translateX(9px) rotate(1deg); }
+  70% { transform: translateX(-5px); }
+}
+
+@keyframes cheat-loss-red {
+  0%, 60% { filter: sepia(1) saturate(6) hue-rotate(-40deg); }
+  100% { filter: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .classic-victory-banner h2,
+  .classic-window.is-debugging,
+  .classic-window.is-cheat-loss { animation: none; }
+}

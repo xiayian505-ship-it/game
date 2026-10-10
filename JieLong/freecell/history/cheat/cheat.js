@@ -364,6 +364,8 @@
       game.freeCells = game.freeCells.map((value) => value === card ? null : value);
       game.foundations[getSuit(card)] = getRank(card) + 1;
       render();
+      // 通知界面播放原版逐張收牌音效；遊戲核心不負責聲音與特效。
+      notify("cheat-card", { card, remaining: remaining.length });
     }, window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 8 : 55);
   }
 
