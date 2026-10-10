@@ -414,3 +414,16 @@ button { font: inherit; }
     padding: 0 14px 24px;
   }
 }
+
+/* 作弊程式卡片正式成為可操作入口，仍使用原本的主題卡片外觀。 */
+.history-topic-button {
+  width: 100%;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.history-topic-button:focus-visible {
+  outline: 3px solid #dcb567;
+  outline-offset: 3px;
+}

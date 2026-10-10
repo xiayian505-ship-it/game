@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>自由之都｜作弊程式</title>
+  <link rel="stylesheet" href="cheat.css">
+  <link rel="stylesheet" href="cheat_style.css">
+</head>
+<body>
+  <main class="game-shell">
+    <!-- 與自由之都正式 FreeCell 相同的橫幅語言。導覽由帝國主頁處理。 -->
+    <header class="game-header">
+      <div class="empire-title-group">
+        <div class="suit-seal" aria-hidden="true">♣</div>
+        <div class="empire-title-copy">
+          <p class="eyebrow">自由之都</p>
+          <h1>作弊程式</h1>
+          <p class="subtitle">新接龍 <span lang="en">FreeCell</span>｜歷史密技體驗</p>
+        </div>
+      </div>
+      <div class="empire-header-actions">
+        <button id="returnHistoryButton" class="restart-button" type="button">返回歷史</button>
+        <button id="leaveFreeCellButton" class="leave-freecell-button" type="button">離境</button>
+      </div>
+    </header>
+
+    <section class="cheat-intro" aria-labelledby="cheatIntroductionHeading">
+      <h2 id="cheatIntroductionHeading">Ctrl + Shift + F10：古早的新接龍密技</h2>
+      <p>在舊版 Microsoft 新接龍（FreeCell）中，同時按下 <strong>Ctrl + Shift + F10</strong>，會出現一個看似程式錯誤的對話視窗。</p>
+      <p>選擇<strong>「中止」</strong>後，只要再成功移動一手牌就會贏；選擇<strong>「重試」</strong>，下一手則會直接判定本局結束；選擇<strong>「略過」</strong>，就能繼續正常玩牌。這個密技在 Windows Vista 的新接龍版本中已被移除。</p>
+      <p class="cheat-intro-note">下方是獨立的復古模擬體驗，不會影響接龍帝國正式牌局或破關紀錄。</p>
+    </section>
+
+    <section class="experience-section" aria-labelledby="experienceHeading">
+      <h2 id="experienceHeading">體驗作弊程式</h2>
+      <p class="experience-hint">先移幾張牌，再用鍵盤或畫面上的 Ctrl、Shift、F10 試試看。</p>
+
+      <!-- Windows 經典風格模擬器：不依賴正式 FreeCell 的 JS / 資料庫。 -->
+      <div class="classic-window" id="classicWindow" aria-label="微軟舊版新接龍作弊模擬器">
+        <div class="classic-titlebar">
+          <span class="classic-window-title"><span class="classic-window-icon" aria-hidden="true">♣</span> 新接龍</span>
+          <span class="classic-window-controls" aria-hidden="true"><i>_</i><i>□</i><i>×</i></span>
+        </div>
+        <div class="classic-menubar" aria-hidden="true">遊戲(G)　 說明(H)</div>
+
+        <div class="classic-toolbar">
+          <label class="deal-number-label" for="dealNumber">牌局 #</label>
+          <input id="dealNumber" type="number" min="1" max="1000000" inputmode="numeric" value="1" aria-label="微軟牌局編號，1 至 1000000">
+          <button id="dealButton" class="classic-button" type="button">發牌</button>
+          <span class="move-display">步數：<strong id="moveCount">0</strong></span>
+        </div>
+
+        <div class="classic-table" id="classicTable">
+          <div class="classic-top-row" id="topCells" aria-label="四個自由寄放格及四個本位回收格"></div>
+          <div class="classic-columns" id="tableau" aria-label="八欄新接龍牌區"></div>
+        </div>
+
+        <div class="classic-statusbar" id="classicStatus" role="status" aria-live="polite">按 Ctrl + Shift + F10 試試經典密技</div>
+        <div class="classic-virtual-keyboard" aria-label="手機用虛擬快捷鍵">
+          <span class="keyboard-caption">模擬鍵盤</span>
+          <div class="virtual-keys">
+            <button type="button" class="virtual-key" data-shortcut-key="ctrl" aria-pressed="false">Ctrl</button>
+            <span>＋</span>
+            <button type="button" class="virtual-key" data-shortcut-key="shift" aria-pressed="false">Shift</button>
+            <span>＋</span>
+            <button type="button" class="virtual-key" data-shortcut-key="f10" aria-pressed="false">F10</button>
+          </div>
+        </div>
+
+        <!-- 對話框存在於模擬器裡，不跳出帝國 iframe。 -->
+        <div class="classic-dialog-shade" id="dialogShade" hidden>
+          <div class="classic-dialog" role="dialog" aria-modal="true" aria-labelledby="dialogTitle" aria-describedby="dialogMessage">
+            <div class="classic-dialog-titlebar">
+              <span id="dialogTitle">Microsoft Visual C++ Runtime Library</span>
+              <span class="dialog-close-icon" aria-hidden="true">×</span>
+            </div>
+            <div class="classic-dialog-body">
+              <span class="classic-dialog-icon" id="dialogIcon" aria-hidden="true">✖</span>
+              <p id="dialogMessage"></p>
+            </div>
+            <div class="classic-dialog-actions" id="dialogActions"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="cheat.js"></script>
+  <script src="cheat_style.js"></script>
+</body>
+</html>

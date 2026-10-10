@@ -1,0 +1,153 @@
+/*
+ * 自由之都｜作弊程式：帝國外觀與網頁版面。
+ * 橫幅參照 freecell/freecell.html 的 game-header 同款尺寸、配色及按鈕。
+ * 經典 Windows 介面另由 cheat.css 管理。
+ */
+* { box-sizing: border-box; }
+html { min-height: 100%; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: #2d2a26;
+  background: linear-gradient(180deg, #b8d8e7 0%, #e6d8ad 63%, #93b5a2 100%);
+  font-family: Arial, "Microsoft JhengHei", sans-serif;
+}
+button, input { font: inherit; }
+.game-shell {
+  position: relative;
+  width: min(100%, 1080px);
+  margin: 0 auto;
+  padding: 18px 10px 28px;
+  overflow: hidden;
+}
+/* 正式 FreeCell 橫幅樣式（同尺寸、間距、色彩）。 */
+.game-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  color: #fbe5aa;
+  background: linear-gradient(105deg, #0f4567, #0a2f48);
+  box-shadow: inset 0 -1px rgba(255,255,255,.14), 0 8px 18px rgba(35,56,67,.12);
+}
+.empire-title-group {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.game-header .suit-seal {
+  flex: 0 0 auto;
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  border: 2px solid #dcb567;
+  border-radius: 50%;
+  color: #fbe5aa;
+  background: rgba(255,244,194,.1);
+  box-shadow: inset 0 0 0 4px rgba(0,0,0,.12);
+  font-size: 2rem;
+}
+.empire-title-copy { min-width: 0; }
+.game-header .eyebrow {
+  margin: 0 0 2px;
+  color: rgba(255,234,177,.72);
+  font-size: .78rem;
+  letter-spacing: .18em;
+}
+.game-header h1 {
+  margin: 0;
+  color: #fbe5aa;
+  font-size: clamp(1.35rem, 3vw, 2rem);
+}
+.game-header .subtitle {
+  margin: 5px 0 0;
+  color: rgba(255,244,213,.78);
+  font-size: .9rem;
+}
+.empire-header-actions {
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: 1fr;
+  justify-items: stretch;
+  gap: 6px;
+}
+.game-header .restart-button,
+.game-header .leave-freecell-button {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid #dcb567;
+  border-radius: 10px;
+  color: #fbe5aa;
+  background: linear-gradient(135deg, #0a2f48 0%, #0f4567 100%);
+  box-shadow: inset 0 0 0 1px rgba(255,239,186,.10), 0 3px 8px rgba(29,47,58,.16);
+  font: inherit;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.game-header .restart-button:hover,
+.game-header .leave-freecell-button:hover,
+.game-header .restart-button:focus-visible,
+.game-header .leave-freecell-button:focus-visible {
+  border-color: #f0cf83;
+  background: linear-gradient(135deg, #0d3b59 0%, #15577f 100%);
+}
+.game-header .restart-button:active,
+.game-header .leave-freecell-button:active {
+  transform: translateY(1px);
+  box-shadow: inset 0 0 0 1px rgba(255,239,186,.08), 0 1px 3px rgba(29,47,58,.14);
+}
+/* 文字說明是自由之都風格；只有體驗視窗使用 Windows 復古風。 */
+.cheat-intro, .experience-section {
+  margin: 14px 0;
+  padding: clamp(15px, 3vw, 24px);
+  border: 1px solid rgba(140,103,59,.34);
+  border-radius: 18px;
+  background: rgba(255,250,239,.94);
+  box-shadow: 0 10px 24px rgba(64,54,36,.12);
+}
+.cheat-intro h2, .experience-section h2 {
+  margin: 0 0 12px;
+  color: #0f4567;
+  font-size: clamp(1.15rem, 2.5vw, 1.45rem);
+}
+.cheat-intro p {
+  margin: 9px 0 0;
+  line-height: 1.8;
+  font-size: .96rem;
+}
+.cheat-intro strong { color: #744b16; }
+.cheat-intro .cheat-intro-note {
+  color: #655849;
+  font-size: .85rem;
+}
+.experience-hint {
+  margin: 0 0 16px;
+  color: #5d5347;
+  font-size: .9rem;
+}
+@media (max-width: 600px) {
+  .game-header { padding: 12px 10px; flex-wrap: nowrap; }
+  .empire-title-group { gap: 9px; }
+  .game-header .suit-seal { width: 46px; height: 46px; font-size: 1.6rem; }
+  .game-header .eyebrow { font-size: .66rem; }
+  .game-header h1 { font-size: 1.3rem; }
+  .game-header .subtitle { font-size: .72rem; }
+  .game-header .restart-button,
+  .game-header .leave-freecell-button {
+    min-height: 34px;
+    padding-inline: 10px;
+    font-size: .8rem;
+  }
+  .cheat-intro, .experience-section { border-radius: 13px; margin-block: 10px; }
+  .cheat-intro p { font-size: .87rem; }
+}
+@media (max-width: 380px) {
+  .game-header .subtitle { font-size: .65rem; }
+  .game-header .restart-button, .game-header .leave-freecell-button { padding-inline: 7px; font-size: .74rem; }
+}

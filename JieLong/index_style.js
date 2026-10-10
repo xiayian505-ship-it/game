@@ -316,10 +316,25 @@
     if (event.origin !== window.location.origin) return;
     if (event.source !== freecellIframe.contentWindow) return;
 
-    if (event.data?.type === "slowly-freecell-open" && event.data?.mode === "freecell") {
-      const targetUrl = normalizeFreecellUrl(freecellEnter?.href);
-      enterFreecell(targetUrl, freecellEnter, { preserveCurrent: false, mode: "freecell" });
-      return;
+    if (event.data?.type === "slowly-freecell-open") {
+      const requestedMode = event.data?.mode;
+      if (requestedMode === "freecell") {
+        const targetUrl = normalizeFreecellUrl(freecellEnter?.href);
+        enterFreecell(targetUrl, freecellEnter, { preserveCurrent: false, mode: "freecell" });
+        return;
+      }
+
+      // 歷史淵源與作弊展示使用同一個 iframe，和原本入境／離境機制一致。
+      if (requestedMode === "cheat") {
+        const cheatUrl = normalizeFreecellUrl("./freecell/history/cheat/cheat.html");
+        enterFreecell(cheatUrl, freecellHistoryEnter, { mode: "cheat" });
+        return;
+      }
+      if (requestedMode === "history") {
+        const historyUrl = normalizeFreecellUrl(freecellHistoryEnter?.href);
+        enterFreecell(historyUrl, freecellHistoryEnter, { mode: "history" });
+        return;
+      }
     }
 
     if (event.data?.type !== "slowly-freecell-leave") return;

@@ -8,6 +8,15 @@
     window.location.href = "../freecell.html";
   });
 
+  // 歷史淵源第五張主題牌：進入獨立作弊模擬器，維持帝國 iframe 導覽。
+  document.querySelector("#historyCheatButton")?.addEventListener("click", () => {
+    if (window.parent !== window) {
+      window.parent.postMessage({ type: "slowly-freecell-open", mode: "cheat" }, window.location.origin);
+      return;
+    }
+    window.location.href = "./cheat/cheat.html";
+  });
+
   const leaveButton = document.querySelector("#leaveHistoryButton");
   leaveButton?.addEventListener("click", () => {
     if (window.parent !== window) {
