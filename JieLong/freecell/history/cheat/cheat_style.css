@@ -102,16 +102,310 @@ button, input { font: inherit; }
   transform: translateY(1px);
   box-shadow: inset 0 0 0 1px rgba(255,239,186,.08), 0 1px 3px rgba(29,47,58,.14);
 }
-/* 文字說明是自由之都風格；只有體驗視窗使用 Windows 復古風。 */
-.cheat-intro, .experience-section {
+/* 第二區：取消米白卡片，入口與模擬器自然融入自由之都的背景。 */
+.experience-section {
+  position: relative;
+  isolation: isolate;
   margin: 14px 0;
-  padding: clamp(15px, 3vw, 24px);
-  border: 1px solid rgba(140,103,59,.34);
-  border-radius: 18px;
-  background: rgba(255,250,239,.94);
-  box-shadow: 0 10px 24px rgba(64,54,36,.12);
+  padding: 20px clamp(8px, 2vw, 18px) 28px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
-.cheat-intro h2, .experience-section h2 {
+
+/* 點擊前只有緩緩漂浮的「密技體驗」；浮動由軍火庫 sbs-atom 管理。 */
+.experience-gateway {
+  display: grid;
+  place-items: center;
+  min-height: 215px;
+  transition: opacity 1.6s ease, filter 1.6s ease, transform 1.6s ease;
+}
+.experience-enter {
+  position: relative;
+  padding: 22px 27px;
+  border: 0;
+  background: transparent;
+  color: #143e59;
+  font-family: "Noto Serif TC", "Songti TC", "PMingLiU", serif;
+  font-weight: 900;
+  font-size: clamp(2.4rem, 8vw, 4.9rem);
+  letter-spacing: .15em;
+  text-indent: .15em;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+  text-shadow: 0 0 12px rgba(255,244,205,.85), 0 0 28px rgba(226,177,76,.45);
+  --sbs-atom-speed: 5s;
+}
+.experience-enter::after {
+  content: "";
+  position: absolute;
+  left: 24%;
+  right: 24%;
+  bottom: 12px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(204,149,49,.55), transparent);
+  transition: left .25s ease, right .25s ease;
+}
+.experience-enter:hover::after,
+.experience-enter:focus-visible::after {
+  left: 11%;
+  right: 11%;
+}
+.experience-enter:focus-visible {
+  outline: 2px solid #bf8e42;
+  outline-offset: 5px;
+}
+.experience-section.is-entering .experience-gateway {
+  opacity: 0;
+  filter: blur(12px);
+  transform: scale(1.05);
+  pointer-events: none;
+}
+.experience-gateway[hidden],
+.experience-simulator[hidden] {
+  display: none !important;
+}
+
+/* 鹿雨森式霧幕：先聚攏遮住入口，再緩緩散開。不是全頁覆蓋。 */
+.experience-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  opacity: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 45%, #d3e9e2, #7fb0a5 75%);
+  transition: opacity 1.45s ease;
+}
+.experience-section.is-entering .experience-veil {
+  opacity: 1;
+}
+.experience-section.is-unveiling .experience-veil {
+  opacity: 0;
+  transition-duration: 1.55s;
+}
+.experience-simulator {
+  position: relative;
+  opacity: 0;
+  filter: blur(15px);
+  transform: translateY(24px) scale(1.012);
+  transition: opacity 1.75s ease, filter 1.75s ease, transform 1.75s ease;
+  pointer-events: none;
+}
+.experience-simulator.is-revealed {
+  opacity: 1;
+  filter: none;
+  transform: none;
+}
+/* 動畫完成後再允許移牌；避免模擬器尚在霧中就被操作。 */
+.experience-simulator.is-settled {
+  pointer-events: auto;
+}
+/* 微弱的甦醒邊光只出現一次；不去改 Windows 視窗內的牌桌和特效。 */
+.experience-simulator::before {
+  content: "";
+  position: absolute;
+  inset: -7px;
+  z-index: -1;
+  border-radius: 8px;
+  box-shadow: 0 0 24px rgba(255,237,184,.40), 0 0 42px rgba(100,186,180,.28);
+  opacity: 0;
+  transition: opacity 1.2s ease;
+  pointer-events: none;
+}
+.experience-simulator.is-awakening::before {
+  opacity: 1;
+}
+.experience-simulator.is-settled::before {
+  opacity: 0;
+}
+
+/* 第一區：去除原本卡片的外框、白色底板與陰影，讓舞台融進風景。 */
+.cheat-intro {
+  position: relative;
+  isolation: isolate;
+  min-height: 375px;
+  margin: 12px 0 16px;
+  padding: 12px clamp(12px, 3vw, 24px);
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.cheat-city-backdrop {
+  position: absolute;
+  z-index: -1;
+  inset: -12px -8px;
+  pointer-events: none;
+  opacity: .62;
+  filter: blur(9px);
+  -webkit-mask-image: radial-gradient(ellipse 88% 80% at center, black 53%, transparent 100%);
+  mask-image: radial-gradient(ellipse 88% 80% at center, black 53%, transparent 100%);
+}
+.cheat-city-backdrop .history-hero {
+  height: 100%;
+  min-height: 100%;
+}
+.cheat-city-backdrop .castle {
+  bottom: 19%;
+  transform: translateX(-50%) scale(1.85);
+  filter: drop-shadow(0 0 8px rgba(39, 86, 113, .30));
+}
+.cheat-city-backdrop .sun {
+  right: clamp(25px, 17%, 150px);
+}
+.cheat-city-backdrop .fountain {
+  left: clamp(20px, 19%, 150px);
+}
+
+/* 初見的三鍵舞台。大圓環轉動用慢慢軍火庫的 sbs-orbit；
+   細圓環使用同一軍火庫的 sbs-enso；按鍵呼吸光使用 sbs-breathe。 */
+.cheat-secret-stage {
+  position: relative;
+  width: min(100%, 392px);
+  height: 340px;
+  margin: 0 auto;
+  isolation: isolate;
+}
+.cheat-orbit-ring,
+.cheat-enso-ring {
+  position: absolute;
+  z-index: 0;
+  top: 50%;
+  left: 50%;
+  width: 274px;
+  height: 274px;
+  translate: -50% -50%;
+  pointer-events: none;
+  color: #aa7833;
+  opacity: .58;
+}
+.cheat-orbit-ring {
+  --sbs-orbit-border: 2px dashed rgba(143, 98, 42, .60);
+}
+.cheat-enso-ring {
+  opacity: .53;
+}
+.cheat-enso-ring svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: currentColor;
+  filter: drop-shadow(0 0 8px rgba(226, 179, 80, .43));
+}
+.cheat-secret-key {
+  --sbs-breathe-color: rgba(230, 175, 70, .30);
+  position: absolute;
+  z-index: 2;
+  min-width: 88px;
+  padding: 11px 15px;
+  border: 1.5px solid #d7b66b;
+  border-radius: 9px;
+  background: linear-gradient(145deg, #184567, #092c48);
+  color: #fff0ba;
+  box-shadow: 0 0 0 1px rgba(255,250,214,.10) inset,
+              0 0 20px rgba(246, 191, 94, .56),
+              0 5px 14px rgba(32, 58, 64, .25);
+  text-shadow: 0 0 10px rgba(255, 228, 148, .9);
+  font-size: clamp(1.05rem, 3vw, 1.3rem);
+  font-weight: 700;
+  letter-spacing: .035em;
+  line-height: 1.25;
+  text-align: center;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  animation: cheat-title-rise 2.1s cubic-bezier(.2,.7,.2,1) forwards;
+}
+.cheat-secret-key--ctrl {
+  top: 18px;
+  left: 50%;
+  margin-left: -44px;
+  animation-delay: .15s;
+}
+.cheat-secret-key--shift {
+  left: 8px;
+  bottom: 59px;
+  animation-delay: .53s;
+}
+.cheat-secret-key--f10 {
+  right: 8px;
+  bottom: 59px;
+  animation-delay: .91s;
+}
+
+/* 中央沿用自由之都的梅花徽章；低調但有 hover/focus 的點擊暗示。 */
+.cheat-secret-center {
+  --sbs-breathe-color: rgba(232, 187, 92, .25);
+  position: absolute;
+  z-index: 3;
+  top: 50%;
+  left: 50%;
+  width: 74px;
+  height: 74px;
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 2px solid #dcb567;
+  border-radius: 50%;
+  background: rgba(12, 54, 80, .88);
+  color: #ffe7a7;
+  font-size: 2.4rem;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 4px rgba(0,0,0,.1), 0 0 14px rgba(222, 171, 80, .2);
+  transition: box-shadow .25s ease, border-color .25s ease, background .25s ease;
+  opacity: 0;
+  animation: cheat-center-reveal 1.4s ease 1.25s forwards;
+}
+.cheat-secret-center:hover,
+.cheat-secret-center:focus-visible {
+  border-color: #fff0ba;
+  background: rgba(16, 73, 105, .96);
+  box-shadow: inset 0 0 0 4px rgba(0,0,0,.1), 0 0 22px rgba(255, 221, 133, .65);
+}
+.cheat-secret-center:focus-visible {
+  outline: 2px solid #173d5a;
+  outline-offset: 5px;
+}
+.cheat-secret-stage.is-dissolving {
+  animation: cheat-stage-out .54s ease-in forwards;
+  pointer-events: none;
+}
+
+.cheat-intro-copy[hidden],
+.cheat-secret-stage[hidden] { display: none; }
+.cheat-intro-copy {
+  position: relative;
+  max-width: 760px;
+  min-height: 320px;
+  margin: 0 auto;
+  padding: clamp(30px, 5vw, 48px) clamp(8px, 2vw, 28px);
+  color: #163d52;
+  text-shadow: 0 1px 14px rgba(255,255,255,.9);
+}
+.cheat-intro-copy > p {
+  opacity: 0;
+  animation: cheat-title-rise 2.15s cubic-bezier(.2,.7,.2,1) forwards;
+}
+.cheat-intro-copy > p:nth-of-type(1) { animation-delay: .05s; }
+.cheat-intro-copy > p:nth-of-type(2) { animation-delay: .5s; }
+.cheat-intro-copy > p:nth-of-type(3) { animation-delay: .95s; }
+.cheat-intro-copy > p:nth-of-type(4) { animation-delay: 1.4s; }
+.cheat-result-lines span { display: block; }
+@keyframes cheat-title-rise {
+  from { opacity: 0; filter: blur(20px); translate: 0 28px; scale: 1.1; }
+  to { opacity: 1; filter: blur(0); translate: 0 0; scale: 1; }
+}
+@keyframes cheat-center-reveal {
+  from { opacity: 0; filter: blur(14px); }
+  to { opacity: 1; filter: blur(0); }
+}
+@keyframes cheat-stage-out {
+  to { opacity: 0; filter: blur(14px); transform: translateY(-12px); }
+}
+.cheat-intro h2 {
   margin: 0 0 12px;
   color: #0f4567;
   font-size: clamp(1.15rem, 2.5vw, 1.45rem);
@@ -120,16 +414,6 @@ button, input { font: inherit; }
   margin: 9px 0 0;
   line-height: 1.8;
   font-size: .96rem;
-}
-.cheat-intro strong { color: #744b16; }
-.cheat-intro .cheat-intro-note {
-  color: #655849;
-  font-size: .85rem;
-}
-.experience-hint {
-  margin: 0 0 16px;
-  color: #5d5347;
-  font-size: .9rem;
 }
 @media (max-width: 600px) {
   .game-header { padding: 12px 10px; flex-wrap: nowrap; }
@@ -144,7 +428,16 @@ button, input { font: inherit; }
     padding-inline: 10px;
     font-size: .8rem;
   }
-  .cheat-intro, .experience-section { border-radius: 13px; margin-block: 10px; }
+  .experience-section { margin-block: 10px; padding-inline: 4px; }
+  .experience-gateway { min-height: 160px; }
+  .cheat-intro { margin-block: 10px; min-height: 340px; }
+  .cheat-secret-stage { width: min(100%, 340px); height: 320px; }
+  .cheat-orbit-ring, .cheat-enso-ring { width: 242px; height: 242px; }
+  .cheat-secret-key { min-width: 78px; padding: 9px 12px; }
+  .cheat-secret-key--ctrl { margin-left: -39px; }
+  .cheat-secret-key--shift { left: 0; bottom: 47px; }
+  .cheat-secret-key--f10 { right: 0; bottom: 47px; }
+  .cheat-intro-copy { padding-block: 32px; }
   .cheat-intro p { font-size: .87rem; }
 }
 @media (max-width: 380px) {
@@ -237,4 +530,77 @@ button, input { font: inherit; }
   .classic-victory-banner h2,
   .classic-window.is-debugging,
   .classic-window.is-cheat-loss { animation: none; }
+}
+
+
+/* 不宜動畫的裝置直接顯示三鍵／正文；保留所有閱讀與點擊功能。 */
+@media (prefers-reduced-motion: reduce) {
+  .cheat-secret-key, .cheat-secret-center,
+  .cheat-intro-copy > p,
+  .cheat-secret-stage.is-dissolving {
+    animation: none;
+    opacity: 1;
+    filter: none;
+    translate: none;
+    scale: 1;
+  }
+}
+
+/* 尊重減少動態：霧幕不遮擋入口與遊戲，內容仍可完整操作。 */
+@media (prefers-reduced-motion: reduce) {
+  .experience-gateway,
+  .experience-veil,
+  .experience-simulator,
+  .experience-simulator::before {
+    transition: none !important;
+  }
+  .experience-enter { animation: none !important; }
+  .experience-simulator { transform: none; filter: none; }
+}
+
+/* 頁面最底端的小聲歷史旁白：文字直接融入自由之都背景，不做獨立卡片或橫幅。 */
+.cheat-vista-note {
+  min-height: 1.8em;
+  margin: 24px auto 7px;
+  padding: 0 12px;
+  border: none;
+  background: none;
+  box-shadow: none;
+  color: rgba(24, 60, 79, .74);
+  font-size: clamp(.76rem, 1.8vw, .92rem);
+  line-height: 1.8;
+  letter-spacing: .035em;
+  text-align: center;
+  text-shadow: 0 1px 7px rgba(255, 255, 255, .33);
+}
+
+.cheat-vista-note-text::after {
+  content: "";
+  display: inline-block;
+  width: 1px;
+  height: .85em;
+  margin-left: 2px;
+  vertical-align: -.08em;
+  background: currentColor;
+  opacity: .55;
+  animation: cheat-vista-caret 1s steps(1) infinite;
+}
+
+/* 螢幕閱讀器讀完整句，不會跟著打字機逐字朗讀。 */
+.cheat-vista-note-accessible {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@keyframes cheat-vista-caret {
+  50% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cheat-vista-note-text::after { animation: none; opacity: .3; }
 }

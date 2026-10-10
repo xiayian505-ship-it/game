@@ -3,9 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>自由之都｜作弊程式</title>
+  <title>自由之都｜密技體驗</title>
+  <!-- 直接沿用歷史淵源的太陽、城堡與噴泉造型，不複製重寫原本的景觀 CSS。 -->
+  <link rel="stylesheet" href="../history.css?v=20261008-freecell-return">
+  <!-- 慢慢軍火庫的圓環及呼吸光特效：始終以公開 HTTPS 引用。 -->
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/particle/orbit.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/line/enso_ring.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/light/breathing_glow.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/particle/atom_bob.css">
   <link rel="stylesheet" href="cheat.css?v=20261011-fx-restored">
-  <link rel="stylesheet" href="cheat_style.css?v=20261011-fx-restored">
+  <link rel="stylesheet" href="cheat_style.css?v=20261011-vista-typewriter">
 </head>
 <body>
   <main class="game-shell">
@@ -15,8 +22,8 @@
         <div class="suit-seal" aria-hidden="true">♣</div>
         <div class="empire-title-copy">
           <p class="eyebrow">自由之都</p>
-          <h1>作弊程式</h1>
-          <p class="subtitle">新接龍 <span lang="en">FreeCell</span>｜歷史密技體驗</p>
+          <h1>密技體驗</h1>
+          <p class="subtitle">復古模擬體驗</p>
         </div>
       </div>
       <div class="empire-header-actions">
@@ -25,17 +32,56 @@
       </div>
     </header>
 
-    <section class="cheat-intro" aria-labelledby="cheatIntroductionHeading">
-      <h2 id="cheatIntroductionHeading">Ctrl + Shift + F10：古早的新接龍密技</h2>
-      <p>在舊版 Microsoft 新接龍（FreeCell）中，同時按下 <strong>Ctrl + Shift + F10</strong>，會出現一個看似程式錯誤的對話視窗。</p>
-      <p>選擇<strong>「中止」</strong>後，只要再成功移動一手牌就會贏；選擇<strong>「重試」</strong>，下一手則會直接判定本局結束；選擇<strong>「略過」</strong>，就能繼續正常玩牌。這個密技在 Windows Vista 的新接龍版本中已被移除。</p>
-      <p class="cheat-intro-note">下方是獨立的復古模擬體驗，不會影響接龍帝國正式牌局或破關紀錄。</p>
+    <section class="cheat-intro" aria-label="Ctrl、Shift、F10 密技展示與說明">
+      <!-- 與 history/ 的城堡景完全共用造型；只有本頁額外施加模糊與淡化。 -->
+      <div class="cheat-city-backdrop" aria-hidden="true">
+        <div class="history-hero">
+          <div class="sun"></div>
+          <div class="castle castle-blue"><i></i><i></i><i></i><i></i></div>
+          <div class="fountain">♣</div>
+        </div>
+      </div>
+
+      <!-- 初始畫面只有發光的三個鍵，以及中央可點擊的自由之都徽章。 -->
+      <div id="cheatSecretStage" class="cheat-secret-stage">
+        <div class="cheat-orbit-ring sbs-orbit" aria-hidden="true"><span></span></div>
+        <div class="cheat-enso-ring sbs-enso" aria-hidden="true">
+          <svg viewBox="0 0 240 240" focusable="false">
+            <circle cx="120" cy="120" r="100" pathLength="100" stroke-width="2.5"/>
+            <circle cx="120" cy="120" r="108" pathLength="100" stroke-width="1"/>
+          </svg>
+        </div>
+        <span class="cheat-secret-key cheat-secret-key--ctrl sbs-breathe">Ctrl</span>
+        <span class="cheat-secret-key cheat-secret-key--shift sbs-breathe">Shift</span>
+        <span class="cheat-secret-key cheat-secret-key--f10 sbs-breathe">F10</span>
+        <button id="cheatSecretReveal" class="suit-seal cheat-secret-center sbs-breathe" type="button"
+                aria-label="展開經典密技說明" aria-controls="cheatIntroductionCopy" aria-expanded="false">
+          <span aria-hidden="true">♣</span>
+        </button>
+      </div>
+
+      <!-- 梅花被點擊後才出現的四組文字。第四組的三行視作同一段。 -->
+      <div id="cheatIntroductionCopy" class="cheat-intro-copy" hidden>
+        <p>新接龍密技：同時按下 Ctrl + Shift + F10</p>
+        <p>會彈出程式錯誤的對話視窗</p>
+        <p>會有中止、重試、略過三個按鈕</p>
+        <p class="cheat-result-lines">
+          <span>選擇中止，再移動一手牌，即會判定勝利</span>
+          <span>選擇重試，再移動一手牌，即會判定結束</span>
+          <span>選擇略過，即會返回遊戲</span>
+        </p>
+      </div>
     </section>
 
-    <section class="experience-section" aria-labelledby="experienceHeading">
-      <h2 id="experienceHeading">體驗作弊程式</h2>
-      <p class="experience-hint">先移幾張牌，再用鍵盤或畫面上的 Ctrl、Shift、F10 試試看。</p>
+    <section class="experience-section" aria-label="密技體驗">
+      <!-- 初始只看到四字入口；懸浮零件由慢慢軍火庫 atom_bob.css 提供。 -->
+      <div id="experienceGateway" class="experience-gateway">
+        <button id="experienceEnterButton" class="experience-enter sbs-atom" type="button"
+                aria-controls="experienceSimulator" aria-expanded="false">密技體驗</button>
+      </div>
 
+      <!-- 選擇進入、霧幕轉場後才顯示；模擬器本身維持完整遊戲與勝負特效。 -->
+      <div id="experienceSimulator" class="experience-simulator" hidden>
       <!-- Windows 經典風格模擬器：不依賴正式 FreeCell 的 JS / 資料庫。 -->
       <div class="classic-window" id="classicWindow" aria-label="微軟舊版新接龍作弊模擬器">
         <div class="classic-titlebar">
@@ -91,10 +137,20 @@
           <button id="victoryPlayAgain" type="button">再玩一局</button>
         </div>
       </div>
+      </div>
+      <!-- 取鹿雨森「踏入霧中」的霧色及轉場節奏，限定於體驗區內。 -->
+      <div id="experienceVeil" class="experience-veil" aria-hidden="true"></div>
     </section>
+    <!-- 歷史尾聲：文字融於背景，打字與刪除循環直接使用慢慢軍火庫。 -->
+    <p class="cheat-vista-note" aria-live="off">
+      <span class="cheat-vista-note-accessible">此密技已於Window Vista的新接龍版本慘遭死刑</span>
+      <span id="cheatVistaTypewriter" class="cheat-vista-note-text" aria-hidden="true">此密技已於Window Vista的新接龍版本慘遭死刑</span>
+    </p>
   </main>
 
   <script src="cheat.js?v=20261011-fx-restored"></script>
-  <script src="cheat_style.js?v=20261011-fx-restored"></script>
+  <!-- 軍火庫的現成打字機：直接引用，不複製程式碼。 -->
+  <script src="https://lib.stillnessbyslowly.com/effects/typography/typewriter.js"></script>
+  <script src="cheat_style.js?v=20261011-vista-typewriter"></script>
 </body>
 </html>

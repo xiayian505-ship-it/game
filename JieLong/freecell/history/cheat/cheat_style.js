@@ -7,6 +7,69 @@
 (() => {
   "use strict";
 
+  // 第一張展示區：梅花徽章是唯一的說明開關，與作弊模擬器互不干擾。
+  // 文字動畫仿照鹿雨森 game 的 title-rise（先模糊，逐漸清晰）。
+  const secretStage = document.querySelector("#cheatSecretStage");
+  const secretRevealButton = document.querySelector("#cheatSecretReveal");
+  const introductionCopy = document.querySelector("#cheatIntroductionCopy");
+  const reduceIntroMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+  secretRevealButton?.addEventListener("click", () => {
+    if (!secretStage || !introductionCopy || secretStage.classList.contains("is-dissolving")) return;
+
+    secretRevealButton.setAttribute("aria-expanded", "true");
+    secretStage.classList.add("is-dissolving");
+    // 先讓環繞舞台退場，再由模糊到清晰浮出原本的密技介紹。
+    window.setTimeout(() => {
+      secretStage.hidden = true;
+      introductionCopy.hidden = false;
+    }, reduceIntroMotion.matches ? 0 : 540);
+  });
+
+  // 第二區：鹿雨森「踏入霧中」的退場與霧幕節奏。
+  // 模擬器首次顯示後重新計算八欄牌寬；否則隱藏時會被量成 0px。
+  const experienceSection = document.querySelector(".experience-section");
+  const experienceGateway = document.querySelector("#experienceGateway");
+  const experienceEnterButton = document.querySelector("#experienceEnterButton");
+  const experienceSimulator = document.querySelector("#experienceSimulator");
+  let experienceOpening = false;
+
+  experienceEnterButton?.addEventListener("click", () => {
+    if (experienceOpening || !experienceSection || !experienceSimulator || !experienceGateway) return;
+    experienceOpening = true;
+    experienceEnterButton.setAttribute("aria-expanded", "true");
+
+    if (reduceIntroMotion.matches) {
+      experienceGateway.hidden = true;
+      experienceSimulator.hidden = false;
+      experienceSimulator.classList.add("is-revealed", "is-settled");
+      window.dispatchEvent(new Event("resize"));
+      return;
+    }
+
+    // 鹿雨森入口：文字淡出、放大、失焦，霧幕在同一區域聚攏。
+    experienceSection.classList.add("is-entering");
+
+    window.setTimeout(() => {
+      experienceGateway.hidden = true;
+      experienceSimulator.hidden = false;
+      experienceSimulator.classList.add("is-awakening");
+      // 重新渲染遊戲牌面，避免先 hidden 導致牌寬計算不正確。
+      window.dispatchEvent(new Event("resize"));
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => {
+          experienceSection.classList.add("is-unveiling");
+          experienceSimulator.classList.add("is-revealed");
+        });
+      });
+      // 微弱光邊隨霧散去收斂，模擬器保持原本的經典 Windows 外觀。
+      window.setTimeout(() => {
+        experienceSimulator.classList.add("is-settled");
+        experienceSimulator.classList.remove("is-awakening");
+      }, 1800);
+    }, 1550);
+  });
+
   const simulator = window.FreeCellCheatSimulator;
   const dialogShade = document.querySelector("#dialogShade");
   const dialogTitle = document.querySelector("#dialogTitle");
@@ -426,4 +489,25 @@
     }
     window.location.href = "../../../index.html";
   });
+  // 最底部的歷史旁白：使用軍火庫 SlowlyTypewriter 循環打字／刪字。
+  // 當外部函式未載入或使用者偏好減少動態時，保留 HTML 裡的完整靜態文字。
+  const vistaTypewriterTarget = document.querySelector("#cheatVistaTypewriter");
+  if (vistaTypewriterTarget && !reduceIntroMotion.matches && window.SlowlyTypewriter?.create) {
+    const phrase = vistaTypewriterTarget.textContent.trim();
+    const vistaTypewriter = window.SlowlyTypewriter.create({
+      target: vistaTypewriterTarget,
+      phrases: [phrase],
+      typeMin: 90,
+      typeJitter: 35,
+      deleteDelay: 34,
+      holdDelay: 2400,
+      gapDelay: 700,
+      loop: true
+    });
+
+    vistaTypewriterTarget.textContent = "";
+    vistaTypewriter.start();
+    window.addEventListener("pagehide", () => vistaTypewriter.stop());
+    window.addEventListener("pageshow", () => vistaTypewriter.start());
+  }
 })();
