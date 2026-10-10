@@ -333,7 +333,7 @@
     });
   });
 
-  // 秩序之城與經典之境｜比照 FreeCell 的 iframe 入境、離境及切換。
+  // 秩序之城與傳說之境｜比照 FreeCell 的 iframe 入境、離境及切換。
   const empireEmbeds = new Map();
   for (const territory of ["territory-spider", "territory-klondike"]) {
     const page = bookPages.find((item) => item.dataset.bookPage === territory);

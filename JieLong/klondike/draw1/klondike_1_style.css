@@ -196,7 +196,7 @@
 
 
 /* ================================================================
-   接龍帝國｜經典之境（Klondike）
+   接龍帝國｜傳說之境（Klondike）
    色彩直接對應主城 JieLong/index_style.css 中的 territory-klondike。
    僅調整帝國版外觀，牌局邏輯、儲存、資料庫和原始玩法不變。
    ================================================================ */
@@ -216,7 +216,7 @@ body {
   background: var(--empire-klondike-sky);
 }
 
-/* 領地橫幅：標題、紋章與主城「經典之境」完全同色系。 */
+/* 領地橫幅：標題、紋章與主城「傳說之境」完全同色系。 */
 .game-header {
   align-items: center;
   padding: 14px 16px;
@@ -269,7 +269,7 @@ body {
   color: rgba(255,244,213,.78);
 }
 
-/* 入境、離境按鈕與 FreeCell 相同語言，改為經典之境深綠。 */
+/* 入境、離境按鈕與 FreeCell 相同語言，改為傳說之境深綠。 */
 .game-header .empire-header-actions .restart-button,
 .game-header .empire-header-actions .leave-empire-button,
 #restartConfirm .dialog-actions button,
