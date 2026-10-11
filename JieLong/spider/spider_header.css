@@ -1,0 +1,131 @@
+/* 秩序之城（初／中／高階）HUD 統一：只調整畫面，不改 Spider 的牌局規則及 JS。 */
+.game-header .eyebrow-with-stat {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 3px 10px;
+}
+.game-header .city-solved-stat {
+  color: rgba(255,244,213,.78);
+  font-size: 1em;
+  letter-spacing: .04em;
+  white-space: nowrap;
+}
+.game-header .city-solved-stat strong { color: #fbe5aa; }
+.game-header .empire-status-line {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  margin-top: 4px;
+  font-size: .78rem;
+}
+.game-header .deal-identity {
+  display: inline-flex;
+  width: auto;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: rgba(255,244,213,.84);
+  font-size: inherit;
+}
+.game-header .deal-identity[hidden] { display: none; }
+.game-header .deal-id-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+.game-header .deal-id-left strong { color: #fbe5aa; letter-spacing: .04em; }
+/* 複製按鈕改用小圖示，但原 copyCurrentUid() 事件與完整 UID 不變。 */
+.game-header .deal-identity .copy-deal-id-button {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 26px;
+  min-width: 26px;
+  height: 26px;
+  min-height: 26px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  box-shadow: none;
+  color: #fbe5aa;
+  font-size: 0;
+  line-height: 0;
+}
+.game-header .deal-identity .copy-deal-id-button::before,
+.game-header .deal-identity .copy-deal-id-button::after {
+  content: "";
+  position: absolute;
+  width: 11px;
+  height: 13px;
+  border: 1.5px solid currentColor;
+  border-radius: 2px;
+}
+.game-header .deal-identity .copy-deal-id-button::before { transform: translate(-2px, -2px); }
+.game-header .deal-identity .copy-deal-id-button::after {
+  transform: translate(2px, 2px);
+  background: #4d1013;
+}
+.game-header .deal-identity .copy-deal-id-button:hover,
+.game-header .deal-identity .copy-deal-id-button:focus-visible {
+  border: 0;
+  background: rgba(255,244,213,.12);
+  box-shadow: none;
+}
+.game-header .deal-identity .copy-deal-id-button:active { transform: scale(.96); }
+.game-header .header-deal-stats {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  min-height: 0;
+  margin-top: 1px;
+  color: rgba(255,244,213,.84);
+  font-size: .78rem;
+  line-height: 1.25;
+}
+.game-header .header-deal-stats .deal-best,
+.game-header .header-deal-stats .deal-clears {
+  color: rgba(255,244,213,.84);
+  font-size: inherit;
+}
+.game-header .header-deal-stats strong { color: #fbe5aa; }
+/* 發牌區與十欄牌陣之間只留步數；完成組數與發牌數仍留在 JS 運作。 */
+.gameplay-step-row {
+  margin: -1px 0 6px;
+  padding-inline: 4px;
+  color: #71181b;
+  font-size: .78rem;
+  line-height: 1.25;
+  letter-spacing: .01em;
+}
+.gameplay-step-row strong { color: #71181b; }
+/* 遊戲通知仍給 JS 和輔助技術使用，但不再佔牌桌空間。 */
+.spider-status-notice {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  min-height: 0;
+  padding: 0;
+  margin: -1px;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+@media (max-width: 600px) {
+  .game-header .eyebrow-with-stat { gap: 2px 7px; }
+  .game-header .empire-status-line,
+  .game-header .header-deal-stats { font-size: .68rem; }
+  .game-header .header-deal-stats { gap: 3px 10px; margin-top: 0; }
+  .gameplay-step-row { margin-bottom: 5px; font-size: .68rem; }
+}

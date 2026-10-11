@@ -18,6 +18,7 @@
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/celebration/classic_fireworks.css">
   <link rel="stylesheet" href="klondike_3.css">
   <link rel="stylesheet" href="klondike_3_style.css">
+  <link rel="stylesheet" href="../klondike_header.css?v=20261011-klondike-hud">
 </head>
 <body>
   <main id="gameShell" class="game-shell">
@@ -25,9 +26,20 @@
       <div class="empire-title-group">
         <div class="suit-seal" aria-hidden="true">♦</div>
         <div class="empire-title-copy">
-          <p class="eyebrow">傳說之境・翻 3 張</p>
+          <p class="eyebrow eyebrow-with-stat"><span>傳說之境・翻 3 張</span><span class="city-solved-stat">玩家已解牌局：<strong id="solvedDealCount">0</strong></span></p>
           <h1>接龍 <span>Klondike</span></h1>
-          <p class="subtitle">需由大至小疊牌，紅黑交錯；空欄只能放 K<br>牌庫每次翻 3 張，4 個回收格由 A 起同花色往上</p>
+          <div class="subtitle empire-status-line">
+            <div id="currentDealIdentity" class="deal-identity" hidden>
+              <div class="deal-id-left">
+                <span><strong id="currentDealShortUid">K3-────────</strong></span>
+                <button id="copyDealUidButton" class="copy-deal-id-button" type="button" aria-label="複製牌局 UID" title="複製牌局 UID">複製 UID</button>
+              </div>
+            </div>
+          </div>
+          <div class="deal-stats header-deal-stats" aria-live="polite">
+            <span id="currentDealBest" class="deal-best" hidden>最佳：<strong id="currentDealBestSteps">—</strong> 步</span>
+            <span id="currentDealClears" class="deal-clears" hidden>破關：<strong id="currentDealClearCount">—</strong> 次</span>
+          </div>
         </div>
       </div>
 
@@ -37,12 +49,8 @@
       </div>
     </header>
 
-    <section class="status-row" aria-live="polite">
-      <span>完成：<strong id="completedCount">0</strong>/52</span>
-      <span>牌庫：<strong id="stockCount">24</strong></span>
-      <span>步數：<strong id="moveCount">0</strong></span>
-      <span>玩家已解牌局：<strong id="solvedDealCount">0</strong></span>
-    </section>
+    <span id="completedCount" hidden>0</span>
+    <span id="stockCount" hidden>24</span>
 
     <section class="top-row klondike-top-row" aria-label="牌庫、棄牌區與回收區">
       <button id="stockButton" class="completed-slot klondike-slot stock-slot" type="button" aria-label="牌庫"></button>
@@ -50,14 +58,10 @@
       <div id="completedArea" class="completed-area foundation-area" aria-label="四個回收區"></div>
     </section>
 
-    <p id="notice" class="notice">選擇一副牌局開始。</p>
+    <div class="gameplay-step-row" aria-live="polite">步數：<strong id="moveCount">0</strong></div>
+    <p id="notice" class="notice klondike-status-notice" role="status" aria-live="polite">選擇一副牌局開始。</p>
 
-    <div id="currentDealIdentity" class="deal-identity" hidden>
-      <span>牌局 <strong id="currentDealShortUid">K3-────────</strong></span>
-      <span id="currentDealBest" class="deal-best" hidden>最佳：<strong id="currentDealBestSteps">—</strong> 步</span>
-      <span id="currentDealClears" class="deal-clears" hidden>破關：<strong id="currentDealClearCount">—</strong> 次</span>
-      <button id="copyDealUidButton" type="button">複製 UID</button>
-    </div>
+
 
     <section id="tableau" class="tableau" aria-label="七欄牌區"></section>
 
