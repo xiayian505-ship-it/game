@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>傳說之境｜可能無解局｜接龍帝國</title>
+  <link rel="stylesheet" href="klondike_unsolvable.css">
+  <link rel="stylesheet" href="klondike_unsolvable_style.css">
+</head>
+<body data-collection-kind="possible" data-collection-modes="klondike_draw1,klondike_draw3">
+  <main class="collection-shell">
+    <header class="collection-header">
+      <div class="empire-title-group">
+        <div class="suit-seal" aria-hidden="true">♥</div>
+        <div class="empire-title-copy"><p class="collection-kicker">秘藏之谷</p><h1>傳說之境</h1></div>
+      </div>
+      <div class="empire-header-actions">
+        <a class="collection-return" href="../unsolvable.html">返回</a>
+        <a class="collection-return" data-collection-leave href="../../../index.html#territory-trove" target="_top">離境</a>
+      </div>
+    </header>
+    <div class="collection-toolbar"><p class="collection-note">點擊牌局即可進入傳說之境，從頭開始該局。</p><button id="refreshButton" type="button">重新整理</button></div>
+      <div id="collectionTabs" class="collection-tabs-shell" data-slowly-tabs>
+        <nav class="collection-tabs" role="tablist" aria-label="遊戲玩法">
+          <button type="button" role="tab" data-view-target="klondike_draw1" aria-selected="true">翻一張</button>
+          <button type="button" role="tab" data-view-target="klondike_draw3" aria-selected="false">翻三張</button>
+        </nav>
+        <section class="collection-panel" data-view-panel="klondike_draw1">
+          <div class="panel-meta"><span>共 <strong id="klondike_draw1_count">—</strong> 局</span><span id="klondike_draw1_status" class="status-text" aria-live="polite"></span></div>
+          <div id="klondike_draw1_list" class="record-list" aria-label="翻一張｜可能無解局"></div>
+          <nav class="pager" id="klondike_draw1_pager" aria-label="翻一張分頁" hidden>
+            <button id="klondike_draw1_prev" type="button">上一頁</button>
+            <span id="klondike_draw1_page" class="page-info">1 / 1</span>
+            <button id="klondike_draw1_next" type="button">下一頁</button>
+          </nav>
+        </section>
+        <section class="collection-panel" data-view-panel="klondike_draw3" hidden>
+          <div class="panel-meta"><span>共 <strong id="klondike_draw3_count">—</strong> 局</span><span id="klondike_draw3_status" class="status-text" aria-live="polite"></span></div>
+          <div id="klondike_draw3_list" class="record-list" aria-label="翻三張｜可能無解局"></div>
+          <nav class="pager" id="klondike_draw3_pager" aria-label="翻三張分頁" hidden>
+            <button id="klondike_draw3_prev" type="button">上一頁</button>
+            <span id="klondike_draw3_page" class="page-info">1 / 1</span>
+            <button id="klondike_draw3_next" type="button">下一頁</button>
+          </nav>
+        </section>
+      </div>
+  </main>
+  <script src="https://lib.stillnessbyslowly.com/fiction/Fiction_paginate.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/ui/tabs/tabs.js"></script>
+  <script src="../../collection_keys.js?v=20261012-archive"></script>
+  <script src="../../collection_archive.js?v=20261012-archive"></script>
+  <script src="../../collection_archive_ui.js?v=20261012-archive"></script>
+  <script src="klondike_unsolvable.js?v=20261012-archive"></script>
+  <script src="klondike_unsolvable_style.js?v=20261012-archive"></script>
+</body>
+</html>

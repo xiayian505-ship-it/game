@@ -2325,6 +2325,7 @@
     selectOtherDeal: () => { restartConfirm.hidden = true; showDealPicker({ canReturn: true }); },
     hideDealPicker,
     toggleRandomChoices,
+    abandonCurrentDeal: () => abandonCurrentDeal(),
     selectRandomDeal: () => { if (!busy) { abandonCurrentDeal(); startGame({ source: "random" }); } },
     selectRandomPendingDeal: () => loadRandomSolvedDeal("pending"),
     openContributedPanel,
@@ -2365,9 +2366,34 @@
   initializeEffects();
   render();
 
-  if (!restoreActiveGame()) {
-    showDealPicker({ canReturn: false });
+  // 秘藏之谷指定牌局入口：先沿用原本的待破解／重新開局函式，不重寫發牌。
+  function launchCollectionRequest() {
+    const params = new URLSearchParams(window.location.search);
+    const uid = params.get("collectionUid");
+    const kind = params.get("collectionKind");
+    if (!uid || !["favorite", "possible"].includes(kind)) return false;
+    const key = window.EmpireCollectionKeys?.["spider_hard"]?.[kind];
+    if (!key) return false;
+    let record = null;
+    try {
+      const saved = JSON.parse(localStorage.getItem(key) || "[]");
+      record = Array.isArray(saved) ? saved.find(item => item?.uid === uid &&
+        Array.isArray(item.deal) && item.deal.length === 104 && dealKeyOf(item.deal)) : null;
+    } catch (error) { console.warn("讀取指定館藏失敗。", error); }
+    if (!record) { showDealPicker({ canReturn: false }); setPickerNotice("找不到個人館藏牌局，請回館藏重新選擇。"); return true; }
+    abandonCurrentDeal();
+    startGame({ deal: record.deal, uid: record.uid, source: kind === "possible" ? "pending" : "uid",
+      bestSteps: kind === "favorite" ? record.bestSteps : null,
+      clearCount: kind === "favorite" ? record.clearCount : 0 });
+    if (kind === "possible") void markPendingAttempt(record);
+    hideDealPicker();
+    window.EmpirePersonalCollection?.sync?.();
+    return true;
   }
+
+  // 未來從同一副牌的收藏再次進入，也應從零步開局，不延用瀏覽器舊進度。
+  const restored = restoreActiveGame();
+  if (!launchCollectionRequest() && !restored) showDealPicker({ canReturn: false });
 
   void initializeDatabase();
 })();

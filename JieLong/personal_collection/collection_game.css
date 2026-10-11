@@ -1,3 +1,16 @@
+/* UID 左側最愛：對齊自由之都，只有星星，不顯示多餘方框。 */
+.game-header .deal-id-left button.slowly-favorite,
+.game-header .deal-id-left button.slowly-favorite:hover,
+.game-header .deal-id-left button.slowly-favorite.is-favorite {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline-offset: 2px;
+  padding: 0 !important;
+  min-width: 2rem;
+  min-height: 2rem;
+}
 /* 帝國個人牌局：共用操作元件，配色從各遊戲既有的按鈕樣式繼承。 */
 .game-header .deal-id-left { display: flex; align-items: center; min-width: 0; }
 .game-header .deal-id-left .slowly-favorite,

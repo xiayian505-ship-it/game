@@ -371,14 +371,14 @@
     book?.classList.toggle("is-empire-playing", [...empireEmbeds.values()].some(({ page }) => page.classList.contains("is-empire-playing")));
   }
 
-  function enterEmpireGame(territory, url, opener) {
+  function enterEmpireGame(territory, url, opener, { forceReload = false } = {}) {
     const state = empireEmbeds.get(territory);
     if (!state || !url) return;
     const targetUrl = normalizeFreecellUrl(url);
     hideOtherEmpireGames(territory);
     state.opener = opener;
     // FreeCell 同款行為：同入口重進保留頁面；換難度重新載入 iframe。
-    if (state.url !== targetUrl || !state.iframe.getAttribute("src")) {
+    if (forceReload || state.url !== targetUrl || !state.iframe.getAttribute("src")) {
       if (state.iframe.getAttribute("src")) state.iframe.removeAttribute("src");
       state.iframe.src = targetUrl;
       state.url = targetUrl;
@@ -415,6 +415,45 @@
     const trove = empireEmbeds.get("territory-trove");
     if (!trove || event.source !== trove.iframe.contentWindow) return;
     const { mode, kind } = event.data;
+    // 另兩座城使用同一種本機館藏訊息；由主城白名單驗證玩法、收藏 Key、UID 與完整牌組。
+    const gameRoutes = {
+      spider_easy: { territory: "territory-spider", path: "./spider/easy/spider_easy.html", length: 104 },
+      spider_medium: { territory: "territory-spider", path: "./spider/medium/spider_medium.html", length: 104 },
+      spider_hard: { territory: "territory-spider", path: "./spider/hard/spider_hard.html", length: 104 },
+      klondike_draw1: { territory: "territory-klondike", path: "./klondike/draw1/klondike_1.html", length: 52 },
+      klondike_draw3: { territory: "territory-klondike", path: "./klondike/draw3/klondike_3.html", length: 52 }
+    };
+    const route = gameRoutes[mode];
+    if (route) {
+      if (!["favorite", "possible"].includes(kind)) return;
+      const uid = event.data.uid;
+      if (typeof uid !== "string" || !uid || uid.length > 200) return;
+      const keyName = `${mode}_${kind === "favorite" ? "favorite_deals_v1" : "possible_unsolvable_deals_v1"}`;
+      // 一律沿用已定名的 10 個 Key（不變更存檔格式）。
+      try {
+        const saved = JSON.parse(localStorage.getItem(keyName) || "[]");
+        if (!Array.isArray(saved) || !saved.some(item => item?.uid === uid &&
+            Array.isArray(item.deal) && item.deal.length === route.length)) return;
+      } catch (error) {
+        console.warn("館藏資料無法讀取，未切換遊戲。", error);
+        return;
+      }
+      const state = empireEmbeds.get(route.territory);
+      if (!state) return;
+      // 只放棄進行中的牌局；歷史紀錄與收藏不刪除。
+      try {
+        const prior = state.iframe.contentWindow;
+        if (route.territory === "territory-spider") prior?.SpiderEmpireUI?.abandonCurrentDeal?.();
+        else if (mode === "klondike_draw1") prior?.KlondikeDraw1Game?.abandonCurrentDeal?.();
+        else prior?.KlondikeDraw3Game?.abandonCurrentDeal?.();
+      } catch (error) { console.warn("切換館藏牌局時，舊局儲存提醒失敗。", error); }
+      const url = new URL(route.path, window.location.href);
+      url.searchParams.set("collectionUid", uid);
+      url.searchParams.set("collectionKind", kind);
+      // 即使再次選取同一 UID，也必須從第零步重新開局。
+      enterEmpireGame(route.territory, url.href, state.opener, { forceReload: true });
+      return;
+    }
     if (!freecellPage || !freecellIframe || !freecellEmbed) return;
     let url;
     let opener;

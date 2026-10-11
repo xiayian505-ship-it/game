@@ -574,7 +574,42 @@
 
   void window.KlondikeDraw3Data?.initialize?.();
 
-  if (!window.KlondikeDraw3Game?.hasGame()) {
+  // 秘藏之谷指定 UID 載入：從本機已保存牌組開局，保留原資料庫機制。
+  function launchCollectionRequest() {
+    const params = new URLSearchParams(window.location.search);
+    const uid = params.get("collectionUid");
+    const kind = params.get("collectionKind");
+    if (!uid || !["favorite", "possible"].includes(kind)) return false;
+    const key = window.EmpireCollectionKeys?.["klondike_draw3"]?.[kind];
+    if (!key) return false;
+    let record = null;
+    try {
+      const saved = JSON.parse(localStorage.getItem(key) || "[]");
+      record = Array.isArray(saved) ? saved.find(item => item?.uid === uid &&
+        Array.isArray(item.deal) && item.deal.length === 52) : null;
+    } catch (error) { console.warn("讀取指定館藏失敗。", error); }
+    if (!record) {
+      showDealPicker({ canReturn: false });
+      setPickerNotice("找不到個人館藏牌局，請回館藏重新選擇。");
+      return true;
+    }
+    window.KlondikeDraw3Game?.abandonCurrentDeal?.();
+    if (window.KlondikeDraw3Game?.startKnownGame?.({
+      ...record,
+      bestSteps: kind === "favorite" ? record.bestSteps : null,
+      clearCount: kind === "favorite" ? record.clearCount : 0
+    })) {
+      if (kind === "possible") void window.KlondikeDraw3Data?.markPendingAttempt?.(record);
+      hideDealPicker();
+      window.EmpirePersonalCollection?.sync?.();
+    } else {
+      showDealPicker({ canReturn: false });
+      setPickerNotice("指定館藏牌局載入失敗。");
+    }
+    return true;
+  }
+
+  if (!launchCollectionRequest() && !window.KlondikeDraw3Game?.hasGame()) {
     showDealPicker({ canReturn: false });
   }
 })();
