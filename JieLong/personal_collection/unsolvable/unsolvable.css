@@ -132,3 +132,22 @@ a {
     gap: 9px;
   }
 }
+
+/* 第三階段：第二層只選三個系列，真正的資料列在第三層。 */
+.collection-grid { grid-template-columns: 1fr; }
+.collection-group { display: flex; align-items: center; gap: 15px; min-height: 85px; text-decoration: none; }
+.collection-series-suit { flex: 0 0 45px; display: grid; place-items: center; font-size: 1.9rem; }
+.collection-series-suit--spider { color: #324b72; }
+.collection-series-suit--freecell { color: #166178; }
+.collection-series-suit--klondike { color: #ba6044; }
+.collection-series-copy { display: grid; min-width: 0; gap: 6px; flex: 1; }
+.collection-series-copy strong { font-size: 1.08rem; }
+.collection-series-copy strong span { font-size: .76em; font-weight: 500; }
+.collection-series-copy small { color: var(--muted); font-size: .85rem; }
+.collection-series-arrow { font-size: 2rem; color: #8b4354; }
+.collection-series-status { color: #947d6d; white-space: nowrap; font-size: .78rem; }
+@media (max-width: 380px) {
+  .collection-group { gap: 8px; padding: 12px; }
+  .collection-series-suit { flex-basis: 34px; }
+  .collection-series-status { font-size: .68rem; }
+}

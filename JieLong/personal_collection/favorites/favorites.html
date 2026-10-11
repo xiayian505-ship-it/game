@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>玩家最愛局｜接龍帝國</title>
-  <link rel="stylesheet" href="./favorites.css">
-  <link rel="stylesheet" href="./favorites_style.css">
+  <link rel="stylesheet" href="./favorites.css?v=20261011-trove-v3">
+  <link rel="stylesheet" href="./favorites_style.css?v=20261011-trove-v3">
 </head>
 <body>
   <main class="collection-shell">
@@ -22,15 +22,24 @@
         <a class="collection-return" data-collection-leave href="../../index.html#territory-trove" target="_top">離境</a>
       </div>
     </header>
-      <p class="collection-note">目前先建立固定網址與分類頁面；個人 UID 清單與指定牌局載入將在下一階段接入。</p>
-      <div class="collection-grid" aria-label="六種遊戲分類">
-        <section class="collection-group"><strong>連環新接龍・初階</strong><p>秩序之城｜UID 館藏清單待接入</p></section>
-        <section class="collection-group"><strong>連環新接龍・中階</strong><p>秩序之城｜UID 館藏清單待接入</p></section>
-        <section class="collection-group"><strong>連環新接龍・高階</strong><p>秩序之城｜UID 館藏清單待接入</p></section>
-        <section class="collection-group"><strong>新接龍 FreeCell</strong><p>自由之都｜UID 館藏清單待接入</p></section>
-        <section class="collection-group"><strong>接龍・一張牌</strong><p>傳說之境｜UID 館藏清單待接入</p></section>
-        <section class="collection-group"><strong>接龍・三張牌</strong><p>傳說之境｜UID 館藏清單待接入</p></section>
-      </div>
+      <p class="collection-note">選擇遊戲系列，查看個人保存的牌局。</p>
+      <nav class="collection-grid" aria-label="三個遊戲系列">
+        <div class="collection-group collection-group--reserved" aria-disabled="true">
+          <span class="collection-series-suit collection-series-suit--spider" aria-hidden="true">♠</span>
+          <span class="collection-series-copy"><strong>連環新接龍 <span>Spider</span></strong><small>初階／中階／高階・館藏功能準備中</small></span>
+          <span class="collection-series-status">籌備中</span>
+        </div>
+        <a class="collection-group collection-group--link" href="./freecell/freecell_favorites.html">
+          <span class="collection-series-suit collection-series-suit--freecell" aria-hidden="true">♣</span>
+          <span class="collection-series-copy"><strong>新接龍 <span>FreeCell</span></strong><small>瀏覽已收藏的牌局</small></span>
+          <span class="collection-series-arrow" aria-hidden="true">›</span>
+        </a>
+        <div class="collection-group collection-group--reserved" aria-disabled="true">
+          <span class="collection-series-suit collection-series-suit--klondike" aria-hidden="true">♦</span>
+          <span class="collection-series-copy"><strong>接龍 <span>Klondike</span></strong><small>翻一張／翻三張・館藏功能準備中</small></span>
+          <span class="collection-series-status">籌備中</span>
+        </div>
+      </nav>
     <footer class="collection-footer">慢 慢 | Stillness by Slowly</footer>
   </main>
   <script src="./favorites.js"></script>

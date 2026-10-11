@@ -129,3 +129,9 @@
   color: #745436;
   font-size: .85rem;
 }
+
+/* 可用的 FreeCell 分類才有可點擊的 hover／focus。 */
+.collection-group--reserved { opacity: .76; }
+.collection-group--link { cursor: pointer; transition: transform .15s ease, box-shadow .15s ease; }
+.collection-group--link:hover { transform: translateY(-2px); box-shadow: 0 12px 22px rgba(69,42,20,.14); }
+.collection-group--link:focus-visible { outline: 3px solid #cda35d; outline-offset: 2px; }

@@ -1013,7 +1013,32 @@
   void reconcilePossibleWithSolved();
   window.addEventListener("freecelldealchange", syncCurrentFavorite);
 
-  if (!window.FreeCellGame?.hasGame()) {
+  // 來自秘藏之谷的指定開局：使用原本的 startKnownGame，不另寫發牌規則。
+  function launchCollectionRequest() {
+    const params = new URLSearchParams(window.location.search);
+    const uid = params.get("collectionUid");
+    const kind = params.get("collectionKind");
+    if (!uid || !["favorite", "possible"].includes(kind)) return false;
+    const records = kind === "favorite" ? readFavoriteDeals() : readPossibleDeals();
+    const record = records.find(item => item.uid === uid);
+    if (!record) {
+      showDealPicker({ canReturn: false });
+      setPickerNotice("無法讀取這副個人館藏牌局，請返回館藏重新選擇。");
+      return true;
+    }
+    window.FreeCellGame?.abandonCurrentDeal?.();
+    if (window.FreeCellGame?.startKnownGame?.(record)) {
+      if (kind === "possible") void window.FreeCellData?.markPendingAttempt?.(record);
+      syncCurrentFavorite();
+      hideDealPicker();
+    } else {
+      showDealPicker({ canReturn: false });
+      setPickerNotice("指定牌局載入失敗，請返回館藏重新選擇。");
+    }
+    return true;
+  }
+
+  if (!launchCollectionRequest() && !window.FreeCellGame?.hasGame()) {
     showDealPicker({ canReturn: false });
   }
 })();

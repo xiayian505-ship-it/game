@@ -409,6 +409,52 @@
     if (index !== activeBookIndex) turnBookTo(index);
   });
 
+  // 秘藏之谷第三層：指定本機收藏後轉往自由之都，完全不更動主城入口 UI。
+  window.addEventListener("message", (event) => {
+    if (event.origin !== window.location.origin || event.data?.type !== "slowly-trove-launch") return;
+    const trove = empireEmbeds.get("territory-trove");
+    if (!trove || event.source !== trove.iframe.contentWindow) return;
+    const { mode, kind } = event.data;
+    if (!freecellPage || !freecellIframe || !freecellEmbed) return;
+    let url;
+    let opener;
+    try {
+      if (mode === "microsoft" && kind === "favorite") {
+        const number = Number(event.data.dealNumber);
+        if (!Number.isSafeInteger(number) || !([-1, -2, -3, -4].includes(number) || (number >= 1 && number <= 1000000))) return;
+        const favorites = JSON.parse(localStorage.getItem("freecell_microsoft_favorites_v1") || "[]");
+        if (!Array.isArray(favorites) || !favorites.includes(number)) return;
+        url = new URL("./freecell/microsoft/microsoft.html", window.location.href);
+        url.searchParams.set("deal", String(number));
+        opener = freecellMicrosoftEnter;
+      } else if (mode === "freecell" && ["favorite", "possible"].includes(kind)) {
+        const uid = event.data.uid;
+        if (typeof uid !== "string" || !uid || uid.length > 200) return;
+        const key = kind === "favorite" ? "freecell_favorite_deals_v1" : "freecell_possible_unsolvable_deals_v1";
+        const records = JSON.parse(localStorage.getItem(key) || "[]");
+        if (!Array.isArray(records) || !records.some(record => record?.uid === uid && Array.isArray(record.deal) && record.deal.length === 52)) return;
+        url = new URL("./freecell/freecell.html", window.location.href);
+        url.searchParams.set("collectionUid", uid);
+        url.searchParams.set("collectionKind", kind);
+        opener = freecellEnter;
+      } else return;
+    } catch (error) {
+      console.warn("館藏驗證失敗，未切換牌局。", error);
+      return;
+    }
+
+    // 舊遊戲如已存在，先沿用其放棄進度的操作，才載入新牌局。
+    if (currentFreecellMode === "freecell") {
+      try { freecellIframe.contentWindow?.FreeCellGame?.abandonCurrentDeal?.(); }
+      catch (error) { console.warn("舊牌局保存狀態無法讀取，繼續載入指定牌局。", error); }
+    }
+    hideOtherEmpireGames("territory-freecell");
+    // 每次選 UID 都重開該牌局，即使與上次選擇相同也不沿用半局進度。
+    enterFreecell(url.href, opener, { mode, preserveCurrent: false });
+    const targetIndex = bookPages.indexOf(freecellPage);
+    if (targetIndex !== activeBookIndex) turnBookTo(targetIndex);
+  });
+
   window.addEventListener("message", (event) => {
     if (event.origin !== window.location.origin || event.data?.type !== "slowly-empire-leave") return;
     const state = empireEmbeds.get(event.data?.territory);
