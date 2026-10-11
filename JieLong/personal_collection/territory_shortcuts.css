@@ -1,0 +1,110 @@
+/* 與主城「三大領地」快捷面板一致的原始按鈕 CSS（2026-10-11）。
+   只載入於個人牌局館的第二層分類頁，不動主城樣式。 */
+:root {
+  --burgundy: #71181b;
+  --burgundy-2: #4d1013;
+  --navy: #0f4567;
+  --navy-2: #0a2f48;
+  --green: #0d594d;
+  --green-2: #063c35;
+}
+
+.territory-shortcuts,
+.quick-game-list {
+  display: grid;
+  gap: 12px;
+}
+
+.territory-shortcut,
+.quick-game-entry {
+  min-height: 78px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 16px;
+  text-decoration: none;
+  border: 1px solid rgba(133, 93, 48, .28);
+  border-radius: 18px;
+  box-shadow: 0 8px 18px rgba(69, 42, 20, .08), inset 0 0 0 2px rgba(255,255,255,.34);
+  --slowly-lift-y: -3px;
+  --slowly-press-scale: .992;
+}
+
+.territory-shortcut b,
+.quick-game-entry b {
+  color: rgba(255,255,255,.8);
+  font-size: 1.8rem;
+  font-weight: 400;
+}
+
+.territory-shortcut > span:nth-child(2),
+.quick-game-entry > span:nth-child(2) {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.territory-shortcut small,
+.quick-game-entry small {
+  font-size: .77rem;
+  opacity: .76;
+}
+
+.territory-shortcut strong,
+.quick-game-entry strong {
+  font-size: 1rem;
+}
+
+.territory-shortcut em {
+  font-style: normal;
+  font-size: .82em;
+  opacity: .86;
+}
+
+.shortcut-seal {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border: 2px solid rgba(255, 226, 157, .72);
+  border-radius: 50%;
+  background: rgba(255,255,255,.08);
+  font-size: 1.7rem;
+}
+
+.shortcut-spider {
+  color: #ffe7af;
+  background: linear-gradient(105deg, var(--burgundy-2), var(--burgundy));
+}
+
+.shortcut-freecell {
+  color: #e7f3ff;
+  background: linear-gradient(105deg, var(--navy-2), var(--navy));
+}
+
+.shortcut-klondike {
+  color: #eaf8df;
+  background: linear-gradient(105deg, var(--green-2), var(--green));
+}
+
+/* 與主城 600px 版快捷面板同樣的按鈕間距與徽章尺寸。 */
+@media (max-width: 600px) {
+  .territory-shortcut {
+    padding: 11px 12px;
+    gap: 11px;
+  }
+  .shortcut-seal {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+/* 未啟用的系列維持原本配色，但不提供點擊行為。 */
+.territory-shortcut[aria-disabled="true"] {
+  cursor: default;
+}
+.territory-shortcut[href]:focus-visible {
+  outline: 3px solid #d6a54d;
+  outline-offset: 2px;
+}

@@ -4,8 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>可能無解局｜接龍帝國</title>
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/hover/lift.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/feedback/press.css">
   <link rel="stylesheet" href="./unsolvable.css?v=20261011-trove-v3">
   <link rel="stylesheet" href="./unsolvable_style.css?v=20261011-trove-v3">
+  <link rel="stylesheet" href="../territory_shortcuts.css?v=20261011-trove-v4">
 </head>
 <body>
   <main class="collection-shell">
@@ -23,21 +26,21 @@
       </div>
     </header>
       <p class="collection-note">選擇遊戲系列，查看個人保存的牌局。</p>
-      <nav class="collection-grid" aria-label="三個遊戲系列">
-        <div class="collection-group collection-group--reserved" aria-disabled="true">
-          <span class="collection-series-suit collection-series-suit--spider" aria-hidden="true">♠</span>
-          <span class="collection-series-copy"><strong>連環新接龍 <span>Spider</span></strong><small>初階／中階／高階・館藏功能準備中</small></span>
-          <span class="collection-series-status">籌備中</span>
+      <nav class="territory-shortcuts" aria-label="三個遊戲系列">
+        <div class="territory-shortcut shortcut-spider" aria-disabled="true" title="館藏功能籌備中">
+          <span class="shortcut-seal">♠</span>
+          <span><small>秩序之城</small><strong>連環新接龍 <em>SPIDER</em></strong></span>
+          <b>›</b>
         </div>
-        <a class="collection-group collection-group--link" href="./freecell/freecell_unsolvable.html">
-          <span class="collection-series-suit collection-series-suit--freecell" aria-hidden="true">♣</span>
-          <span class="collection-series-copy"><strong>新接龍 <span>FreeCell</span></strong><small>查看個人標記的可能無解局</small></span>
-          <span class="collection-series-arrow" aria-hidden="true">›</span>
+        <a class="territory-shortcut shortcut-freecell slowly-lift slowly-press" href="./freecell/freecell_unsolvable.html">
+          <span class="shortcut-seal">♣</span>
+          <span><small>自由之都</small><strong>新接龍 <em>FREECELL</em></strong></span>
+          <b>›</b>
         </a>
-        <div class="collection-group collection-group--reserved" aria-disabled="true">
-          <span class="collection-series-suit collection-series-suit--klondike" aria-hidden="true">♦</span>
-          <span class="collection-series-copy"><strong>接龍 <span>Klondike</span></strong><small>翻一張／翻三張・館藏功能準備中</small></span>
-          <span class="collection-series-status">籌備中</span>
+        <div class="territory-shortcut shortcut-klondike" aria-disabled="true" title="館藏功能籌備中">
+          <span class="shortcut-seal">♦</span>
+          <span><small>傳說之境</small><strong>接龍 <em>KLONDIKE</em></strong></span>
+          <b>›</b>
         </div>
       </nav>
     <footer class="collection-footer">慢 慢 | Stillness by Slowly</footer>
