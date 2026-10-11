@@ -372,7 +372,6 @@
         ></iframe>
       </div>
         </div>
-      </div>
 
         <div class="book-page book-page-territory" data-book-page="territory-trove">
       <section
@@ -405,12 +404,12 @@
           </div>
 
           <nav class="game-list" aria-label="秘藏之谷館藏入口">
-            <a class="game-link slowly-lift slowly-press" href="./personal_collection/favorites/favorites.html">
+            <a class="game-link slowly-lift slowly-press" data-empire-game-enter="territory-trove" href="./personal_collection/favorites/favorites.html">
               <span class="card-stack heart">♥</span>
               <span class="game-text"><strong>進入 玩家最愛局</strong><small>收藏喜愛的牌局</small></span>
               <span class="arrow">›</span>
             </a>
-            <a class="game-link slowly-lift slowly-press" href="./personal_collection/unsolvable/unsolvable.html">
+            <a class="game-link slowly-lift slowly-press" data-empire-game-enter="territory-trove" href="./personal_collection/unsolvable/unsolvable.html">
               <span class="card-stack heart">♥</span>
               <span class="game-text"><strong>進入 可能無解局</strong><small>保存等待破解的疑難牌局</small></span>
               <span class="arrow">›</span>
@@ -418,7 +417,16 @@
           </nav>
         </div>
       </section>
+      <div class="empire-game-embed" data-empire-embed="territory-trove" hidden>
+        <iframe
+          class="empire-game-iframe"
+          data-empire-iframe="territory-trove"
+          title="秘藏之谷｜個人牌局館"
+          loading="eager"
+        ></iframe>
+      </div>
         </div>
+      </div>
 
       <button class="book-turn book-turn-prev" type="button" data-book-prev aria-label="上一頁">
         <span aria-hidden="true">◀</span>
@@ -529,11 +537,11 @@
         <div class="quick-panel-view" data-panel-view="collection" hidden>
           <p class="quick-panel-intro">挑選你的私人館藏，查看收藏的牌局。</p>
           <nav class="quick-game-list" aria-label="個人牌局館入口">
-            <a class="quick-game-entry slowly-lift slowly-press" href="./personal_collection/favorites/favorites.html">
+            <a class="quick-game-entry slowly-lift slowly-press" data-empire-game-enter="territory-trove" href="./personal_collection/favorites/favorites.html">
               <span class="collection-stamp-icon" aria-hidden="true"><span class="collection-stamp-seal">♥</span></span>
               <span><strong>玩家最愛局</strong><small>個人收藏的牌局</small></span><b>›</b>
             </a>
-            <a class="quick-game-entry slowly-lift slowly-press" href="./personal_collection/unsolvable/unsolvable.html">
+            <a class="quick-game-entry slowly-lift slowly-press" data-empire-game-enter="territory-trove" href="./personal_collection/unsolvable/unsolvable.html">
               <span class="collection-stamp-icon" aria-hidden="true"><span class="collection-stamp-seal">♥</span></span>
               <span><strong>可能無解局</strong><small>個人標記的疑難牌局</small></span><b>›</b>
             </a>

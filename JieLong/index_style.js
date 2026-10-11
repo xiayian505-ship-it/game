@@ -348,9 +348,9 @@
     });
   });
 
-  // 秩序之城與傳說之境｜比照 FreeCell 的 iframe 入境、離境及切換。
+  // 秩序之城、傳說之境、秘藏之谷｜共用 iframe 入境、離境及切換。
   const empireEmbeds = new Map();
-  for (const territory of ["territory-spider", "territory-klondike"]) {
+  for (const territory of ["territory-spider", "territory-klondike", "territory-trove"]) {
     const page = bookPages.find((item) => item.dataset.bookPage === territory);
     const embed = document.querySelector(`[data-empire-embed="${territory}"]`);
     const iframe = document.querySelector(`[data-empire-iframe="${territory}"]`);
