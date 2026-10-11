@@ -22,7 +22,7 @@
 
   const panelTitles = {
     territories: "四大領地",
-    games: "遊戲入口",
+    games: "7遊戲入口",
     collection: "個人牌局館",
     classics: "經典無解牌局"
   };

@@ -11,3 +11,6 @@
 }
 .record-row:focus-visible, #refreshButton:focus-visible, .pager button:focus-visible,
 .collection-tabs button:focus-visible { outline: 2px solid #a75c75; outline-offset: 3px; }
+
+/* 第三層與密技體驗頁一致：返回、離境並列。 */
+.collection-header .empire-header-actions { display: flex; align-items: center; gap: 8px; }
