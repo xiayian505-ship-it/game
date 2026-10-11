@@ -2011,7 +2011,7 @@
       const remote = pending ? window.SpiderPendingDealsDB : window.SpiderSolvedDealsDB;
 
       if (remote?.listPage) {
-        const result = await remote.listPage(page, 5);
+        const result = await remote.listPage(page, 4);
         if (!pending) {
           databaseReady = true;
           remoteSolvedDealCount = Number(result.totalCount || 0);
@@ -2038,10 +2038,10 @@
 
       const localDeals = pending ? getLocalPendingDealsSorted() : getLocalSolvedDealsSorted();
       const totalCount = localDeals.length;
-      const totalPages = Math.max(1, Math.ceil(totalCount / 5));
+      const totalPages = Math.max(1, Math.ceil(totalCount / 4));
       const safePage = Math.min(Math.max(1, Number(page) || 1), totalPages);
-      const start = (safePage - 1) * 5;
-      const records = localDeals.slice(start, start + 5);
+      const start = (safePage - 1) * 4;
+      const records = localDeals.slice(start, start + 4);
 
       renderContributedPage(records, totalCount, safePage, totalPages);
       setPickerNotice(totalCount > 0 ? `目前使用這台裝置上的${label}。` : `目前還沒有${label}。`);

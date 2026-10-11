@@ -112,10 +112,10 @@
     return Number(total || 0);
   }
 
-  async function listPage(page = 1, pageSize = 5) {
+  async function listPage(page = 1, pageSize = 4) {
     if (!client) throw new Error("Supabase client 尚未載入。");
 
-    const size = Math.min(50, Math.max(1, Math.trunc(Number(pageSize)) || 5));
+    const size = Math.min(50, Math.max(1, Math.trunc(Number(pageSize)) || 4));
     const requestedPage = Math.max(1, Math.trunc(Number(page)) || 1);
     const from = (requestedPage - 1) * size;
     const to = from + size - 1;
@@ -292,9 +292,9 @@
     return Number(total || 0);
   }
 
-  async function pendingListPage(page = 1, pageSize = 5) {
+  async function pendingListPage(page = 1, pageSize = 4) {
     if (!client) throw new Error("Supabase client 尚未載入。");
-    const size = Math.min(50, Math.max(1, Math.trunc(Number(pageSize)) || 5));
+    const size = Math.min(50, Math.max(1, Math.trunc(Number(pageSize)) || 4));
     const requestedPage = Math.max(1, Math.trunc(Number(page)) || 1);
     const from = (requestedPage - 1) * size;
     const to = from + size - 1;

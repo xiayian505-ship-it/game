@@ -239,8 +239,8 @@
         : (isPendingMode() && pendingListMode === "possible"
           ? window.EmpirePersonalCollection.possiblePage(page)
           : (isPendingMode()
-            ? await window.KlondikeDraw1Data.listPendingPage(page, 5)
-            : await window.KlondikeDraw1Data.listPage(page, 5)));
+            ? await window.KlondikeDraw1Data.listPendingPage(page, 4)
+            : await window.KlondikeDraw1Data.listPage(page, 4)));
       renderContributedPage(result);
       setPickerNotice(result.totalCount > 0 ? `共有 ${result.totalCount} 副${label}。` : `目前還沒有${label}。`);
     } catch (error) {

@@ -14,7 +14,7 @@
     let opener = null;
     let reconcilePromise = null;
     let previousIdentity = "";
-    const pageSize = 5;
+    const pageSize = 4;
     const isEasy = mode === "spider_easy";
     const length = mode.startsWith("spider_") ? 104 : 52;
     const allowedSuits = mode === "spider_medium" ? ["spade", "heart"] : ["spade", "heart", "club", "diamond"];
