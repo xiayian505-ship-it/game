@@ -34,9 +34,11 @@ a {
 }
 
 .collection-header {
-  display: grid;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 12px;
-  padding: 24px;
+  padding: 14px 16px;
 }
 
 .collection-header h1, .collection-header p {
@@ -71,10 +73,29 @@ a {
   color: var(--muted);
 }
 
-.collection-return {
-  display: inline-flex;
-  min-height: 40px;
+.empire-title-group {
+  display: flex;
   align-items: center;
+  min-width: 0;
+  gap: 14px;
+}
+
+.empire-title-copy {
+  min-width: 0;
+}
+
+.empire-header-actions {
+  flex: 0 0 auto;
+  display: grid;
+  align-items: center;
+}
+
+.collection-return {
+  display: inline-grid;
+  place-items: center;
+  min-height: 40px;
+  padding: 0 14px;
+  white-space: nowrap;
 }
 
 .collection-grid {
@@ -103,5 +124,11 @@ a {
   }
   .collection-shell {
     padding: 12px 10px 32px;
+  }
+  .collection-header {
+    padding: 12px 10px;
+  }
+  .empire-title-group {
+    gap: 9px;
   }
 }
