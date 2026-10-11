@@ -1,0 +1,43 @@
+/* 帝國個人牌局：共用操作元件，配色從各遊戲既有的按鈕樣式繼承。 */
+.game-header .deal-id-left { display: flex; align-items: center; min-width: 0; }
+.game-header .deal-id-left .slowly-favorite,
+.game-header .deal-id-left .slowly-favorite.is-favorite,
+.game-header .deal-id-left .slowly-favorite:focus-visible,
+.game-header .deal-id-left .slowly-favorite:hover { color: #fbe5aa; font-size: 1.05rem; }
+#dealPicker .pending-row-wrap {
+  display: flex; align-items: stretch; min-width: 0;
+  border: 1px solid #dcb567; border-radius: 9px; overflow: hidden;
+  background: var(--empire-deal-row-bg, linear-gradient(135deg, #3e1823, #6d283a));
+}
+#dealPicker .pending-row-wrap .pending-play-button {
+  flex: 1 1 auto; min-width: 0; border: 0; border-radius: 0;
+  box-shadow: none; background: transparent; padding-inline: 8px;
+}
+#dealPicker .pending-row-wrap .pending-play-button::after { content: none; }
+#dealPicker .pending-row-wrap .pending-play-button:hover,
+#dealPicker .pending-row-wrap .pending-attempt-button:hover,
+#dealPicker .pending-flag-button:hover:not(:disabled) { background: rgba(255,255,255,.1); }
+#dealPicker .pending-row-wrap .pending-attempt-button {
+  flex: 0 0 auto; border: 0; border-radius: 0; padding: 7px 8px;
+  background: transparent; color: #fbe5aa; font: inherit; font-size: .78rem;
+  white-space: nowrap; cursor: pointer;
+}
+#dealPicker .pending-row-wrap .pending-flag-button {
+  flex: 0 0 38px; width: 38px; border: 0; border-left: 1px solid rgba(255,234,177,.35);
+  padding: 0; background: transparent; color: #fbe5aa; font-size: 1.28rem; cursor: pointer;
+}
+#dealPicker .pending-row-wrap .pending-flag-button.is-marked {
+  color: #ffd16a; background: rgba(255,200,80,.12); opacity: 1; cursor: default;
+}
+#possibleMarkConfirm .possible-mark-card { max-width: min(100%, 420px); }
+#possibleMarkConfirm .possible-mark-warning {
+  margin: 14px 0 0; padding: 12px; border: 1px solid rgba(214,165,77,.55);
+  border-radius: 10px; background: rgba(255,247,223,.76);
+  color: #755526; font-size: .88rem; line-height: 1.65; text-align: center;
+}
+@media (max-width: 380px) {
+  #dealPicker .pending-row-wrap .pending-play-button { padding-inline: 5px; gap: 3px; }
+  #dealPicker .pending-row-wrap .contributed-code { font-size: .72rem; }
+  #dealPicker .pending-row-wrap .pending-attempt-button { font-size: .70rem; padding-inline: 4px; }
+  #dealPicker .pending-row-wrap .pending-flag-button { flex-basis: 32px; width: 32px; }
+}

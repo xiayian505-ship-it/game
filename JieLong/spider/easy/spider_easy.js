@@ -20,9 +20,13 @@
   const currentDealClearCount = document.getElementById("currentDealClearCount");
 
   const randomDealButton = document.getElementById("randomDealButton");
+  const randomChoicePanel = document.getElementById("randomChoicePanel");
   const solvedDealButton = document.getElementById("solvedDealButton");
   const pendingDealButton = document.getElementById("pendingDealButton");
   const contributedPanel = document.getElementById("contributedPanel");
+  const pendingChoiceTabs = document.getElementById("pendingChoiceTabs");
+  const pendingAllTab = document.getElementById("pendingAllTab");
+  const possibleUnsolvedTab = document.getElementById("possibleUnsolvedTab");
   const contributedList = document.getElementById("contributedList");
   const randomContributedButton = document.getElementById("randomContributedButton");
   const contributedPrevButton = document.getElementById("contributedPrevButton");
@@ -87,6 +91,7 @@
   let contributedPageRecords = [];
   let contributedLoading = false;
   let contributedMode = "solved";
+  let pendingListMode = "all";
 
   const VICTORY_EFFECTS = Object.freeze([
     "confetti",
@@ -646,7 +651,8 @@
     completed = Number(state.completed);
     moveCount = Number(state.moveCount);
     originalDeal = state.originalDeal.map(Number);
-    currentDealUid = state.currentDealUid || null;
+    // 舊存檔若尚無 UID，補一個穩定的身分並跟隨同一局存檔。
+    currentDealUid = state.currentDealUid || createSolvedDealUid();
     currentDealSource = state.currentDealSource || "random";
     currentDealBestValue = currentDealUid ? localBestSteps(currentDealUid) : null;
     currentDealClearValue = Math.max(0, Number(state.currentDealClearValue) || 0);
@@ -662,6 +668,7 @@
     messageClears.textContent = "";
     restartConfirm.hidden = true;
     dealPicker.hidden = true;
+    closeRandomChoices();
     contributedPanel.hidden = true;
     uidSearchPanel.hidden = true;
     uidDealButton.setAttribute("aria-expanded", "false");
@@ -675,7 +682,7 @@
       window.setTimeout(() => void checkWin(), 0);
     } else {
       saveActiveGame();
-      if (!currentDealUid && currentDealSource === "random") {
+      if (currentDealSource === "random") {
         void resolveCurrentDealIdentity();
       }
     }
@@ -703,7 +710,7 @@
           .reverse()
           .map(card => card.rank);
 
-    currentDealUid = options.uid || null;
+    currentDealUid = String(options.uid || "").trim() || createSolvedDealUid();
     currentDealSource = options.source || (knownDeal ? "solved" : "random");
     currentDealBestValue = Number(options.bestSteps) > 0 ? Number(options.bestSteps) : (currentDealUid ? localBestSteps(currentDealUid) : null);
     currentDealClearValue = Math.max(0, Number(options.clearCount) || 0);
@@ -732,21 +739,22 @@
     messageClears.textContent = "";
     restartConfirm.hidden = true;
     dealPicker.hidden = true;
+    closeRandomChoices();
     contributedPanel.hidden = true;
     uidSearchPanel.hidden = true;
     uidDealButton.setAttribute("aria-expanded", "false");
     setPickerNotice("");
     setNotice(
-      currentDealUid
-        ? (currentDealSource === "pending"
+      currentDealSource === "random"
+        ? `已開始牌局 ${shortUid(currentDealUid)}。`
+        : (currentDealSource === "pending"
             ? `已載入待破解牌局 ${shortUid(currentDealUid)}`
             : `已載入玩家已解牌局 ${shortUid(currentDealUid)}`)
-        : "點一張牌或牌串開始。"
     );
     render();
     saveActiveGame();
 
-    if (!currentDealUid && currentDealSource === "random") {
+    if (currentDealSource === "random") {
       void resolveCurrentDealIdentity();
     }
   }
@@ -764,6 +772,7 @@
     moveCountElement.textContent = moveCount;
     solvedDealCountElement.textContent = Math.max(remoteSolvedDealCount, readSolvedDeals().length);
     renderDealIdentity();
+    window.EmpirePersonalCollection?.sync?.();
 
     stockButton.disabled = busy || stockCount === 0;
     restartButton.disabled = busy;
@@ -1583,6 +1592,7 @@
 
     const key = dealKeyOf(originalDeal);
     const expectedKey = key;
+    const expectedUid = currentDealUid;
     let record = findLocalDealByKey(key);
 
     if (!record && window.SpiderSolvedDealsDB?.findByDeal) {
@@ -1594,7 +1604,8 @@
       }
     }
 
-    if (!record || dealKeyOf(originalDeal) !== expectedKey || currentDealUid) {
+    // 查詢可能很慢；若玩家已切換牌局或手動開始另一局，舊結果不得覆蓋新局。
+    if (!record || dealKeyOf(originalDeal) !== expectedKey || currentDealUid !== expectedUid || currentDealSource !== "random") {
       return record || null;
     }
 
@@ -1628,7 +1639,7 @@
     }
 
     const record = existing || {
-      uid: currentDealUid || pending?.uid || createSolvedDealUid(),
+      uid: pending?.uid || currentDealUid || createSolvedDealUid(),
       deal: originalDeal.slice(),
       solvedAt: window.Timestamp?.create ? window.Timestamp.create() : String(Date.now())
     };
@@ -1839,6 +1850,7 @@
     currentDealClearValue = clears.clearCount || saved.clearCount || 0;
     clearActiveGame();
     render();
+    window.EmpirePersonalCollection?.onWin?.(saved.uid, originalDeal, currentDealBestValue, currentDealClearValue);
     await playBOM({ isNew: saved.isNew });
 
     // 勝利流程結束後解除操作鎖。
@@ -1891,7 +1903,18 @@
   }
 
   function currentPoolLabel() {
+    if (contributedMode === "favorite") return "最愛牌局";
+    if (isPendingMode() && pendingListMode === "possible") return "可能無解局";
     return isPendingMode() ? "待破解牌局" : "玩家已解牌局";
+  }
+
+  function switchPendingList(mode) {
+    if (!isPendingMode() || contributedLoading || contributedPanel.hidden) return;
+    if (pendingListMode === mode) return;
+    pendingListMode = mode;
+    pendingAllTab.setAttribute("aria-pressed", String(mode === "all"));
+    possibleUnsolvedTab.setAttribute("aria-pressed", String(mode === "possible"));
+    void loadContributedPage(1);
   }
 
   function renderContributedPage(records, totalCount, page, totalPages) {
@@ -1899,7 +1922,7 @@
     contributedPage = Math.max(1, Number(page) || 1);
     contributedTotalPages = Math.max(1, Number(totalPages) || 1);
 
-    if (!isPendingMode()) {
+    if (contributedMode === "solved") {
       remoteSolvedDealCount = Math.max(remoteSolvedDealCount, Number(totalCount) || 0);
     }
 
@@ -1908,7 +1931,8 @@
     if (contributedPageRecords.length === 0) {
       const empty = document.createElement("p");
       empty.className = "contributed-empty";
-      empty.textContent = isPendingMode() ? "目前還沒有待破解牌局。" : "目前還沒有玩家已解牌局。";
+      empty.textContent = contributedMode === "favorite" ? "目前還沒有最愛牌局。"
+        : (isPendingMode() ? (pendingListMode === "possible" ? "你尚未標記可能無解局。" : "目前還沒有待破解牌局。") : "目前還沒有玩家已解牌局。");
       contributedList.appendChild(empty);
     } else {
       contributedPageRecords.forEach(record => {
@@ -1950,7 +1974,11 @@
           if (pending) void markPendingAttempt(record);
         });
 
-        contributedList.appendChild(button);
+        if (isPendingMode() && pendingListMode === "all") {
+          contributedList.appendChild(window.EmpirePersonalCollection.decoratePending(button, record));
+        } else {
+          contributedList.appendChild(button);
+        }
       });
     }
 
@@ -1963,6 +1991,17 @@
 
     contributedLoading = true;
     render();
+
+    if (contributedMode === "favorite" || (isPendingMode() && pendingListMode === "possible")) {
+      const result = contributedMode === "favorite"
+        ? window.EmpirePersonalCollection.favoritePage(page)
+        : window.EmpirePersonalCollection.possiblePage(page);
+      renderContributedPage(result.records, result.totalCount, result.page, result.totalPages);
+      setPickerNotice(result.totalCount ? `共有 ${result.totalCount} 副${currentPoolLabel()}。` : `目前還沒有${currentPoolLabel()}。`);
+      contributedLoading = false;
+      render();
+      return;
+    }
 
     const pending = isPendingMode();
     const label = currentPoolLabel();
@@ -2015,26 +2054,31 @@
   async function openContributedPanel(mode = "solved") {
     if (busy) return;
 
-    contributedMode = mode === "pending" ? "pending" : "solved";
+    contributedMode = ["pending", "favorite"].includes(mode) ? mode : "solved";
+    if (contributedMode === "pending") pendingListMode = "all";
+    pendingAllTab.setAttribute("aria-pressed", String(pendingListMode === "all"));
+    possibleUnsolvedTab.setAttribute("aria-pressed", String(pendingListMode === "possible"));
+    pendingChoiceTabs.hidden = contributedMode !== "pending";
+    if (contributedMode === "pending") void window.EmpirePersonalCollection?.reconcile?.();
+    closeRandomChoices();
     contributedPanel.hidden = false;
     contributedPanel.setAttribute("aria-label", currentPoolLabel());
-    randomContributedButton.textContent = isPendingMode()
-      ? "從待破解牌局隨機抽一局"
-      : "從已解牌局隨機抽一局";
+    randomContributedButton.hidden = contributedMode !== "solved";
+    randomContributedButton.textContent = "從已解牌局隨機抽一局";
     uidSearchPanel.hidden = true;
     uidDealButton.setAttribute("aria-expanded", "false");
     uidInput.value = "";
     await loadContributedPage(1);
   }
 
-  async function loadRandomSolvedDeal() {
+  async function loadRandomSolvedDeal(poolMode = contributedMode) {
     if (busy || contributedLoading) return;
 
     contributedLoading = true;
     render();
 
-    const pending = isPendingMode();
-    const label = currentPoolLabel();
+    const pending = poolMode === "pending";
+    const label = pending ? "待破解牌局" : "玩家已解牌局";
     setPickerNotice(`正在從${label}隨機抽一副…`);
 
     try {
@@ -2125,6 +2169,8 @@
 
   function toggleUidSearch() {
     const willOpen = uidSearchPanel.hidden;
+    closeRandomChoices();
+    contributedPanel.hidden = true;
     uidSearchPanel.hidden = !willOpen;
     uidDealButton.setAttribute("aria-expanded", String(willOpen));
 
@@ -2145,11 +2191,31 @@
     dealPickerNotice.textContent = String(text || "");
   }
 
+  function closeRandomChoices() {
+    randomChoicePanel.hidden = true;
+    randomDealButton.setAttribute("aria-expanded", "false");
+  }
+
+  function toggleRandomChoices() {
+    if (busy) return;
+    const willOpen = randomChoicePanel.hidden;
+    closeRandomChoices();
+    contributedPanel.hidden = true;
+    uidSearchPanel.hidden = true;
+    uidDealButton.setAttribute("aria-expanded", "false");
+    if (willOpen) {
+      randomChoicePanel.hidden = false;
+      randomDealButton.setAttribute("aria-expanded", "true");
+    }
+    setPickerNotice("");
+  }
+
   function showDealPicker(options = {}) {
     const canReturn = options.canReturn !== false;
     restartConfirm.hidden = true;
     message.hidden = true;
     dealPickerBackButton.hidden = !canReturn;
+    closeRandomChoices();
     contributedPanel.hidden = true;
     uidSearchPanel.hidden = true;
     uidDealButton.setAttribute("aria-expanded", "false");
@@ -2165,6 +2231,7 @@
 
   function hideDealPicker() {
     dealPicker.hidden = true;
+    closeRandomChoices();
     contributedPanel.hidden = true;
     uidSearchPanel.hidden = true;
     uidDealButton.setAttribute("aria-expanded", "false");
@@ -2198,7 +2265,9 @@
     hideRestartConfirm: () => { restartConfirm.hidden = true; },
     selectOtherDeal: () => { restartConfirm.hidden = true; showDealPicker({ canReturn: true }); },
     hideDealPicker,
+    toggleRandomChoices,
     selectRandomDeal: () => { if (!busy) { abandonCurrentDeal(); startGame({ source: "random" }); } },
+    selectRandomPendingDeal: () => loadRandomSolvedDeal("pending"),
     openContributedPanel,
     loadRandomSolvedDeal,
     previousPage: () => { if (contributedPage > 1) return loadContributedPage(contributedPage - 1); },
@@ -2207,7 +2276,27 @@
     loadDealByUid,
     copyCurrentUid: () => copyUid(currentDealUid, copyDealUidButton),
     copyMessageUid: () => copyUid(messageCopyUidButton.dataset.uid, messageCopyUidButton),
+    switchPendingList,
+    getCurrentDealRecord: () => originalDeal.length === 104 && currentDealUid
+      ? {uid: currentDealUid, deal: originalDeal.slice(), bestSteps: currentDealBestValue, clearCount: currentDealClearValue}
+      : null,
     chooseNextDeal: () => showDealPicker({ canReturn: false })
+  });
+
+  window.EmpirePersonalCollection = window.EmpirePersonalDeals.create({
+    mode: "spider_easy",
+    getCurrent: () => window.SpiderEmpireUI.getCurrentDealRecord(),
+    shortUid,
+    findSolved: async record => {
+      if (findLocalDealByKey(dealKeyOf(record.deal))) return true;
+      const db = window.SpiderSolvedDealsDB;
+      if (!db?.findByUid) return false;
+      return Boolean((await db.findByUid(record.uid)) || (await db.findByDeal?.(record.deal)));
+    },
+    onUpdated: (message, changed) => {
+      setPickerNotice(message);
+      if (!contributedPanel.hidden && isPendingMode() && !contributedLoading) void loadContributedPage(contributedPage);
+    }
   });
 
   window.addEventListener("pagehide", () => {

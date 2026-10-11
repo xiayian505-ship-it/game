@@ -19,9 +19,15 @@
   const dealPickerNotice = document.getElementById("dealPickerNotice");
   const dealPickerBackButton = document.getElementById("dealPickerBackButton");
   const randomDealButton = document.getElementById("randomDealButton");
+  const randomChoicePanel = document.getElementById("randomChoicePanel");
+  const randomNewDealButton = document.getElementById("randomNewDealButton");
+  const randomPendingDealButton = document.getElementById("randomPendingDealButton");
   const solvedDealButton = document.getElementById("solvedDealButton");
   const pendingDealButton = document.getElementById("pendingDealButton");
   const contributedPanel = document.getElementById("contributedPanel");
+  const pendingChoiceTabs = document.getElementById("pendingChoiceTabs");
+  const pendingAllTab = document.getElementById("pendingAllTab");
+  const possibleUnsolvedTab = document.getElementById("possibleUnsolvedTab");
   const randomContributedButton = document.getElementById("randomContributedButton");
   const contributedList = document.getElementById("contributedList");
   const contributedPrevButton = document.getElementById("contributedPrevButton");
@@ -76,6 +82,7 @@
   let contributedTotalPages = 1;
   let contributedLoading = false;
   let contributedMode = "solved";
+  let pendingListMode = "all";
   let lastVictoryEffectSignature = "";
   let lastVictoryEffects = (() => {
     try {
@@ -101,11 +108,31 @@
     dealPickerNotice.textContent = String(text || "");
   }
 
+  function closeRandomChoices() {
+    randomChoicePanel.hidden = true;
+    randomDealButton.setAttribute("aria-expanded", "false");
+  }
+
+  function toggleRandomChoices() {
+    if (window.KlondikeDraw1Game?.isBusy()) return;
+    const willOpen = randomChoicePanel.hidden;
+    closeRandomChoices();
+    contributedPanel.hidden = true;
+    uidSearchPanel.hidden = true;
+    uidDealButton.setAttribute("aria-expanded", "false");
+    if (willOpen) {
+      randomChoicePanel.hidden = false;
+      randomDealButton.setAttribute("aria-expanded", "true");
+    }
+    setPickerNotice("");
+  }
+
   function showDealPicker(options = {}) {
     const canReturn = options.canReturn !== false;
     restartConfirm.hidden = true;
     message.hidden = true;
     dealPickerBackButton.hidden = !canReturn;
+    closeRandomChoices();
     contributedPanel.hidden = true;
     uidSearchPanel.hidden = true;
     uidDealButton.setAttribute("aria-expanded", "false");
@@ -116,6 +143,7 @@
 
   function hideDealPicker() {
     dealPicker.hidden = true;
+    closeRandomChoices();
     contributedPanel.hidden = true;
     uidSearchPanel.hidden = true;
     uidDealButton.setAttribute("aria-expanded", "false");
@@ -124,17 +152,25 @@
 
   function toggleUidSearch() {
     const willOpen = uidSearchPanel.hidden;
+    closeRandomChoices();
+    contributedPanel.hidden = true;
     uidSearchPanel.hidden = !willOpen;
     uidDealButton.setAttribute("aria-expanded", String(willOpen));
     if (willOpen) uidInput.focus();
   }
 
-  function isPendingMode() {
-    return contributedMode === "pending";
-  }
-
+  function isPendingMode() { return contributedMode === "pending"; }
   function currentPoolLabel() {
+    if (contributedMode === "favorite") return "最愛牌局";
+    if (isPendingMode() && pendingListMode === "possible") return "可能無解局";
     return isPendingMode() ? "待破解牌局" : "玩家已解牌局";
+  }
+  function switchPendingList(mode) {
+    if (!isPendingMode() || contributedLoading || contributedPanel.hidden || pendingListMode === mode) return;
+    pendingListMode = mode;
+    pendingAllTab.setAttribute("aria-pressed", String(mode === "all"));
+    possibleUnsolvedTab.setAttribute("aria-pressed", String(mode === "possible"));
+    void loadContributedPage(1);
   }
 
   function renderContributedPage(result) {
@@ -146,7 +182,8 @@
     if (!records.length) {
       const empty = document.createElement("p");
       empty.className = "contributed-empty";
-      empty.textContent = isPendingMode() ? "目前還沒有待破解牌局。" : "目前還沒有玩家已解牌局。";
+      empty.textContent = contributedMode === "favorite" ? "目前還沒有最愛牌局。"
+        : (isPendingMode() ? (pendingListMode === "possible" ? "你尚未標記可能無解局。" : "目前還沒有待破解牌局。") : "目前還沒有玩家已解牌局。");
       contributedList.appendChild(empty);
     } else {
       records.forEach(record => {
@@ -176,7 +213,11 @@
             hideDealPicker();
           }
         });
-        contributedList.appendChild(button);
+        if (isPendingMode() && pendingListMode === "all") {
+          contributedList.appendChild(window.EmpirePersonalCollection.decoratePending(button, record));
+        } else {
+          contributedList.appendChild(button);
+        }
       });
     }
 
@@ -193,9 +234,13 @@
     const label = currentPoolLabel();
     setPickerNotice(`正在讀取${label}…`);
     try {
-      const result = isPendingMode()
-        ? await window.KlondikeDraw1Data.listPendingPage(page, 5)
-        : await window.KlondikeDraw1Data.listPage(page, 5);
+      const result = contributedMode === "favorite"
+        ? window.EmpirePersonalCollection.favoritePage(page)
+        : (isPendingMode() && pendingListMode === "possible"
+          ? window.EmpirePersonalCollection.possiblePage(page)
+          : (isPendingMode()
+            ? await window.KlondikeDraw1Data.listPendingPage(page, 5)
+            : await window.KlondikeDraw1Data.listPage(page, 5)));
       renderContributedPage(result);
       setPickerNotice(result.totalCount > 0 ? `共有 ${result.totalCount} 副${label}。` : `目前還沒有${label}。`);
     } catch (error) {
@@ -209,34 +254,40 @@
   }
 
   async function openContributedPanel(mode = "solved") {
-    contributedMode = mode === "pending" ? "pending" : "solved";
+    contributedMode = ["pending", "favorite"].includes(mode) ? mode : "solved";
+    if (contributedMode === "pending") pendingListMode = "all";
+    pendingAllTab.setAttribute("aria-pressed", String(pendingListMode === "all"));
+    possibleUnsolvedTab.setAttribute("aria-pressed", String(pendingListMode === "possible"));
+    pendingChoiceTabs.hidden = contributedMode !== "pending";
+    if (contributedMode === "pending") void window.EmpirePersonalCollection?.reconcile?.();
+    closeRandomChoices();
     contributedPanel.hidden = false;
     contributedPanel.setAttribute("aria-label", currentPoolLabel());
-    randomContributedButton.textContent = isPendingMode()
-      ? "從待破解牌局隨機抽一局"
-      : "從已解牌局隨機抽一局";
+    randomContributedButton.hidden = contributedMode !== "solved";
+    randomContributedButton.textContent = "從已解牌局隨機抽一局";
     uidSearchPanel.hidden = true;
     uidDealButton.setAttribute("aria-expanded", "false");
     uidInput.value = "";
     await loadContributedPage(1);
   }
 
-  async function loadRandomSolvedDeal() {
+  async function loadRandomSolvedDeal(poolMode = contributedMode) {
     if (contributedLoading) return;
     contributedLoading = true;
-    const label = currentPoolLabel();
+    const pending = poolMode === "pending";
+    const label = pending ? "待破解牌局" : "玩家已解牌局";
     setPickerNotice(`正在從${label}隨機抽一副…`);
     try {
-      const record = isPendingMode()
+      const record = pending
         ? await window.KlondikeDraw1Data.randomPending()
         : await window.KlondikeDraw1Data.randomSolved();
       if (!record) {
-        setPickerNotice(isPendingMode() ? "目前還沒有待破解牌局。" : "目前還沒有玩家已解牌局。先解出第一副吧。");
+        setPickerNotice(pending ? "目前還沒有待破解牌局。" : "目前還沒有玩家已解牌局。先解出第一副吧。");
         return;
       }
       window.KlondikeDraw1Game?.abandonCurrentDeal?.();
       if (window.KlondikeDraw1Game?.startKnownGame(record)) {
-        if (isPendingMode()) void window.KlondikeDraw1Data?.markPendingAttempt?.(record);
+        if (pending) void window.KlondikeDraw1Data?.markPendingAttempt?.(record);
         hideDealPicker();
       }
     } catch (error) {
@@ -457,7 +508,8 @@
     showDealPicker({ canReturn: true });
   });
 
-  randomDealButton.addEventListener("click", () => {
+  randomDealButton.addEventListener("click", toggleRandomChoices);
+  randomNewDealButton.addEventListener("click", () => {
     if (window.KlondikeDraw1Game?.isBusy()) return;
     try {
       window.KlondikeDraw1Game?.abandonCurrentDeal?.();
@@ -469,8 +521,12 @@
     }
   });
 
+  randomPendingDealButton.addEventListener("click", () => void loadRandomSolvedDeal("pending"));
   solvedDealButton.addEventListener("click", () => void openContributedPanel("solved"));
   pendingDealButton.addEventListener("click", () => void openContributedPanel("pending"));
+  pendingAllTab.addEventListener("click", () => switchPendingList("all"));
+  possibleUnsolvedTab.addEventListener("click", () => switchPendingList("possible"));
+  document.getElementById("favoriteDealButton").addEventListener("click", () => void openContributedPanel("favorite"));
   randomContributedButton.addEventListener("click", () => void loadRandomSolvedDeal());
   contributedPrevButton.addEventListener("click", () => {
     if (contributedPage > 1) void loadContributedPage(contributedPage - 1);
@@ -499,6 +555,21 @@
     playVictory,
     showWinMessage,
     showDealPicker
+  });
+
+  window.EmpirePersonalCollection = window.EmpirePersonalDeals.create({
+    mode: "klondike_draw1",
+    getCurrent: () => window.KlondikeDraw1Game?.getCurrentDealRecord?.(),
+    shortUid: uid => window.KlondikeDraw1Data?.shortUid?.(uid) || uid,
+    findSolved: async record => {
+      const db = window.KlondikeDraw1SolvedDealsDB;
+      if (!db?.findByUid) return false;
+      return Boolean((await db.findByUid(record.uid)) || (await db.findByDeal?.(record.deal)));
+    },
+    onUpdated: (message, changed) => {
+      setPickerNotice(message);
+      if (!contributedPanel.hidden && isPendingMode() && !contributedLoading) void loadContributedPage(contributedPage);
+    }
   });
 
   void window.KlondikeDraw1Data?.initialize?.();

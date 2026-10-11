@@ -9,9 +9,14 @@
   on("restartCurrentButton", "click", () => ui.restartCurrentDeal());
   on("restartConfirmButton", "click", () => ui.selectOtherDeal());
   on("dealPickerBackButton", "click", () => ui.hideDealPicker());
-  on("randomDealButton", "click", () => ui.selectRandomDeal());
+  on("randomDealButton", "click", () => ui.toggleRandomChoices());
+  on("randomNewDealButton", "click", () => ui.selectRandomDeal());
+  on("randomPendingDealButton", "click", () => void ui.selectRandomPendingDeal());
   on("solvedDealButton", "click", () => void ui.openContributedPanel("solved"));
   on("pendingDealButton", "click", () => void ui.openContributedPanel("pending"));
+  on("pendingAllTab", "click", () => ui.switchPendingList("all"));
+  on("possibleUnsolvedTab", "click", () => ui.switchPendingList("possible"));
+  on("favoriteDealButton", "click", () => void ui.openContributedPanel("favorite"));
   on("randomContributedButton", "click", () => void ui.loadRandomSolvedDeal());
   on("contributedPrevButton", "click", () => void ui.previousPage());
   on("contributedNextButton", "click", () => void ui.nextPage());

@@ -302,7 +302,9 @@
     selection = null;
     busy = false;
     hasStartedGame = true;
-    currentDealUid = String(options.uid || "").trim() || null;
+    const knownUid = String(options.uid || "").trim();
+    currentDealUid = knownUid || window.KlondikeDraw1Data?.createUid?.() ||
+      `klondike-draw1-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
     currentDealBestValue = Number.isInteger(Number(options.bestSteps)) && Number(options.bestSteps) > 0 ? Number(options.bestSteps) : null;
     currentDealClearValue = Number.isInteger(Number(options.clearCount)) && Number(options.clearCount) >= 0 ? Number(options.clearCount) : 0;
 
@@ -319,6 +321,27 @@
     setNotice("翻牌或移動牌開始。空欄只能放 K。");
     render();
     saveActiveGame();
+    // 隨機新局仍須比對舊牌庫；辨識期間保留開局時已建立的 UID。
+    if (!knownUid) void resolveCurrentDealIdentity();
+  }
+
+  async function resolveCurrentDealIdentity() {
+    const expectedUid = currentDealUid;
+    const expectedDeal = originalDeal.map(serializeDealCard);
+    if (expectedDeal.length !== 52 || !window.KlondikeDraw1Data?.resolveIdentity) return;
+    try {
+      const match = await window.KlondikeDraw1Data.resolveIdentity(expectedDeal);
+      if (!match?.record?.uid || !currentDealUid || currentDealUid !== expectedUid ||
+          !originalDeal.length || originalDeal.length !== 52 ||
+          originalDeal.some((card, index) => card.rank !== expectedDeal[index].rank || card.suit !== expectedDeal[index].suit)) return;
+      currentDealUid = match.record.uid;
+      currentDealBestValue = Number(match.record.bestSteps) > 0 ? Number(match.record.bestSteps) : null;
+      currentDealClearValue = Math.max(0, Number(match.record.clearCount) || 0);
+      render();
+      saveActiveGame();
+    } catch (error) {
+      console.warn("比對接龍開局身分失敗；保留已建立的 UID。", error);
+    }
   }
 
   function restartCurrentDeal() {
@@ -378,6 +401,7 @@
     moveCountElement.textContent = String(moveCount);
     solvedDealCountElement.textContent = String(solvedDealCount);
     renderDealIdentity();
+    window.EmpirePersonalCollection?.sync?.();
     restartButton.disabled = busy || !hasStartedGame || originalDeal.length !== 52;
   }
 
@@ -977,6 +1001,7 @@
 
     busy = false;
     render();
+    window.EmpirePersonalCollection?.onWin?.(result.uid || currentDealUid, originalDeal, currentDealBestValue, currentDealClearValue);
     window.KlondikeDraw1UI?.showWinMessage?.(moveCount, result);
     return true;
   }
@@ -1075,12 +1100,16 @@
     selection = null;
     busy = false;
     hasStartedGame = true;
-    currentDealUid = String(parsed.currentDealUid || "").trim() || null;
+    const storedUid = String(parsed.currentDealUid || "").trim();
+    currentDealUid = storedUid || window.KlondikeDraw1Data?.createUid?.() ||
+      `klondike-draw1-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
     currentDealBestValue = Number.isInteger(Number(parsed.currentDealBestValue)) && Number(parsed.currentDealBestValue) > 0 ? Number(parsed.currentDealBestValue) : null;
     currentDealClearValue = Number.isInteger(Number(parsed.currentDealClearValue)) && Number(parsed.currentDealClearValue) >= 0 ? Number(parsed.currentDealClearValue) : 0;
 
     setNotice("已恢復上次未完成的牌局。");
     render();
+    saveActiveGame();
+    if (!storedUid) void resolveCurrentDealIdentity();
     return true;
   }
 
@@ -1111,6 +1140,12 @@
     },
     restartCurrentDeal,
     abandonCurrentDeal,
+    getCurrentDealRecord() {
+      return hasStartedGame && originalDeal.length === 52 && currentDealUid
+        ? {uid: currentDealUid, deal: originalDeal.map(serializeDealCard),
+          bestSteps: currentDealBestValue, clearCount: currentDealClearValue}
+        : null;
+    },
     hasGame() {
       return hasStartedGame;
     },

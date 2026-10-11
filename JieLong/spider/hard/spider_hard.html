@@ -20,6 +20,9 @@
   <link rel="stylesheet" href="spider_hard.css">
   <link rel="stylesheet" href="spider_hard_style.css">
   <link rel="stylesheet" href="../spider_header.css?v=20261011-spider-hud">
+  <link rel="stylesheet" href="../../select_deal_buttons.css?v=20261011-pending-tabs">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/ui/favorite.css">
+  <link rel="stylesheet" href="../../personal_collection/collection_game.css?v=20261012-favmark">
 </head>
 <body>
   <main id="gameShell" class="game-shell">
@@ -32,6 +35,7 @@
           <div class="subtitle empire-status-line">
             <div id="currentDealIdentity" class="deal-identity" hidden>
               <div class="deal-id-left">
+                <button id="favoriteDealToggle" class="slowly-favorite" type="button" data-slowly-favorite aria-pressed="false" aria-label="最愛牌局" title="最愛牌局" hidden>☆</button>
                 <span><strong id="currentDealShortUid">H-────────</strong></span>
                 <button id="copyDealUidButton" class="copy-deal-id-button" type="button" aria-label="複製牌局 UID" title="複製牌局 UID">複製 UID</button>
               </div>
@@ -102,12 +106,29 @@
       <p class="dialog-text">要玩哪一種？</p>
 
       <section class="deal-tools deal-tools-main" aria-label="牌局選擇">
-        <button id="randomDealButton" class="deal-button" type="button">隨機牌局</button>
+        <button id="randomDealButton" class="deal-button" type="button" aria-expanded="false" aria-controls="randomChoicePanel">隨機牌局</button>
         <button id="solvedDealButton" class="deal-button" type="button">玩家已解牌局</button>
         <button id="pendingDealButton" class="deal-button" type="button">待破解牌局</button>
       </section>
 
+
+      <section class="deal-tools deal-tools-secondary" aria-label="其他牌局選擇">
+        <button id="favoriteDealButton" class="deal-button" type="button">最愛牌局</button>
+        <button id="uidDealButton" class="deal-button" type="button" aria-expanded="false" aria-controls="uidSearchPanel">輸入 UID</button>
+      </section>
+
+      <section id="randomChoicePanel" class="picker-subpanel" hidden aria-label="隨機牌局選擇">
+        <div class="picker-choice-row">
+          <button id="randomNewDealButton" class="deal-button" type="button">隨機開新局</button>
+          <button id="randomPendingDealButton" class="deal-button" type="button">抽取未解局</button>
+        </div>
+      </section>
+
       <section id="contributedPanel" class="contributed-panel" hidden aria-label="玩家已解牌局">
+        <div id="pendingChoiceTabs" class="picker-choice-row" role="group" aria-label="待破解牌局分類" hidden>
+          <button id="pendingAllTab" class="deal-button" type="button" aria-pressed="true">待破解牌局</button>
+          <button id="possibleUnsolvedTab" class="deal-button" type="button" aria-pressed="false">可能無解局</button>
+        </div>
         <button id="randomContributedButton" class="contributed-random" type="button">從已解牌局隨機抽一局</button>
 
         <div id="contributedList" class="contributed-list" aria-live="polite"></div>
@@ -118,7 +139,7 @@
           <button id="contributedNextButton" type="button">下一頁</button>
         </div>
 
-        <button id="uidDealButton" class="uid-paste-toggle" type="button" aria-expanded="false">有完整 UID？貼上載入</button>
+      </section>
 
         <section id="uidSearchPanel" class="uid-search" hidden>
           <label class="uid-search-label" for="uidInput">完整牌局 UID</label>
@@ -127,10 +148,20 @@
             <button id="uidSearchButton" type="button">載入</button>
           </div>
         </section>
-      </section>
-
       <p id="dealPickerNotice" class="picker-notice" aria-live="polite"></p>
       <button id="dealPickerBackButton" class="dialog-back" type="button">返回遊戲</button>
+    </div>
+  </div>
+
+  <div id="possibleMarkConfirm" class="dialog-overlay" hidden>
+    <div class="dialog-card possible-mark-card" role="alertdialog" aria-modal="true" aria-labelledby="possibleMarkTitle" aria-describedby="possibleMarkDescription">
+      <p id="possibleMarkTitle" class="dialog-title">標記可能無解局</p>
+      <p id="possibleMarkDescription" class="dialog-text">確定要標記此牌局嗎？</p>
+      <p class="possible-mark-warning">標記後無法手動取消；當有人成功破解並收錄為已解牌局時，才會自動移除。</p>
+      <div class="dialog-actions">
+        <button id="possibleMarkCancel" type="button">取消</button>
+        <button id="possibleMarkAccept" type="button">確認標記</button>
+      </div>
     </div>
   </div>
 
@@ -171,8 +202,12 @@
   <script src="https://lib.stillnessbyslowly.com/audio/gain/envelope.js"></script>
   <script src="https://lib.stillnessbyslowly.com/audio/tone/tone.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.min.js"></script>
+  <!-- 個人牌局館本機資料 Key 預留，不建立空收藏。 -->
+  <script src="../../personal_collection/collection_keys.js?v=20261011-uid"></script>
+  <script src="https://lib.stillnessbyslowly.com/ui/favorite.js"></script>
+  <script src="../../personal_collection/collection_game.js?v=20261012-favmark"></script>
   <script src="spider_hard_db.js"></script>
-  <script src="spider_hard.js"></script>
-  <script src="spider_hard_style.js"></script>
+  <script src="spider_hard.js?v=20261012-favmark"></script>
+  <script src="spider_hard_style.js?v=20261012-favmark"></script>
 </body>
 </html>

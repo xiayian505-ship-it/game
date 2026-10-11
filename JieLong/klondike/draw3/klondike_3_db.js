@@ -671,7 +671,7 @@
     const pendingRecord = record ? null : await resolvePendingDeal(deal);
     if (!record) {
       record = {
-        uid: String(uid || "").trim() || pendingRecord?.uid || createUid(),
+        uid: pendingRecord?.uid || String(uid || "").trim() || createUid(),
         deal: cloneDeal(deal),
         solvedAt: window.Timestamp?.create ? window.Timestamp.create() : String(Date.now()),
         bestSteps: null,
@@ -859,6 +859,14 @@
     findByUid,
     findPendingByUid,
     copyUid,
-    shortUid
+    shortUid,
+    createUid,
+    // 優先沿用已解／待破解牌組身分，查無才保留開局建立的 UID。
+    async resolveIdentity(deal) {
+      const solved = await resolveDeal(deal);
+      if (solved) return { record: solved, source: "solved" };
+      const pending = await resolvePendingDeal(deal);
+      return pending ? { record: pending, source: "pending" } : null;
+    }
   });
 })();
