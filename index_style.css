@@ -123,6 +123,10 @@ body {
   perspective:1200px;
 }
 
+.game-list--four {
+  max-width:930px;
+}
+
 .game-item {
   flex:1 1 300px;
   max-width:400px
@@ -138,6 +142,10 @@ body {
 
 .game-item:nth-child(3) {
   --sbs-reveal-delay:480ms
+}
+
+.game-item:nth-child(4) {
+  --sbs-reveal-delay:640ms
 }
 
 .game-card {
@@ -174,6 +182,12 @@ body {
   --accent:#ff7eb6;
   --panel-light:#64205a;
   --panel-dark:#2a0f3d
+}
+
+.game-card--huarong {
+  --accent:#f2ad76;
+  --panel-light:#603b38;
+  --panel-dark:#291a27
 }
 
 .game-shell {
@@ -434,6 +448,76 @@ body {
 .candy-grid i:nth-child(8) {
   --candy:#ffe14d
 }
+
+/* 華容道：純 CSS 棋盤縮影，色彩與尺寸由此宿主控制。 */
+.huarong-board {
+  position:relative;
+  display:grid;
+  grid-template-columns:repeat(4,41px);
+  grid-template-rows:repeat(5,39px);
+  gap:4px;
+  padding:9px;
+  border:7px solid #ab7654;
+  border-radius:11px;
+  background:#271e21;
+  box-shadow:0 12px 30px #0008,inset 0 0 0 1px #f9d6ab30,0 0 27px #f2ad7626;
+}
+
+.huarong-board::after {
+  content:"";
+  position:absolute;
+  bottom:-8px;
+  left:50%;
+  translate:-50% 0;
+  width:88px;
+  height:8px;
+  background:var(--panel-dark);
+  box-shadow:0 -3px 10px #f2ad7650;
+}
+
+.huarong-piece {
+  display:grid;
+  place-items:center;
+  min-width:0;
+  min-height:0;
+  border:1px solid #ffdfb47d;
+  border-radius:5px;
+  background:linear-gradient(145deg,#dca975,#ac704d);
+  box-shadow:inset 2px 2px 2px #fff4,inset -3px -3px 4px #41201866,0 2px 4px #0006;
+  color:#3d241f;
+  font:900 15px/1.1 var(--serif);
+  text-shadow:0 1px #f6c48c;
+}
+
+.huarong-piece--cao {
+  grid-area:1 / 2 / 3 / 4;
+  background:linear-gradient(145deg,#f9d6a2,#d9935e);
+  border-color:#ffe6bc;
+  font-size:23px;
+  letter-spacing:.08em;
+}
+
+.huarong-piece--guard {
+  writing-mode:vertical-rl;
+  letter-spacing:.12em;
+}
+
+.huarong-piece--zhang {grid-area:1 / 1 / 3 / 2}
+.huarong-piece--zhao {grid-area:1 / 4 / 3 / 5}
+.huarong-piece--ma {grid-area:3 / 1 / 5 / 2}
+.huarong-piece--huang {grid-area:3 / 4 / 5 / 5}
+.huarong-piece--guan {
+  grid-area:3 / 2 / 4 / 4;
+  background:linear-gradient(145deg,#b9d0ad,#7d9d81);
+  border-color:#d4e7bf;
+  color:#233c31;
+  text-shadow:0 1px #e3f0d2;
+}
+.huarong-piece--soldier {font-size:17px}
+.huarong-piece--soldier-1 {grid-area:4 / 2 / 5 / 3}
+.huarong-piece--soldier-2 {grid-area:4 / 3 / 5 / 4}
+.huarong-piece--soldier-3 {grid-area:5 / 2 / 6 / 3}
+.huarong-piece--soldier-4 {grid-area:5 / 3 / 6 / 4}
 
 /* 頁尾 */
 .site-footer {

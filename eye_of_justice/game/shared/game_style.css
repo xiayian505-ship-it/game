@@ -1,0 +1,103 @@
+/* 《執法之眼》遊戲 UI／美術與響應式。獨立原創畫面，不引用鹿雨森素材。 */
+body { background: radial-gradient(ellipse 58% 52% at 52% 9%, rgba(39, 89, 78, .15), transparent 77%), linear-gradient(#07181e, #091b20 60%, #061216); }
+body::before { content: ''; position: fixed; inset: 0; pointer-events: none; opacity: .25; background: repeating-linear-gradient(122deg, transparent, transparent 3px, rgba(185, 214, 180, .012) 4px, transparent 6px); }
+body[data-chapter-scene="office"] { background: radial-gradient(ellipse at top, #12313b, #06141b 80%); }
+.topbar { border-bottom: 1px solid rgba(201, 225, 201, .13); }
+.brand img { filter: drop-shadow(0 0 16px rgba(188, 218, 192, .16)); }
+:is(.icon-btn,.record-btn,.close-btn,.secondary-btn,.secondary-link,.choice-btn,.gaze-btn,.action-btn,.primary-btn,.hotspot):not(:disabled) { transition: background .25s, color .25s, border-color .25s, box-shadow .25s, transform .25s; }
+:is(.icon-btn,.record-btn,.close-btn,.secondary-btn,.secondary-link,.choice-btn,.gaze-btn):hover { background: rgba(64, 111, 99, .32); border-color: rgba(219, 234, 192, .65); }
+:is(.primary-btn,.action-btn):hover { filter: brightness(1.11); transform: translateY(-2px); }
+.stage { box-shadow: 0 23px 66px rgba(0, 0, 0, .44), inset 0 0 75px rgba(0, 0, 0, .35); }
+.stage::before { content: ''; position: absolute; z-index: 2; inset: 10px; pointer-events: none; border: 1px solid rgba(215, 230, 194, .13); }
+.stage::after { content: ''; position: absolute; z-index: 2; inset: 0; pointer-events: none; box-shadow: inset 0 0 80px rgba(3, 11, 15, .7); }
+.stage-illustration { filter: saturate(.87) contrast(1.06); transform: scale(1.015); transition: opacity 1.15s ease, transform 1.8s ease; }
+.stage[data-scene="office"] .stage-illustration { filter: saturate(.78) contrast(1.04); }
+.stage-film { background: linear-gradient(180deg, rgba(2, 15, 21, .52), transparent 28%, transparent 57%, rgba(1, 13, 17, .45)); z-index: 1; }
+.scene-title, .objective { z-index: 3; text-shadow: 0 3px 17px #000; }
+.scene-title strong { text-shadow: 0 1px 11px rgba(0, 0, 0, .8); }
+.objective { border: 1px solid rgba(221, 227, 195, .22); padding: 9px 14px; background: rgba(5, 25, 29, .74); backdrop-filter: blur(12px); }
+.hotspot-layer { z-index: 4; }
+.hotspot-ring { backdrop-filter: blur(9px); box-shadow: 0 0 0 7px rgba(207, 226, 192, .065), 0 0 30px rgba(225, 201, 143, .29), inset 0 0 14px rgba(193, 226, 190, .14); animation: eye-pulse 2.8s ease-in-out infinite; }
+.hotspot-label { padding: 4px 9px; border: 1px solid rgba(230, 229, 203, .20); background: rgba(4, 19, 23, .74); backdrop-filter: blur(7px); }
+.hotspot:hover .hotspot-ring, .hotspot:focus-visible .hotspot-ring { transform: scale(1.13); box-shadow: 0 0 0 9px rgba(223, 214, 178, .09), 0 0 38px rgba(236, 218, 158, .6); }
+.hotspot.explored .hotspot-ring { animation: none; box-shadow: 0 0 0 5px rgba(159, 198, 166, .05); }
+.play-area { position: relative; z-index: 2; margin-top: -1px; background: linear-gradient(123deg, rgba(8, 26, 32, .98), rgba(11, 35, 38, .97) 63%, rgba(9, 27, 33, .98)); border: 1px solid rgba(196, 220, 203, .28); box-shadow: 0 20px 55px rgba(0,0,0,.22); }
+.play-area::before { content: ''; position: absolute; pointer-events: none; top: 13px; bottom: 12px; left: 13px; width: 1px; background: linear-gradient(transparent, rgba(218, 218, 182, .33), transparent); }
+.dialogue[data-speaker="magistrate"] .speaker { color: #f1d9a4; }
+.dialogue-text { color: #dbe8df; text-shadow: 0 1px 1px #081b1d; }
+.type-letter { display: inline-block; opacity: 0; transform: translateY(5px); animation: letter-rise .3s ease forwards; white-space: pre; }
+.next-btn:hover { color: white; text-shadow: 0 0 14px rgba(224, 199, 139, .55); }
+.choice-btn { border-radius: 2px; box-shadow: inset 0 0 20px rgba(166, 206, 178, .025); }
+.choice-btn.is-wrong { border-color: rgba(195, 102, 92, .7); background: rgba(89, 28, 33, .34); }
+.toolstrip { border-top: 1px solid rgba(190, 220, 200, .13); background: rgba(5, 18, 23, .26); }
+.drawer, .detail-card, .simple-card { background: radial-gradient(ellipse 70% 40% at 50% 0%, rgba(66, 109, 89, .2), transparent 70%), #0a2229; border: 1px solid rgba(204, 228, 208, .34); box-shadow: 0 29px 110px rgba(0,0,0,.55); }
+.drawer { box-shadow: -21px 0 70px rgba(0,0,0,.6); }
+.clue-card { background: linear-gradient(110deg, rgba(19, 52, 52, .68), rgba(14, 40, 44, .7)); }
+.detail-picture { background: radial-gradient(ellipse at 50% 45%, rgba(189, 216, 161, .19), transparent 51%), linear-gradient(#06151a,#102f36); border: 1px solid rgba(188, 210, 178, .19); }
+.detail-picture img { filter: blur(5px) saturate(.68) brightness(.8); transform: scale(.95) rotate(-5deg); }
+.detail-picture.is-seen img { filter: drop-shadow(0 0 31px rgba(197, 226, 187, .48)); transform: scale(1.08) rotate(0); }
+.detail-aura { background: radial-gradient(circle, transparent 0%, rgba(3, 16, 18, .73) 80%); }
+.detail-picture.is-seen .detail-aura { animation: aura-reveal 1s ease both; }
+.start-screen, .ending-screen { background: radial-gradient(ellipse at 50% 50%, rgba(22, 55, 53, .74), rgba(3, 13, 18, .98) 69%), url('./assets/court.svg') center/cover no-repeat; }
+.start-panel, .ending-inner { background: linear-gradient(180deg, rgba(10, 31, 35, .88), rgba(6, 21, 26, .92)); border: 1px solid rgba(229, 218, 185, .29); box-shadow: 0 20px 100px rgba(0, 0, 0, .56); backdrop-filter: blur(18px); }
+.start-panel::before, .ending-inner::before { content: ''; position: absolute; inset: 10px; border: 1px solid rgba(218, 221, 187, .10); pointer-events: none; }
+.start-crest { filter: drop-shadow(0 0 28px rgba(210, 226, 190, .25)); }
+.start-en { color: #e3d2a8; }
+.start-panel h1 { text-shadow: 0 0 30px rgba(204, 227, 183, .21); }
+.start-panel h2 { color: #e1d7b7; }
+.ending-screen { background-image: radial-gradient(ellipse at 50% 45%, rgba(19, 59, 54, .92), rgba(1, 12, 15, .99) 75%), url('./assets/office.svg'); }
+.ending-inner img { filter: drop-shadow(0 0 25px rgba(192, 230, 199, .27)); }
+.toast { background: rgba(13, 40, 39, .98); border: 1px solid rgba(204, 226, 195, .54); color: #e7edd5; box-shadow: 0 11px 40px rgba(0,0,0,.45); }
+.flash { z-index: 6; background: rgba(231, 244, 218, .71); opacity: 0; }
+.stage.is-flashing .flash { animation: lightning .9s ease both; }
+@keyframes eye-pulse { 50% { box-shadow: 0 0 0 11px rgba(224, 217, 170, .045), 0 0 38px rgba(218, 213, 178, .45); } }
+@keyframes letter-rise { to { opacity: 1; transform: translateY(0); } }
+@keyframes lightning { 0%, 16%, 27%, 39%, 100% { opacity: 0; } 3%, 21%, 33% { opacity: 1; } }
+@keyframes aura-reveal { from { background: radial-gradient(circle,rgba(191, 240, 184, .75), transparent 35%); } to { background: radial-gradient(circle,transparent,rgba(3, 16, 18, .5) 86%); } }
+@media (max-width: 730px) {
+  .game-shell { width: 100%; }
+  .topbar { padding: 0 14px; min-height: 70px; }
+  .brand b { font-size: 16px; letter-spacing: .14em; }
+  .brand small { font-size: 10px; }
+  .brand img { width: 35px; }
+  .topbar-side { gap: 5px; }
+  .location-label { display: none; }
+  .record-btn { padding: 7px 10px; }
+  .icon-btn { width: 35px; min-height: 35px; }
+  .stage { height: min(60vh, 520px); min-height: 330px; }
+  .stage-illustration { background-size: 100% 100%; }
+  .scene-title { top: 20px; left: 19px; }
+  .scene-title span { font-size: 12px; }
+  .scene-title strong { font-size: 21px; }
+  .objective { right: 17px; top: 78px; max-width: calc(100% - 32px); font-size: 11px; padding: 7px 10px; }
+  .hotspot { min-width: 54px; padding: 7px 3px; }
+  .hotspot-ring { width: 40px; }
+  .hotspot-label { padding: 3px 5px; font-size: 10px; }
+  .dialogue { padding: 19px 24px 19px 23px; min-height: 220px; }
+  .dialogue-text { font-size: 14px; line-height: 1.9; }
+  .interaction { padding: 18px 20px; }
+  .option-list { grid-template-columns: 1fr; gap: 8px; }
+  .choice-btn { min-height: 48px; }
+  .toolstrip { padding: 10px 15px; }
+  .toolstrip-tip { font-size: 10px; }
+  .action-btn { white-space: nowrap; padding: 9px 11px; }
+  .foot { padding: 15px 14px 30px; flex-direction: column; font-size: 10px; gap: 6px; }
+  .start-screen, .ending-screen { padding: 11px; }
+  .start-panel, .ending-inner { padding: 31px 16px 25px; }
+  .start-crest { width: 79px; margin: 9px auto 0; }
+  .start-panel h1 { font-size: 37px; }
+  .start-blurb { font-size: 12px; }
+  .drawer-mask { padding: 0; }
+  .drawer { padding: 23px 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+}
+/* 探索模式只保留一條狀態列，讓場景佔據視線；對話模式恢復文字區高度。 */
+.play-area:has(.dialogue[hidden]):has(.interaction[hidden]) { min-height: 0; }
+.play-area:has(.dialogue[hidden]):has(.interaction[hidden]) .toolstrip { min-height: 58px; }
+
+/* 深層獨立關卡也能回到所屬回目的選節頁。 */
+.chapter-link { flex: 0 0 auto; color: #e0d5b4; border: 1px solid rgba(217, 217, 181, .32); padding: 8px 12px; font-size: 12px; letter-spacing: .12em; white-space: nowrap; }
+.chapter-link:hover { border-color: rgba(237, 225, 190, .75); background: rgba(67, 102, 87, .35); }
+@media(max-width:410px) { .chapter-link { padding: 7px 8px; font-size: 11px; } .topbar-side { gap: 4px; } .brand { gap: 7px; } .brand b { font-size: 14px; } .brand small { font-size: 9px; } }

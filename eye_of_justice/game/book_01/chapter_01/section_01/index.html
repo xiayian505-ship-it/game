@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#07181e">
+  <meta name="description" content="執法之眼 Eye of Justice｜《人格篡位》第一回第一節，探索夢中公堂與刑事組辦公室的異象。">
+  <title>第一節・敕令｜執法之眼 Eye of Justice</title>
+  <link rel="icon" href="../../../../assets/crest.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Noto+Serif+TC:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+  <!-- 慢慢軍火庫：已存在的共用能力一律 HTTPS 絕對路徑直載。 -->
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/ui/responsive.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/light/button_shine.css">
+  <link rel="stylesheet" href="../../../shared/game.css">
+  <link rel="stylesheet" href="../../../shared/game_style.css">
+  <script src="https://lib.stillnessbyslowly.com/effects/background/fog.js" defer></script>
+  <script src="https://lib.stillnessbyslowly.com/effects/background/rain.js" defer></script>
+  <script src="./data/episode_01_01.js" defer></script>
+  <script src="../../../shared/dream_wind.js" defer></script>
+  <script src="../../../shared/game.js" defer></script>
+  <script src="../../../shared/game_style.js" defer></script>
+</head>
+<body>
+  <div class="ambient" aria-hidden="true"><canvas id="mistCanvas"></canvas><canvas id="rainCanvas"></canvas></div>
+  <main id="gameShell" class="game-shell">
+    <header class="topbar">
+      <a href="../../../../index.html" class="brand" aria-label="返回執法之眼官網"><img src="../../../../assets/crest.svg" alt=""><span><b>執法之眼</b><small>EYE OF JUSTICE</small></span></a>
+      <div class="topbar-side"><a class="chapter-link" href="../index.html" aria-label="返回第一回選節">選節</a><span id="locationLabel" class="location-label">序章・夢中公堂</span><button id="muteButton" type="button" class="icon-btn" title="切換音效" aria-label="音效開關">♫</button><button id="helpButton" type="button" class="icon-btn" title="調查提示" aria-label="查看提示">?</button><button id="recordButton" type="button" class="record-btn">卷宗 <span id="clueCount">0</span></button></div>
+    </header>
+
+    <section class="stage" id="stage" data-scene="dream" aria-label="可互動的調查場景">
+      <div class="stage-illustration" id="stageArt" aria-hidden="true"></div>
+      <div class="stage-film" aria-hidden="true"></div>
+      <div class="scene-title" id="sceneTitle"><span>CHAPTER 01 — SCENE 01</span><strong>夢中公堂</strong></div>
+      <div class="objective" id="objective"><span class="objective-mark">任務</span><span id="objectiveText">查看眼前的公堂</span></div>
+      <div class="hotspot-layer" id="hotspotLayer" aria-label="場景可調查物件"></div>
+      <div class="flash" id="sceneFlash" aria-hidden="true"></div>
+    </section>
+
+    <section class="play-area">
+      <div class="dialogue" id="dialogue" role="group" aria-label="劇情對話">
+        <div class="dialogue-header"><span class="speaker" id="speaker">旁白</span><span class="dialogue-serial">01 / 01</span></div>
+        <p class="dialogue-text" id="dialogueText">雨夜裡，公堂的輪廓漸漸浮現。</p>
+        <button type="button" class="next-btn" id="nextButton">繼續 <span aria-hidden="true">↗</span></button>
+      </div>
+      <div class="interaction" id="interaction" hidden>
+        <p class="interaction-caption" id="interactionTitle">觀察場景</p>
+        <div id="optionList" class="option-list"></div>
+      </div>
+      <div class="toolstrip"><span class="toolstrip-tip" id="toolstripTip">點選畫面上的微光，調查物件。</span><button id="resolveButton" type="button" class="action-btn sbs-shine" hidden>繼續調查 <span aria-hidden="true">→</span></button></div>
+    </section>
+    <footer class="foot"><span>人格篡位｜第一回・第一節</span><span>宋雁寧所見，未必是真相全貌。</span></footer>
+  </main>
+
+  <section id="startScreen" class="start-screen" aria-labelledby="startTitle">
+    <div class="start-panel"><span class="chapter-overline">CASE FILE 001 · THE FIRST VISION</span><img src="../../../../assets/crest.svg" alt="" class="start-crest"><p class="start-kicker">狸貓換太子 · 人格篡位</p><h1 id="startTitle">執法之眼</h1><p class="start-en">EYE OF JUSTICE</p><div class="start-rule"></div><h2>第一回 · 第一節</h2><p>墨水滲出藏狡詐，包家後人偏姓宋。</p><p class="start-blurb">雷聲之外，誰在喊冤？<br>從一場夢開始，親眼找出留在現實中的異象。</p><button type="button" id="startButton" class="primary-btn sbs-shine">踏入夢中 <span aria-hidden="true">↗</span></button><button type="button" id="resumeButton" class="secondary-btn" hidden>繼續上次調查</button><a class="start-exit" href="../index.html">返回選節</a><small>請開啟音效以體驗夢中的風雨與公堂音效 · 可隨時靜音</small></div>
+  </section>
+
+  <section id="recordPanel" class="drawer-mask" hidden aria-labelledby="recordTitle" role="dialog" aria-modal="true">
+    <div class="drawer"><div class="drawer-heading"><div><small>CASE RECORD / 001</small><h2 id="recordTitle">線索卷宗</h2></div><button id="closeRecordButton" type="button" class="close-btn" aria-label="合上卷宗">×</button></div><p class="drawer-intro">這些是宋雁寧已經看見或聽見的事物；請勿將推測當作證實。</p><div id="clueList" class="clue-list"></div><p class="drawer-footer">所見，並不等於所知。</p></div>
+  </section>
+
+  <section id="detailPanel" class="detail-mask" hidden aria-labelledby="detailTitle" role="dialog" aria-modal="true">
+    <div class="detail-card"><div class="detail-head"><div><small>EXAMINE / OBJECT</small><h2 id="detailTitle">虎頭鍘吊墜</h2></div><button id="closeDetailButton" class="close-btn" type="button" aria-label="返回場景">×</button></div><div id="detailPicture" class="detail-picture"><img src="../../../shared/assets/pendant.svg" alt="金屬吊墜，形似虎頭鍘"><span class="detail-aura" aria-hidden="true"></span></div><p id="detailText" class="detail-text">金屬紋路模糊不清。</p><button id="gazeButton" type="button" class="gaze-btn"><span class="gaze-icon">◉</span> 凝視 · 執法之眼</button><p class="detail-tip">觀察仔細一些。這不是普通首飾。</p></div>
+  </section>
+
+  <section id="hintPanel" class="simple-mask" hidden role="dialog" aria-modal="true" aria-labelledby="hintTitle"><div class="simple-card"><small>INVESTIGATION ASSIST</small><h2 id="hintTitle">調查提示</h2><p id="hintText"></p><button id="closeHintButton" class="secondary-btn" type="button">返回調查</button></div></section>
+  <section id="endingScreen" class="ending-screen" hidden aria-labelledby="endingTitle"><div class="ending-inner"><span>FILE 001 / RECORD CLOSED</span><img src="../../../../assets/crest.svg" alt=""><p class="ending-overline">第一回 · 第一節　完成</p><h2 id="endingTitle">夢醒之後</h2><p>從小跟在她身邊的囉嗦阿公，<br>真的就是那位鐵面無私的包青天嗎？</p><div id="endingRecord" class="ending-record"></div><p class="ending-next">故事未完。第一回其餘段落尚未製作。</p><div class="ending-actions"><button type="button" id="replayButton" class="primary-btn sbs-shine">重新體驗</button><a class="secondary-link" href="../index.html">返回選節</a></div></div></section>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

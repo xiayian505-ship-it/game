@@ -1,0 +1,16 @@
+/* 選單美術。與遊戲原創場景共用，不借用其他作品素材。 */
+body { background:radial-gradient(ellipse 50% 30% at 78% 9%,rgba(56,112,103,.20),transparent 75%),linear-gradient(#06161c,#0a2024 56%,#07161a); }
+body::before { content:''; position:fixed; inset:0; z-index:0; pointer-events:none; background:repeating-linear-gradient(135deg,transparent 0 7px,rgba(218,224,193,.014) 8px,transparent 10px); }
+.ambient canvas { opacity:.6; }
+.catalog-nav a, .breadcrumbs a { transition:color .2s; }
+.catalog-nav a:hover, .breadcrumbs a:hover { color:#ead9af; }
+.catalog-stamp { background:linear-gradient(180deg,rgba(7,24,28,.22),rgba(6,19,23,.9)),url('./assets/court.svg') center/cover; box-shadow:0 20px 65px rgba(0,0,0,.27); }
+.catalog-stamp::before { content:''; position:absolute; inset:10px; border:1px solid rgba(221,219,185,.2); }
+.catalog-stamp img { animation:crest-pulse 7s ease-in-out infinite; }
+.archive-card { background:linear-gradient(120deg,rgba(19,57,58,.81),rgba(6,25,31,.92) 76%); box-shadow:0 14px 35px rgba(0,0,0,.13); transition:border-color .2s,transform .2s,box-shadow .2s; }
+.archive-card.is-open:hover, .archive-card.is-open:focus-within { border-color:rgba(214,231,191,.68); box-shadow:0 18px 50px rgba(9,24,20,.45); transform:translateY(-2px); }
+.archive-card.is-open::before { content:''; position:absolute; top:14px; bottom:14px; left:0; width:2px; background:linear-gradient(transparent,#d1c19c,transparent); }
+.archive-action:hover { color:white; }
+.archive-card.is-complete .archive-status { color:#bfe7c7; border-color:rgba(168,217,178,.6); }
+@keyframes crest-pulse { 50% { transform:translateY(-4px) scale(1.04); filter:drop-shadow(0 0 35px rgba(210,238,196,.67)); } }
+@media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation:none!important;transition:none!important; } }
