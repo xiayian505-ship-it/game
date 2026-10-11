@@ -629,6 +629,12 @@ body.quick-panel-open {
   background: linear-gradient(105deg, var(--green-2), var(--green));
 }
 
+/* 秘藏之谷與第四頁同一組莓紅色系，其餘領地共用同款按鈕結構。 */
+.shortcut-trove {
+  color: #ffe9ec;
+  background: linear-gradient(105deg, #743449, #a45163);
+}
+
 .quick-game-entry {
   color: #4e3626;
   background: linear-gradient(145deg, #fffdf6, #f1e7d4);
