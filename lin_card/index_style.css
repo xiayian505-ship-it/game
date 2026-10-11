@@ -1,0 +1,246 @@
+/* lin_card｜宿主視覺／布局。軍火庫不決定這裡的字型、色彩與尺寸。 */
+:root {color-scheme:dark;--lc-light:#edf4e7;--lc-muted:#adc4b8;--lc-green:#9ac8ac;--lc-cream:#e3d9b5;--lc-gold:#d4bc80;--lc-line:rgba(193,225,202,.25);--lc-panel:#112922;--lc-card-top:#173b33;--lc-card-bottom:#0b2423}
+* {box-sizing:border-box}
+html {min-height:100%;background:#091917;scroll-behavior:smooth}
+body {min-height:100vh;margin:0;color:var(--lc-light);font:14px/1.65 'Noto Serif TC','Songti TC','Microsoft JhengHei',sans-serif;background:#091917}
+button,select {font:inherit}
+button {touch-action:manipulation}
+a {color:inherit;text-decoration:none}
+a:hover {color:var(--lc-gold)}
+button:disabled {opacity:.45;cursor:not-allowed!important;transform:none!important}
+.lc-scene {position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;background:radial-gradient(ellipse at 50% 25%,rgba(55,106,90,.4),transparent 64%),linear-gradient(#102b28,#142b24 63%,#061513)}
+.lc-scene canvas {position:absolute;inset:0;width:100%;height:100%}
+.lc-scene #lin-fog {opacity:.32}
+.lc-scene-shade {position:absolute;inset:0;background:linear-gradient(180deg,rgba(4,19,19,.6),rgba(7,19,19,.78) 40%,rgba(6,17,16,.87)),radial-gradient(ellipse at center,transparent 30%,rgba(0,0,0,.45))}
+.lc-shell {position:relative;z-index:1;width:min(1050px,calc(100% - 34px));margin:auto}
+.lc-site-header {min-height:79px;display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:1px solid var(--lc-line)}
+.lc-brand {display:flex;align-items:center;gap:11px}
+.lc-brand-mark {display:grid;place-items:center;width:39px;height:39px;border:1px solid var(--lc-green);border-radius:50%;color:var(--lc-gold);font:28px Georgia,serif}
+.lc-brand strong {display:block;font-size:14px;font-weight:500;letter-spacing:.16em}
+.lc-brand small {display:block;font:9px Georgia,serif;letter-spacing:.14em;color:var(--lc-muted)}
+.lc-reset,.lc-quiet {border:1px solid var(--lc-line);color:var(--lc-cream);background:rgba(7,26,24,.4);border-radius:7px;padding:10px 13px;cursor:pointer;font-size:12px;white-space:nowrap}
+.lc-reset:hover,.lc-quiet:hover {border-color:var(--lc-gold)}
+.lc-intro {padding:52px 2px 35px;text-align:center}
+.lc-eyebrow {margin:0 0 10px;color:var(--lc-green);letter-spacing:.24em;font:11px Georgia,serif}
+.lc-intro h1 {margin:0;color:var(--lc-light);font-size:clamp(35px,6.3vw,63px);letter-spacing:.28em;font-weight:400}
+.lc-intro h1 span {color:#c6dcc1}
+.lc-en {margin:10px 0 0;color:var(--lc-muted);font:italic 18px Georgia,serif;letter-spacing:.08em}
+.lc-line {width:min(300px,75%);height:1px;margin:23px auto 18px;background:linear-gradient(90deg,transparent,var(--lc-gold),transparent)}
+.lc-motto {margin:0;font-size:13px;letter-spacing:.09em;color:var(--lc-cream)}
+.lc-overview {display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:5px 0 18px}
+.lc-overview>div {display:flex;align-items:center;justify-content:space-between;gap:9px;padding:12px 17px;border:1px solid var(--lc-line);background:rgba(7,28,26,.7);border-radius:8px}
+.lc-overview span {color:var(--lc-muted);font-size:11px}
+.lc-overview strong {color:var(--lc-gold);font-size:13px;font-weight:500}
+.lc-stages {display:grid;grid-template-columns:repeat(10,1fr);gap:6px;margin:0 0 12px}
+.lc-stage {display:grid;place-items:center;height:26px;border:1px solid var(--lc-line);border-radius:5px;color:var(--lc-muted);background:rgba(4,24,20,.6);font-size:10px}
+.lc-stage.is-current {color:#1d2a24;background:var(--lc-gold);border-color:var(--lc-gold);font-weight:700}
+.lc-stage.is-cleared {color:#d8f4e0;background:#39785e;border-color:#39785e}
+.lc-message {min-height:24px;color:var(--lc-muted);font-size:12px;line-height:1.6;margin:0 0 13px;text-align:center}
+.lc-game {min-height:450px;padding:27px;background:linear-gradient(148deg,rgba(11,36,33,.94),rgba(7,25,24,.96));border:1px solid var(--lc-line);border-radius:15px;box-shadow:0 18px 65px rgba(0,0,0,.32)}
+.lc-section-heading {padding:0 0 21px;margin-bottom:20px;border-bottom:1px solid var(--lc-line)}
+.lc-section-heading h2 {font-size:clamp(21px,3vw,30px);font-weight:400;letter-spacing:.14em;margin:0 0 8px}
+.lc-section-heading p:last-child {margin:0;color:var(--lc-muted);font-size:12px;line-height:1.9}
+.lc-count-line {display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 15px}
+.lc-count-line strong {font-size:16px;color:var(--lc-gold)}
+.lc-count-line span {color:var(--lc-muted);font-size:12px}
+.lc-primary,.lc-secondary {display:inline-flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;min-height:43px;padding:12px 24px;border:1px solid var(--lc-gold);background:linear-gradient(135deg,#d6c192,#aa925d);color:#1b2924;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;text-align:center;transition:filter .2s,transform .15s}
+.lc-primary:hover:not(:disabled) {filter:brightness(1.12);transform:translateY(-1px)}
+.lc-secondary {color:var(--lc-cream);background:rgba(14,43,38,.7);border-color:var(--lc-line);font-weight:400}
+.lc-secondary:hover:not(:disabled) {border-color:var(--lc-gold)}
+.lc-sticky-actions {display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;padding:23px 0 0}
+.lc-sticky-actions p {margin:0;color:var(--lc-muted);font-size:11px}
+.lc-sticky-actions .lc-primary {margin-left:auto}
+.lc-error {color:#f3b9ae;background:rgba(159,74,68,.1);padding:10px;border-radius:5px}
+.lc-status-grid {display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:0 0 24px}
+.lc-status-grid>div {padding:14px 11px;background:rgba(49,89,73,.16);border:1px solid var(--lc-line);border-radius:8px;text-align:center}
+.lc-status-grid span {display:block;color:var(--lc-muted);font-size:11px}
+.lc-status-grid strong {display:block;color:var(--lc-gold);font-size:21px;font-weight:400;margin-top:3px}
+.lc-reward-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:11px}
+.lc-reward-choice {min-height:155px;display:flex;flex-direction:column;justify-content:space-between;gap:12px;padding:19px 16px;border:1px solid var(--lc-line);border-radius:12px;background:linear-gradient(143deg,rgba(49,79,65,.72),rgba(12,34,31,.89));color:var(--lc-light);text-align:left;cursor:pointer}
+.lc-reward-choice span {font-size:10px;color:var(--lc-green);letter-spacing:.12em}
+.lc-reward-choice strong {font-size:14px;font-weight:500}
+.lc-reward-choice small {color:var(--lc-muted);font-size:11px}
+.lc-reward-choice b {color:var(--lc-gold);font-size:11px;font-weight:400}
+.lc-reward-choice:hover {border-color:var(--lc-gold)}
+.lc-reward-card {display:flex;justify-content:center;margin:22px 0}
+.lc-reward-card .lc-card {width:190px;min-height:248px}
+.lc-reward-actions {display:flex;justify-content:center;gap:10px;flex-wrap:wrap;padding:3px 0 27px}
+.lc-replace-heading {font-size:15px;font-weight:400;margin:22px 0 15px}
+.lc-replace-button {width:100%;padding:9px 5px;margin-top:5px;font-size:11px;border:1px solid var(--lc-line);color:var(--lc-cream);background:rgba(10,32,29,.78);border-radius:6px;cursor:pointer}
+.lc-replace-button:hover {border-color:var(--lc-gold)}
+.lc-finish-icon {margin:25px auto;color:var(--lc-gold);font:100px Georgia,serif;text-align:center}
+.lc-finish-text {max-width:520px;text-align:center;margin:14px auto 28px;line-height:2;color:var(--lc-muted)}
+.lc-actions-center {display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap}
+.lc-guide {margin:28px 0 0;padding:25px;background:rgba(8,28,26,.65);border:1px solid var(--lc-line);border-radius:9px}
+.lc-guide h2 {margin:0 0 18px;font-size:14px;color:var(--lc-cream);font-weight:500}
+.lc-guide-columns {display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.lc-guide-columns p {margin:0;color:var(--lc-muted);font-size:11px;line-height:1.9}
+.lc-guide-columns b {color:var(--lc-light);font-weight:500}
+.lc-footer {display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:33px 0 47px;color:var(--lc-muted);font:11px Georgia,serif;letter-spacing:.04em}
+@media(max-width:680px) {
+ .lc-shell {width:min(100% - 20px,560px)}
+ .lc-site-header {min-height:65px}
+ .lc-brand strong {font-size:12px}
+ .lc-brand small {font-size:8px}
+ .lc-brand-mark {width:34px;height:34px;font-size:25px}
+ .lc-reset {font-size:11px;padding:7px 10px}
+ .lc-intro {padding:36px 0 27px}
+ .lc-en {font-size:13px}
+ .lc-motto {font-size:11px}
+ .lc-overview {gap:5px}
+ .lc-overview>div {display:block;padding:9px 5px;text-align:center}
+ .lc-overview span,.lc-overview strong {display:block;font-size:10px}
+ .lc-overview strong {margin-top:4px;font-size:12px}
+ .lc-stages {gap:3px}
+ .lc-stage {height:23px;font-size:9px}
+ .lc-game {padding:15px 12px;min-height:450px}
+ .lc-status-grid {grid-template-columns:repeat(2,1fr);gap:7px}
+ .lc-sticky-actions .lc-primary {width:100%}
+ .lc-guide-columns {grid-template-columns:1fr;gap:13px}
+ .lc-reward-grid {grid-template-columns:repeat(2,minmax(0,1fr))}
+ .lc-reward-choice {padding:12px;min-height:138px}
+ .lc-reward-choice strong {font-size:12px}
+ .lc-footer {font-size:10px}
+}
+@media(prefers-reduced-motion:reduce) {*,*::before,*::after {animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+/* =========================================================
+   林間卡牌｜鹿雨森 Demo 式戰鬥舞台 v0.2
+   戰鬥畫面是宿主視覺；不修改慢慢軍火庫、也不影響選牌頁。
+   Demo 參考：中央霧影、下方扇型手牌、底部玩家 HUD。
+========================================================= */
+.lc-battle-board {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 180px;
+  grid-template-areas:
+    "turn turn"
+    "boss boss"
+    "hand hand"
+    "player controls"
+    "resources controls"
+    "status status";
+  gap:0 14px;
+  position:relative;
+  isolation:isolate;
+  border:1px solid rgba(167,214,191,.20);
+  border-radius:13px;
+  overflow:hidden;
+  padding:0 24px 17px;
+  background:
+    radial-gradient(ellipse 40% 23% at 50% 35%,rgba(56,114,99,.32),transparent),
+    linear-gradient(180deg,rgba(10,35,37,.60),rgba(3,15,18,.78) 72%,rgba(3,14,17,.95));
+  box-shadow:inset 0 0 80px rgba(0,0,0,.20),0 14px 40px rgba(0,0,0,.3);
+}
+.lc-battle-board::before {content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:
+  radial-gradient(ellipse 58% 8% at 50% 43%,rgba(194,231,211,.07),transparent 80%),
+  linear-gradient(90deg,rgba(1,11,13,.43),transparent 26%,transparent 75%,rgba(1,11,13,.48));}
+.lc-battle-turn {grid-area:turn;display:flex;align-items:center;justify-content:center;gap:15px;min-height:45px;padding:8px 0;border-bottom:1px solid rgba(180,220,200,.15);color:#d6e8df;letter-spacing:.13em;background:linear-gradient(90deg,transparent,rgba(30,66,55,.28),transparent)}
+.lc-battle-turn strong {font:italic 22px Georgia,serif;letter-spacing:.13em;font-weight:400}
+.lc-battle-turn small {font-size:10px;color:#b1cdbb;letter-spacing:.1em}
+.lc-battle-turn>span {color:var(--lc-gold);opacity:.67}
+.lc-battle-boss {grid-area:boss;display:flex;flex-direction:column;align-items:center;justify-content:end;position:relative;min-height:365px;padding:8px 5px 16px;text-align:center;overflow:visible}
+.lc-battle-boss::before {content:"";position:absolute;z-index:-1;inset:14% 15% 9%;background:radial-gradient(ellipse at center,rgba(171,170,195,.14),transparent 68%);pointer-events:none}
+.lc-boss-name {margin-top:3px;color:#f0f3ef;font-size:clamp(16px,2.3vw,21px);letter-spacing:.19em;text-shadow:0 2px 10px #000;}
+.lc-boss-tags {display:flex;justify-content:center;gap:14px;flex-wrap:wrap;color:#d0c2d7;font-size:10px;margin:5px 0 6px}
+.lc-battle-boss .lc-hud-hp {width:min(350px,80%)}
+.lc-battle-boss .lc-health-line {margin:0;color:#dce9e2;font-size:11px}
+.lc-battle-boss .lc-health {height:8px;margin:5px 0 0;border:1px solid rgba(211,183,218,.38);background:rgba(3,14,19,.9);box-shadow:0 3px 12px rgba(0,0,0,.3)}
+.lc-battle-boss .lc-health>span {background:linear-gradient(90deg,#82516a,#c39bbf)}
+.lc-boss-report {min-height:25px;max-width:min(410px,93%);margin:8px 0 0;padding:4px 10px;color:#cedfd5;font-size:10px;line-height:1.5;letter-spacing:.03em;background:rgba(5,23,27,.48);border:1px solid rgba(187,223,204,.12)}
+/* Demo 的 CSS 程式美術：不帶鹿雨森專屬品牌字樣或外部圖檔。 */
+.lc-foe {position:relative;width:clamp(175px,23vw,248px);height:clamp(195px,26vw,265px);margin:0 auto;filter:drop-shadow(0 15px 18px rgba(0,0,0,.5));animation:lc-foe-float 5.6s ease-in-out infinite}
+.lc-foe-halo {position:absolute;inset:0 -30%;background:radial-gradient(ellipse at 50% 52%,rgba(154,175,187,.21),transparent 55%);filter:blur(5px)}
+.lc-foe-antler {position:absolute;z-index:1;top:4%;left:50%;width:4px;height:34%;transform-origin:bottom center;border-radius:5px;background:linear-gradient(180deg,rgba(141,179,184,.67),rgba(66,98,111,.49));box-shadow:0 0 14px rgba(184,226,214,.16)}
+.lc-foe-antler::before,.lc-foe-antler::after {content:"";position:absolute;width:3px;border-radius:3px;background:inherit}
+.lc-foe-antler::before {height:56%;bottom:31%;left:-12px;transform:rotate(-47deg)}
+.lc-foe-antler::after {height:45%;bottom:51%;left:11px;transform:rotate(42deg)}
+.lc-foe-antler.left {transform:translateX(-46px) rotate(-26deg)}
+.lc-foe-antler.right {transform:translateX(42px) rotate(26deg) scaleX(-1)}
+.lc-foe-cloak {position:absolute;inset:20% 8% 0;z-index:2;clip-path:polygon(49% 1%,65% 9%,70% 23%,87% 34%,95% 73%,99% 100%,64% 90%,48% 98%,24% 90%,0% 100%,8% 68%,15% 35%,28% 24%,34% 8%);background:radial-gradient(ellipse at 50% 12%,rgba(79,92,114,.75),transparent 33%),linear-gradient(115deg,#121c28 6%,#263746 43%,#0b121c 79%);box-shadow:inset 0 0 22px rgba(196,225,221,.19)}
+.lc-foe-face {position:absolute;top:24%;left:50%;z-index:3;transform:translateX(-50%);width:35%;height:31%;border-radius:44% 44% 45% 45%;background:radial-gradient(ellipse at 50% 55%,#182d3a,#0c151f 70%);border-top:2px solid rgba(147,179,186,.20)}
+.lc-foe-eyes {position:absolute;left:50%;top:40%;z-index:4;width:25%;height:8px;transform:translateX(-50%);background:radial-gradient(circle at 21% 50%,#e3c9f5 0 3px,transparent 4px),radial-gradient(circle at 79% 50%,#e3c9f5 0 3px,transparent 4px);filter:drop-shadow(0 0 6px #c7a4e8);animation:lc-foe-eyes 4.2s ease-in-out infinite}
+.lc-foe-ground {position:absolute;left:-18%;right:-18%;bottom:-5px;height:27px;z-index:-1;border-radius:50%;background:radial-gradient(ellipse,rgba(152,181,185,.27),transparent 68%);filter:blur(5px)}
+@keyframes lc-foe-float {0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes lc-foe-eyes {0%,100%{opacity:.65}45%{opacity:1}}
+/* 真正的扇型排列：與鹿雨森 Demo 一樣，卡牌重疊而不是水平捲軸。 */
+.lc-battle-hand-zone {grid-area:hand;min-width:0;margin:0 0 9px;padding:0 0 3px;text-align:center;position:relative}
+.lc-hand-title {color:#bbdbca;font:italic 15px Georgia,serif;letter-spacing:.17em}
+.lc-hand-title>span {font-style:normal;color:var(--lc-gold)}
+.lc-selection-hint {min-height:17px;margin:4px 0 7px;color:#bad2c4;font-size:11px;line-height:1.5;letter-spacing:.02em}
+.lc-battle-hand {display:flex;align-items:flex-end;justify-content:center;gap:0;overflow:visible;min-height:240px;padding:25px 0 3px}
+.lc-battle-hand>.lc-card {
+  --fan-tilt:0deg;--fan-rise:0px;
+  position:relative;flex:0 0 172px;width:172px;min-width:0;min-height:223px;
+  margin:0 0 0 -26px;padding:11px 12px 12px;gap:8px;
+  transform-origin:50% 110%;transform:translateY(var(--fan-rise)) rotate(var(--fan-tilt));
+  border-radius:11px 11px 6px 6px;z-index:1;
+  box-shadow:inset 0 0 0 3px rgba(5,17,19,.7),inset 0 0 0 4px rgba(194,226,208,.22),0 7px 22px rgba(0,0,0,.53);
+  transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease,filter .18s ease;
+}
+.lc-battle-hand>.lc-card:first-child {margin-left:0}
+.lc-battle-hand>.lc-card:hover,.lc-battle-hand>.lc-card:focus-visible {z-index:45;transform:translateY(-21px) rotate(0deg);box-shadow:0 12px 32px #000a,0 0 16px rgba(154,223,190,.27)}
+.lc-battle-hand>.lc-card.is-selected {z-index:80;transform:translateY(-38px) rotate(0deg);border-color:#e4f6e3;box-shadow:0 20px 42px #000c,0 0 0 2px rgba(174,238,200,.7),0 0 24px rgba(122,230,194,.43)}
+.lc-battle-hand>.lc-card.is-selected::after {content:'✧ 已選取';display:block;width:auto;height:auto;bottom:auto;top:-26px;right:auto;left:50%;transform:translateX(-50%);white-space:nowrap;padding:2px 8px;border:1px solid rgba(163,234,205,.6);border-radius:20px;background:rgba(11,50,42,.96);font-size:10px;color:#e5f9e6}
+.lc-battle-hand>.lc-card.is-unpayable:not(.is-selected) {opacity:.62;filter:saturate(.75)}
+.lc-battle-hand .lc-card-head {flex-direction:row-reverse}
+.lc-battle-hand .lc-card-symbol {min-height:48px;margin:1px 0;border-top:1px solid rgba(210,238,218,.09);border-bottom:1px solid rgba(210,238,218,.09);font-size:41px;background:radial-gradient(circle at center,color-mix(in srgb,var(--card-glow) 18%,transparent),transparent 68%)}
+.lc-battle-hand .lc-card-name {font-size:15px}
+.lc-battle-hand .lc-card-description {font-size:11px;line-height:1.45}
+.lc-battle-hand .lc-card-foot {font-size:9px}
+/* 玩家：Demo 風格的小型 HUD，不佔用 Boss 的舞台。 */
+.lc-battle-player {grid-area:player;min-width:0;display:grid;grid-template-columns:58px minmax(0,1fr);grid-template-rows:auto auto;grid-template-areas:'avatar name' 'avatar hp';align-items:center;gap:1px 10px;padding:8px 2px 5px}
+.lc-player-emblem {grid-area:avatar;display:grid;place-items:center;align-self:center;width:50px;height:50px;font:29px Georgia,serif;color:#d5eccf;border:1px solid rgba(180,230,204,.38);border-radius:50%;box-shadow:inset 0 0 15px rgba(150,213,181,.10)}
+.lc-player-name {grid-area:name;color:#eaf9ed;font-size:14px;letter-spacing:.12em}
+.lc-battle-player .lc-hud-hp {grid-area:hp;min-width:0}
+.lc-battle-player .lc-health-line {margin:0;font-size:11px}
+.lc-battle-player .lc-health {height:6px;margin:4px 0 0}
+.lc-battle-actions {grid-area:controls;align-self:center;justify-self:stretch;padding:4px 0}
+.lc-battle-actions .lc-primary {min-width:0;width:100%;min-height:57px;font-size:13px;letter-spacing:.1em;background:linear-gradient(120deg,rgba(35,95,77,.9),rgba(18,59,59,.96));border-color:rgba(172,224,195,.54);color:#edfbee}
+.lc-battle-resources {grid-area:resources;display:flex;align-items:center;flex-wrap:wrap;gap:8px 13px;padding:6px 0 12px;color:#bbd2c5;font-size:11px}
+.lc-resource-energy {display:flex;align-items:center;gap:9px;color:var(--lc-gold)}
+.lc-resource-energy strong {font:italic 22px Georgia,serif}
+.lc-battle-discard {padding:5px 9px;font-size:10px;margin-left:auto}
+.lc-battle-status {grid-area:status;margin:0;padding:12px 4px 2px;border-top:1px solid rgba(190,230,208,.15);color:#a7c1b5;font-size:10px;text-align:center}
+.lc-log {margin:12px 0 0;padding:12px 16px}
+.lc-log summary {color:var(--lc-gold);font-size:12px;cursor:pointer;list-style-position:inside}
+.lc-log summary span {color:var(--lc-muted);font-size:10px;margin-left:5px}
+.lc-log ol {margin-top:14px}
+.lc-card-flight {position:fixed!important;z-index:9999!important;display:flex!important;pointer-events:none!important;overflow:hidden;border-radius:11px;background:linear-gradient(155deg,#1a4037,#0b2423);box-shadow:0 0 32px rgba(160,231,193,.55),0 22px 38px #000a;will-change:transform,opacity}
+@media(max-width:680px) {
+  .lc-battle-board {grid-template-columns:minmax(0,1fr) 110px;gap:0 7px;padding:0 9px 12px}
+  .lc-battle-turn {min-height:36px;padding:4px 0}
+  .lc-battle-turn strong {font-size:18px}
+  .lc-battle-turn small {font-size:9px}
+  .lc-battle-boss {min-height:287px;padding:3px 4px 9px}
+  .lc-foe {width:165px;height:181px}
+  .lc-boss-name {font-size:15px}
+  .lc-boss-tags {font-size:9px;gap:9px}
+  .lc-battle-boss .lc-hud-hp {width:min(280px,90%)}
+  .lc-boss-report {font-size:9px;margin-top:5px}
+  .lc-hand-title {font-size:12px}
+  .lc-selection-hint {font-size:10px;margin:3px 0 4px}
+  .lc-battle-hand {min-height:191px;padding:24px 0 0}
+  .lc-battle-hand>.lc-card {flex:0 0 clamp(101px,28vw,126px);width:clamp(101px,28vw,126px);min-height:171px;margin-left:clamp(-45px,-11vw,-40px);padding:8px 7px;gap:5px}
+  .lc-battle-hand .lc-card-symbol {font-size:29px;min-height:39px}
+  .lc-battle-hand .lc-card-name {font-size:12px}
+  .lc-battle-hand .lc-card-description {font-size:9px;line-height:1.3}
+  .lc-battle-hand .lc-family {font-size:9px}
+  .lc-battle-hand .lc-cost {min-width:24px;height:23px;font-size:10px}
+  .lc-battle-hand .lc-card-foot {padding-top:3px;font-size:8px}
+  .lc-battle-hand>.lc-card.is-selected {transform:translateY(-29px) rotate(0deg)}
+  .lc-battle-player {grid-template-columns:37px minmax(0,1fr);gap:1px 7px;padding:5px 0 4px}
+  .lc-player-emblem {width:35px;height:35px;font-size:22px}
+  .lc-player-name {font-size:12px}
+  .lc-battle-player .lc-health-line {font-size:10px}
+  .lc-battle-actions .lc-primary {min-height:62px;padding:6px 7px;font-size:11px}
+  .lc-battle-resources {gap:5px 9px;padding:3px 0 9px;font-size:10px}
+  .lc-resource-energy strong {font-size:19px}
+  .lc-battle-discard {margin-left:0;font-size:9px}
+  .lc-battle-status {font-size:9px}
+}
+@media(max-width:360px) {
+  .lc-battle-board {grid-template-columns:minmax(0,1fr) 98px;padding:0 6px 10px}
+  .lc-battle-hand>.lc-card {flex-basis:99px;width:99px;margin-left:-45px}
+  .lc-battle-hand .lc-card-description {font-size:8px}
+}
+@media(prefers-reduced-motion:reduce) {.lc-foe,.lc-foe-eyes{animation:none}.lc-card-flight{display:none!important}}

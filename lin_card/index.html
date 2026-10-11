@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0d1b19">
+  <meta name="description" content="慢慢好玩遊戲區｜lin_card 森林策略卡牌：你所捨棄的一切，終將成為你的敵人。">
+  <title>lin_card｜森林卡牌試煉・慢慢好玩遊戲區</title>
+  <!-- 軍火庫功能和動畫由 HTTPS 引用，不複製共用原始碼。 -->
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/ui/responsive.css">
+  <link rel="stylesheet" href="./index.css">
+  <link rel="stylesheet" href="./index_style.css">
+  <script src="https://lib.stillnessbyslowly.com/game/card/deck.js" defer></script>
+  <script src="https://lib.stillnessbyslowly.com/effects/background/pine_forest.js" defer></script>
+  <script src="https://lib.stillnessbyslowly.com/effects/background/fog.js" defer></script>
+  <script src="./cards.js" defer></script>
+  <script src="./save.js" defer></script>
+  <script src="./battle_rules.js" defer></script>
+  <script src="./index.js" defer></script>
+  <script src="./index_style.js" defer></script>
+</head>
+<body>
+  <div class="lc-scene" aria-hidden="true"><canvas id="lin-forest"></canvas><canvas id="lin-fog"></canvas><div class="lc-scene-shade"></div></div>
+  <div class="lc-shell">
+    <header class="lc-site-header">
+      <a class="lc-brand" href="https://game.stillnessbyslowly.com/" title="慢慢好玩遊戲區"><span class="lc-brand-mark">✧</span><span><strong>慢慢好玩遊戲區</strong><small>STILLNESS BY SLOWLY</small></span></a>
+      <button id="reset-progress" class="lc-reset" type="button">↻ 重新開始</button>
+    </header>
+    <main>
+      <section class="lc-intro">
+        <p class="lc-eyebrow">LIN CARD / FOREST TRIAL</p>
+        <h1>林間<span>卡牌</span></h1>
+        <p class="lc-en">The Forest Keeps What You Leave Behind</p>
+        <div class="lc-line"></div>
+        <p class="lc-motto">你所捨棄的一切，終將成為你的敵人。</p>
+      </section>
+      <div class="lc-overview"><div><span>已通過</span><strong id="chapter-count">0 / 10</strong></div><div><span>Boss 永久牌庫</span><strong id="boss-count">72</strong></div><div><span>遊戲狀態</span><strong>試玩版 v0.2</strong></div></div>
+      <div id="progress" aria-label="關卡進度"></div>
+      <p id="status-message" class="lc-message" role="status" aria-live="polite">載入遊戲中……</p>
+      <section id="app" class="lc-game" aria-label="卡牌遊戲"></section>
+      <section class="lc-guide"><h2>遊戲說明</h2><div class="lc-guide-columns"><p><b>每場五點行動</b><br>行動點不隨回合恢復；行動牌免費補充，可以累積超過 5。</p><p><b>牌庫不會自動循環</b><br>玩家無牌可用視為戰敗。戰鬥中棄牌不會送給 Boss。</p><p><b>接龍先用測試按鈕</b><br>打贏 Boss 選一種接龍，直接模擬通關，獎勵會真的寫入存檔。</p></div></section>
+    </main>
+    <footer class="lc-footer"><span>lin_card · Forest Strategy</span><a href="https://stillnessbyslowly.com/" target="_blank" rel="noopener noreferrer">慢慢 Stillness by Slowly ↗</a></footer>
+  </div>
+</body>
+</html>
