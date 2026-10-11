@@ -14,13 +14,14 @@
   function fresh() {
     return {
       version: 1, phase: "choose", stage: 1, completed: 0,
-      player: [], boss: Data.bossBase(), pool: Data.initialPool(),
+      player: [], starter: Data.starterAttacks(), boss: Data.bossBase(), pool: Data.initialPool(),
       pendingReward: null, selectedDeckIds: [], lastDeckIds: []
     };
   }
   if (!save || !Array.isArray(save.pool) || !Array.isArray(save.selectedDeckIds)) save = fresh();
   if (save.phase === "battle") save.phase = "deck"; // 暫不恢復半場戰鬥；永久成長完整保留。
-  if (save.phase === "choose" && save.pool?.length !== 30) save = fresh();
+  // 舊版尚未完成的 30 選 15 初始選牌改用新版 25 選 10；已開局存檔不清除。
+  if (save.phase === "choose" && (save.pool?.length !== 25 || save.starter?.length !== 5)) save = fresh();
   chosenInitial = new Set(save.chosenInitialIds || []);
   chosenDeck = new Set(save.selectedDeckIds.length ? save.selectedDeckIds : save.player.map(c => c.id).slice(0, 30));
   function persist() {
@@ -36,19 +37,20 @@
   function pickInitial(id) {
     if (save.phase !== "choose") return;
     if (chosenInitial.has(id)) chosenInitial.delete(id);
-    else if (chosenInitial.size < 15) chosenInitial.add(id);
-    else return refresh("初始只能選 15 張，要換牌請先取消一張。 ");
+    else if (chosenInitial.size < 10) chosenInitial.add(id);
+    else return refresh("另外 10 張只能選 10 張，要換牌請先取消一張。 ");
     persist(); refresh();
   }
   function confirmInitial() {
-    if (save.phase !== "choose" || chosenInitial.size !== 15) return refresh("請選滿 15 張牌。 ");
-    save.player = save.pool.filter(c => chosenInitial.has(c.id));
+    if (save.phase !== "choose" || chosenInitial.size !== 10) return refresh("請從選牌池選滿 10 張牌。 ");
+    save.player = [...save.starter, ...save.pool.filter(c => chosenInitial.has(c.id))];
     save.boss.push(...save.pool.filter(c => !chosenInitial.has(c.id)));
     save.pool = [];
+    save.starter = [];
     chosenDeck = new Set(save.player.map(c => c.id));
     save.selectedDeckIds = [...chosenDeck];
     setPhase("deck");
-    refresh("15 張初始牌已入手，剩餘的 15 張已交給 Boss。 ");
+    refresh("5 張專屬攻擊牌＋10 張自選牌已入手，剩下的 15 張已交給 Boss。 ");
   }
   function toggleDeck(id) {
     if (save.phase !== "deck" || !save.player.some(c => c.id === id)) return;
@@ -130,6 +132,12 @@
     if (!battle.freeDiscard(selectedCard)) return refresh("本回合已經整理過一張手牌。 ");
     syncBattle();
   }
+  function concede() {
+    if (save.phase !== "battle" || !battle || battle.outcome) return;
+    if (!window.confirm("確定認輸本場戰鬥？將從目前關卡重新挑戰，永久收藏與 Boss 牌庫不變。")) return;
+    battle.concede();
+    syncBattle();
+  }
   function retry() {
     if (save.phase !== "defeat") return;
     battle = null; selectedCard = null; targetPrompt = null;
@@ -198,7 +206,7 @@
     selectedCard = null; targetPrompt = null; persist(); refresh("已建立新的 30 張共同牌池。 ");
   }
   function view() { return { save, battle: battle?.state() || null, selectedCard, targetPrompt, chosenInitial, chosenDeck, notice, hasLibrary: !!window.Deck?.create }; }
-  window.LinCardGame = Object.freeze({ view, pickInitial, confirmInitial, toggleDeck, selectAllDeck, changeBranch, beginBattle, cardClick, playTarget, closeTarget, endTurn, freeDiscard, retry, chooseReward, acceptReward, rejectReward, newGame, currentReward });
+  window.LinCardGame = Object.freeze({ view, pickInitial, confirmInitial, toggleDeck, selectAllDeck, changeBranch, beginBattle, cardClick, playTarget, closeTarget, endTurn, freeDiscard, concede, retry, chooseReward, acceptReward, rejectReward, newGame, currentReward });
   persist();
   window.addEventListener("DOMContentLoaded", () => window.LinCardUI?.render());
 })();

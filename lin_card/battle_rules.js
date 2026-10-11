@@ -187,15 +187,31 @@
       return "特殊效果已發動";
     }
     checkHP() {
-      if (this.boss.hp <= 0) this.win("Boss 生命值歸零");
-      else if (this.player.hp <= 0) this.lose("玩家生命值歸零");
+      if (this.outcome) return;
+      // 同時歸零優先判玩家戰敗，不能以 Boss 歸零掩蓋玩家死亡。
+      if (this.player.hp <= 0) this.lose("玩家生命值歸零");
+      else if (this.boss.hp <= 0) this.win("Boss 生命值歸零");
     }
     checkExhaustion() {
+      if (this.outcome) return;
       const p = cardList(this.player);
-      if (p.hand.length === 0 && p.drawPile.length === 0) this.lose("玩家所有可出戰卡牌已耗盡");
+      // 手牌仍有合法卡時，即使抽牌堆空了也能繼續打。
+      if (p.drawPile.length > 0) return;
+      if (p.hand.length === 0) {
+        this.lose("玩家已無手牌，抽牌堆也已耗盡");
+        return;
+      }
+      if (!p.hand.some((_, i) => this.valid(this.player, i))) {
+        this.lose("玩家抽牌堆已耗盡，剩餘手牌均無法使用");
+      }
     }
-    win(reason) { this.outcome = "win"; this.turn = "done"; this.note(`勝利：${reason}`); }
-    lose(reason) { this.outcome = "lose"; this.turn = "done"; this.note(`戰敗：${reason}`); }
+    win(reason) { if (this.outcome) return; this.outcome = "win"; this.turn = "done"; this.note(`勝利：${reason}`); }
+    lose(reason) { if (this.outcome) return; this.outcome = "lose"; this.turn = "done"; this.note(`戰敗：${reason}`); }
+    concede() {
+      if (this.outcome || this.turn !== "player") return false;
+      this.lose("玩家主動認輸");
+      return true;
+    }
     freeDiscard(index) {
       if (this.outcome || this.turn !== "player" || this.freeDiscardUsed) return false;
       if (index < 0 || index >= cardList(this.player).hand.length) return false;

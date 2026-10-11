@@ -34,8 +34,14 @@
     serial += 1;
     return { id: `lc-${Date.now().toString(36)}-${serial.toString(36)}-${Math.random().toString(36).slice(2, 7)}`, type, name, level: 0, branch: "標準", source };
   }
+  function starterAttacks() {
+    // 五張專屬攻擊牌直接配發玩家，不參與 25 選 10，不會被 Boss 分到。
+    return NAMES.attack.slice(0, 5).map(name => make("attack", name, "starter"));
+  }
   function initialPool() {
-    return TYPES.flatMap(type => Array.from({ length: 5 }, (_, i) => make(type, NAMES[type][i], "initial")));
+    // 只放其餘五類：5 類 × 5 張 = 25 張。
+    return TYPES.filter(type => type !== "attack").flatMap(type =>
+      Array.from({ length: 5 }, (_, i) => make(type, NAMES[type][i], "initial")));
   }
   function bossBase() {
     return TYPES.flatMap(type => Array.from({ length: 12 }, (_, i) => {
@@ -65,5 +71,5 @@
   }
   const CHAPTERS = ["霧中行者", "松間觀客", "雨幕旅人", "林下守夜者", "折枝者", "未眠樵夫", "鹿角見證人", "暮林幽客", "循聲而來者", "無名守林人"];
   const HEALTH = [30, 50, 80, 120, 170, 230, 300, 380, 470, 570];
-  window.LinCardData = Object.freeze({ TYPES, LABELS, SYMBOLS, NAMES, SPECIALS, BRANCHES, CHAPTERS, HEALTH, make, initialPool, bossBase, rewardCards, value, actionGain, cost, describe });
+  window.LinCardData = Object.freeze({ TYPES, LABELS, SYMBOLS, NAMES, SPECIALS, BRANCHES, CHAPTERS, HEALTH, make, initialPool, bossBase, rewardCards, value, actionGain, cost, describe, starterAttacks });
 })();

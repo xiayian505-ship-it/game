@@ -244,3 +244,10 @@ button:disabled {opacity:.45;cursor:not-allowed!important;transform:none!importa
   .lc-battle-hand .lc-card-description {font-size:8px}
 }
 @media(prefers-reduced-motion:reduce) {.lc-foe,.lc-foe-eyes{animation:none}.lc-card-flight{display:none!important}}
+
+/* v0.3｜初始牌庫說明與安全的戰鬥認輸入口 */
+.lc-starter-note {margin:-3px 0 16px;padding:11px 13px;border:1px solid var(--lc-line);border-radius:8px;background:rgba(43,84,65,.21);color:var(--lc-cream);font-size:12px;line-height:1.75}
+.lc-battle-actions {display:flex;flex-direction:column;align-items:stretch;gap:10px}
+.lc-surrender {border:1px solid rgba(185,115,115,.38);border-radius:8px;background:rgba(58,27,31,.20);color:#d7aca8;padding:9px 8px;min-height:34px;font-size:11px;letter-spacing:.04em;cursor:pointer}
+.lc-surrender:hover,.lc-surrender:focus-visible {background:rgba(103,43,49,.45);border-color:rgba(218,145,133,.7)}
+@media(max-width:680px){.lc-battle-actions{gap:7px}.lc-surrender{padding:7px 5px;font-size:10px;min-height:33px}}

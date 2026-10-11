@@ -44,10 +44,11 @@
   }
   function chooseView(v) {
     const cards = v.save.pool;
-    return `${headline(v.save, "01 / THE FIRST DIVISION", "初始選牌", "共同牌池六類各五張，選走十五張，其餘十五張永久歸 Boss。")}
-      <div class="lc-count-line"><strong>${v.chosenInitial.size} / 15</strong><span>玩家自選 · 不限制各類數量</span></div>
+    return `${headline(v.save, "01 / THE FIRST DIVISION", "初始選牌", "攻擊牌 5 張直接配發；其餘五類各五張共 25 張，請選 10 張。沒選的 15 張歸 Boss。")}
+      <div class="lc-starter-note">✦ 已保留你的 5 張專屬攻擊牌：${v.save.starter.map(c => esc(c.name)).join("、")}</div>
+      <div class="lc-count-line"><strong>${v.chosenInitial.size} / 10</strong><span>從 25 張非攻擊牌中自選 10 張</span></div>
       <div class="lc-card-grid">${cards.map(c => cardMarkup(c, { action: "choose", selected: v.chosenInitial.has(c.id) })).join("")}</div>
-      <div class="lc-sticky-actions"><p>注意：選剩的卡牌會加入 Boss 原有 72 張牌庫。</p><button class="lc-primary" data-act="confirm-initial" ${v.chosenInitial.size !== 15 ? "disabled" : ""}>確認選取 15 張，開始遊戲 →</button></div>`;
+      <div class="lc-sticky-actions"><p>注意：選剩的卡牌會加入 Boss 原有 72 張牌庫。</p><button class="lc-primary" data-act="confirm-initial" ${v.chosenInitial.size !== 10 ? "disabled" : ""}>領取 5 張攻擊＋10 張自選，開始遊戲 →</button></div>`;
   }
   function deckView(v) {
     const save = v.save;
@@ -101,7 +102,7 @@
           <div class="lc-player-name">森林旅人</div>
           ${healthMeter(b.player)}
         </section>
-        <div class="lc-battle-actions"><button class="lc-primary" data-act="end-turn">結束回合 <span aria-hidden="true">→</span></button></div>
+        <div class="lc-battle-actions"><button class="lc-primary" data-act="end-turn">結束回合 <span aria-hidden="true">→</span></button><button class="lc-surrender" data-act="concede" type="button" title="認輸本場戰鬥，保留永久進度">敗北／認輸</button></div>
         <div class="lc-battle-resources">
           <div class="lc-resource-energy"><span>✧ 行動點</span><strong>${b.player.energy}</strong></div>
           <span>♧ 防禦 ${b.player.guard}</span><span>❖ 護盾 ${b.player.shield}</span>
@@ -129,8 +130,8 @@
         ["freecell", "新接龍", "獲得 3 張新卡"],
         ["spider2", "連環新接龍・中階", "獲得 4 張新卡"]
       ];
-      return `${headline(v.save, "04 / VICTORY · REWARD", "戰後試煉", "這一版不必真的打接龍。點選模式，就直接模擬通關並結算真正的獎勵。")}
-        <div class="lc-reward-grid">${info.map(([key, title, value]) => `<button class="lc-reward-choice" data-act="reward" data-mode="${key}"><span>模擬通關</span><strong>${esc(title)}</strong><small>${esc(value)}</small><b>領取獎勵 →</b></button>`).join("")}</div>`;
+      return `${headline(v.save, "04 / VICTORY · REWARD", "戰後試煉", "挑選一種戰後獎勵，立即領取；這款小遊戲不用另外通關接龍。")}
+        <div class="lc-reward-grid">${info.map(([key, title, value]) => `<button class="lc-reward-choice" data-act="reward" data-mode="${key}"><span>選擇獎勵</span><strong>${esc(title)}</strong><small>${esc(value)}</small><b>領取獎勵 →</b></button>`).join("")}</div>`;
     }
     const full = v.save.player.length >= 60;
     return `${headline(v.save, "04 / REWARD ALLOCATION", `${esc(names[pending.mode])}｜獎勵 ${pending.cursor + 1} / ${pending.queue.length}`, "保留新卡、捨棄舊卡，或直接放棄新卡；被永久捨棄的牌都會加入 Boss。")}
@@ -243,7 +244,7 @@
       deck: () => G.toggleDeck(id), "select-all": G.selectAllDeck,
       start: G.beginBattle, hand: () => playHand(Number(button.dataset.index), button),
       "close-target": G.closeTarget, target: () => confirmTarget(id),
-      "end-turn": bossTurn, discard: G.freeDiscard,
+      "end-turn": bossTurn, discard: G.freeDiscard, concede: G.concede,
       retry: G.retry, reward: () => G.chooseReward(button.dataset.mode),
       "keep-reward": () => G.acceptReward(), "reject-reward": G.rejectReward,
       replace: () => G.acceptReward(id)
