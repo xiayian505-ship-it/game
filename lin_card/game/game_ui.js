@@ -1,4 +1,4 @@
-/** lin_card｜宿主 UI：頁面、卡面與互動呈現，不在此計算戰鬥結果。 */
+/** 霧林之契｜宿主 UI：頁面、卡面與互動呈現，不在此計算戰鬥結果。 */
 (() => {
   "use strict";
   const Data = window.LinCardData;
@@ -122,7 +122,7 @@
         <div><span>永久收藏</span><strong>${save.player.length} / 80</strong></div>
         <div><span>Boss 牌庫</span><strong>${save.boss.length} 張</strong></div>
       </div>
-      <div class="lc-starter-note">✧ 本關玩家初始行動點 ${5 + save.completed}（已通關 ${save.completed} 次）；Boss 仍是 5 點；雙方開場魔法點皆為 5。${save.retroBonusQueue?.length ? ` <button class="lc-quiet" data-act="claim-retro">補領舊版攻擊牌 ${save.retroBonusQueue.length} 張</button>` : ""}</div>
+      <div class="lc-starter-note">✧ 本關玩家初始行動點 ${5 + save.completed}（已通關 ${save.completed} 次）；Boss 仍是 5 點；雙方開場魔法點皆為 5。</div>
       <div class="lc-count-line"><strong>牌組${deckName}：${v.chosenDeck.size} / 30 張</strong><button class="lc-quiet" data-act="select-all">快速選前 30 張</button></div>
       <p class="lc-tree-guide">七大類預設收合，分類互斥；點卡名的「詳細」，才會顯示效果、消耗及加入／移出操作。</p>
       ${selectionTree(save.player, "deck", v.chosenDeck)}
@@ -188,7 +188,7 @@
     const hand = b.player.hand;
     const bossAction = b.log.find(text => text.startsWith("Boss") || text.includes("Boss 牌庫")) || "迷霧正等待你的下一步。";
     return `${headline(v.save, `03 / BATTLE · ROUND ${b.round}`, `第 ${v.save.stage} 關｜${Data.CHAPTERS[v.save.stage - 1]}`, "沿用《鹿雨森》Demo 戰場：霧影在上，扇形手牌在下。點兩次出牌。魔法牌使用魔法點。")} 
-      <div class="lc-battle-board" aria-label="林間卡牌戰鬥舞台">
+      <div class="lc-battle-board" aria-label="霧林之契戰鬥舞台">
         <div class="lc-battle-turn"><strong>ROUND ${String(b.round).padStart(2, "0")}</strong><span>✦</span><small>YOUR TURN · 玩家回合</small></div>
         <section class="lc-battle-boss" aria-label="Boss 狀態">
           ${bossFigure()}
@@ -251,10 +251,10 @@
       return `${headline(v.save, "04 / VICTORY · REWARD", "戰後試煉", `本關固定獲得攻擊牌 1 張，下一場玩家初始行動點 +1（${5 + v.save.completed} → ${6 + v.save.completed}）。另外從五種獎勵中選一種；不用打接龍。`)}
         <div class="lc-reward-grid">${info.map(([key, title, value]) => `<button class="lc-reward-choice" data-act="reward" data-mode="${key}"><span>選擇獎勵</span><strong>${esc(title)}</strong><small>${esc(value)}</small><b>領取獎勵 →</b></button>`).join("")}</div>`;
     }
-    const full = v.save.player.length >= 60;
-    const rewardLabel = pending.mode === "retro" ? "舊版通關補發" : names[pending.mode];
+    const full = v.save.player.length >= 80;
+    const rewardLabel = names[pending.mode];
     return `${headline(v.save, "04 / REWARD ALLOCATION", `${esc(rewardLabel)}｜獎勵 ${pending.cursor + 1} / ${pending.queue.length}`, "每次過關固定多一張攻擊牌。保留、替換或放棄都遵循原本的收藏規則；永久棄牌歸 Boss。")}
-      ${current?.source === "victory-guarantee" ? `<div class="lc-starter-note">✦ ${pending.mode === "retro" ? "補領舊版通關攻擊牌" : "本關固定補給：攻擊牌 +1"}（不佔五選一的額度）</div>` : ""}
+      ${current?.source === "victory-guarantee" ? `<div class="lc-starter-note">✦ ${"本關固定補給：攻擊牌 +1"}（不佔五選一的額度）</div>` : ""}
       <div class="lc-reward-card">${current ? cardMarkup(current) : ""}</div>
       <div class="lc-status-grid"><div><span>玩家收藏</span><strong>${v.save.player.length} / 80</strong></div><div><span>Boss 收藏</span><strong>${v.save.boss.length} 張</strong></div></div>
       <div class="lc-reward-actions">${!full ? `<button class="lc-primary" data-act="keep-reward">保留新卡 ✓</button>` : ""}<button class="lc-secondary" data-act="reject-reward">放棄新卡 → 交給 Boss</button></div>
@@ -267,7 +267,7 @@
   }
   function completeView(v) {
     return `${headline(v.save, "THE END / TEN CHAPTERS", "十關試煉通關", "你擊敗了同一位對手的十個稱號。那些被捨棄的牌，都成了這場旅程的一部分。")}
-      <div class="lc-finish-icon">✧</div><div class="lc-status-grid"><div><span>完成關卡</span><strong>10 / 10</strong></div><div><span>最後玩家收藏</span><strong>${v.save.player.length} 張</strong></div><div><span>Boss 最終牌庫</span><strong>${v.save.boss.length} 張</strong></div></div><p class="lc-finish-text">要重新體驗不同的 40 選 25，可以按上方「重新開始」。</p>${v.save.retroBonusQueue?.length ? `<div class="lc-actions-center"><button class="lc-secondary" data-act="claim-retro">補領舊版攻擊牌 ${v.save.retroBonusQueue.length} 張</button></div>` : ""}`;
+      <div class="lc-finish-icon">✧</div><div class="lc-status-grid"><div><span>完成關卡</span><strong>10 / 10</strong></div><div><span>最後玩家收藏</span><strong>${v.save.player.length} 張</strong></div><div><span>Boss 最終牌庫</span><strong>${v.save.boss.length} 張</strong></div></div><p class="lc-finish-text">十關已完成，旅程暫告一段落。</p>`;
   }
   function render() {
     if (!root || !window.LinCardGame) return;
@@ -393,7 +393,7 @@
       "end-turn": bossTurn, "opening-exchange": G.openingExchange, discard: G.freeDiscard, concede: G.concede,
       retry: G.retry, reward: () => G.chooseReward(button.dataset.mode),
       "keep-reward": () => G.acceptReward(), "reject-reward": G.rejectReward,
-      replace: () => G.acceptReward(id), "claim-retro": G.claimRetroBonus
+      replace: () => G.acceptReward(id)
     };
     map[act]?.();
   });
@@ -401,7 +401,6 @@
     const select = event.target.closest("select[data-branch-id]");
     if (select) window.LinCardGame.changeBranch(select.dataset.branchId, select.value);
   });
-  document.getElementById("reset-progress")?.addEventListener("click", () => window.LinCardGame.newGame());
   document.addEventListener("keydown", event => {
     if (event.key === "Escape" && window.LinCardGame?.view().targetPrompt) window.LinCardGame.closeTarget();
   });
@@ -415,10 +414,10 @@
         ] });
       window.SlowlyCanvasFog?.create?.({ canvas: "#lin-fog", count: reduced ? 8 : 17,
         color: "#9dc2b2", opacity: .34, size: 1.1, speed: reduced ? 0 : .28, maxDpr: 1.4, autoStart: !reduced });
-    } catch (error) { console.warn("lin_card：軍火庫背景效果不可用，使用 CSS 森林背景。", error); }
+    } catch (error) { console.warn("霧林之契：軍火庫背景效果不可用，使用 CSS 森林背景。", error); }
   }
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", paintForest, { once: true });
-  else paintForest();
+  // 開場頁先隱藏遊戲區；等玩家真正進場、Canvas 有尺寸時才啟動軍火庫森林與霧。
+  window.addEventListener("mistforest:enter", paintForest, { once: true });
   window.LinCardUI = Object.freeze({ render });
   if (document.readyState !== "loading") render();
 })();

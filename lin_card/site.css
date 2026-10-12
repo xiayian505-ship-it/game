@@ -1,0 +1,13 @@
+/* 霧林之契｜頁面外殼、主標與慢慢文字 Logo。 */
+.wf-game[hidden] {display:none!important}
+.wf-game:focus {outline:none}
+.lc-shell {padding-top:20px}
+.lc-intro {padding:38px 2px 28px}
+.lc-intro h1 {font-size:clamp(35px,6.3vw,63px);letter-spacing:.22em;padding-left:.22em}
+.lc-intro .lc-en {display:block;margin:11px 0 0;font-size:clamp(12px,2.5vw,18px);letter-spacing:.07em}
+.lc-intro.is-compact {padding:24px 2px 21px}
+.lc-intro.is-compact h1 {font-size:clamp(28px,5vw,46px)}
+/* 主標下方原有英文副標，在各畫面都保留。 */
+.lc-intro.is-compact .lc-en {display:block}
+.lc-footer {display:block;width:100%;text-align:center;padding:35px 10px 45px;font:11px/1.7 'Noto Serif TC','Microsoft JhengHei',serif;color:#b9c8b4;letter-spacing:.09em}
+@media(max-width:680px){.lc-shell{padding-top:8px}.lc-intro{padding:32px 1px 25px}.lc-intro.is-compact{padding:19px 1px}.lc-intro .lc-en{font-size:12px}.lc-footer{padding:29px 9px 35px;font-size:10px}}

@@ -1,0 +1,28 @@
+/* 霧林之契｜獨立開場：場景外觀由本遊戲掌控，不修改軍火庫零件。 */
+.wf-opening {position:fixed;inset:0;z-index:50;overflow:hidden;isolation:isolate;display:grid;place-items:center;background:#071714;color:#e9efde;transition:opacity .85s ease,filter .85s ease;}
+.wf-opening[hidden]{display:none!important}
+.wf-opening.is-leaving {opacity:0;filter:blur(10px);pointer-events:none}
+.wf-opening-bg,.wf-opening-tint,.wf-opening-rain,.wf-opening-mist,.wf-opening-edge {position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.wf-opening-bg{background:#0c2625 url('./forest.svg') center center / cover no-repeat;transform:scale(1.06);animation:wf-forest-breathe 19s ease-in-out infinite alternate}
+.wf-opening-tint {background:linear-gradient(180deg,rgba(2,14,19,.40),rgba(3,23,21,.1) 37%,rgba(2,10,11,.48) 100%),radial-gradient(ellipse at 50% 48%,rgba(55,88,74,.03),rgba(1,10,12,.55) 88%)}
+.wf-opening-rain {z-index:2}
+.wf-opening-mist{z-index:1;inset:auto -28% 7%;height:38%;width:156%;border-radius:50%;filter:blur(39px);background:radial-gradient(ellipse at center,rgba(178,210,194,.24),rgba(89,129,120,.07) 53%,transparent 77%);animation:wf-mist-drift 15s ease-in-out infinite alternate}
+.wf-opening-mist.is-far{bottom:26%;height:21%;opacity:.72;animation-duration:21s;animation-direction:alternate-reverse}
+.wf-opening-edge {z-index:3;box-shadow:inset 0 0 120px 36px rgba(2,12,14,.32);background:linear-gradient(180deg,rgba(3,12,15,.35),transparent 20%,transparent 77%,rgba(2,12,10,.5))}
+.wf-opening-content{position:relative;z-index:5;width:min(92%,730px);padding:35px 18px;text-align:center;display:flex;align-items:center;flex-direction:column;gap:17px;text-shadow:0 2px 22px rgba(0,0,0,.68)}
+.wf-opening-ornament{display:block;font:20px Georgia,serif;letter-spacing:.75em;color:#bdc9a0;opacity:.86;margin-bottom:15px}
+.wf-opening-title{display:block;margin:0;border:0;background:none;cursor:pointer;color:#e9dfbc;text-shadow:0 2px 23px rgba(237,218,159,.20),0 3px 18px #000b;font-family:'Noto Serif TC','Songti TC',serif;font-size:clamp(43px,8vw,93px);font-weight:400;line-height:1.35;letter-spacing:.15em;white-space:nowrap;padding:8px 0 9px .15em;transition:transform .5s ease,color .5s ease,text-shadow .5s ease}
+.wf-opening-title:hover,.wf-opening-title:focus-visible{color:#fff5d6;transform:scale(1.035);text-shadow:0 0 34px rgba(222,230,154,.55)}
+.wf-opening-title:focus-visible{outline:1px solid #dfd5a5;outline-offset:12px;border-radius:4px}
+.wf-opening-divider{width:clamp(90px,33%,200px);height:1px;background:linear-gradient(90deg,transparent,#d8c8a1,transparent);opacity:.8}
+.wf-opening-subtitle{color:#cbd7c5;font:italic clamp(12px,2.4vw,18px) Georgia,serif;letter-spacing:.07em;margin:0;line-height:1.7}
+.wf-opening-caption{color:#d3dbc6;font-size:clamp(12px,2.2vw,14px);letter-spacing:.22em;margin:23px 0 0;animation:wf-glow 3.4s ease-in-out infinite}
+.wf-opening-controls{position:absolute;z-index:6;bottom:max(73px,env(safe-area-inset-bottom) + 70px);left:50%;transform:translateX(-50%);width:100%;text-align:center}
+.wf-sound-btn{border:1px solid rgba(223,226,193,.36);border-radius:25px;background:rgba(10,34,34,.50);backdrop-filter:blur(9px);color:#e0e6ce;padding:8px 17px;min-height:40px;font:12px/1.6 'Noto Serif TC','Microsoft JhengHei',sans-serif;letter-spacing:.09em;cursor:pointer;transition:background .2s,border-color .2s}
+.wf-sound-btn:hover,.wf-sound-btn:focus-visible{border-color:#e2d1a3;background:rgba(36,67,59,.7)}
+.wf-opening-footer{position:absolute;z-index:6;bottom:max(21px,env(safe-area-inset-bottom) + 17px);left:0;right:0;text-align:center;color:rgba(229,231,204,.72);font:11px/1.6 'Noto Serif TC','Microsoft JhengHei',serif;letter-spacing:.09em;padding:0 10px}
+@keyframes wf-forest-breathe{to{transform:scale(1.12) translateY(5px)}}
+@keyframes wf-mist-drift{to{transform:translateX(10%) translateY(-8%);opacity:.56}}
+@keyframes wf-glow{50%{opacity:.52}}
+@media(max-width:600px){.wf-opening-bg{background-position:51% center}.wf-opening-content{transform:translateY(-25px)}.wf-opening-title{font-size:clamp(40px,10.1vw,60px);letter-spacing:.08em;padding-left:.08em}.wf-opening-subtitle{font-size:11px;max-width:310px}.wf-opening-ornament{margin-bottom:6px}.wf-opening-controls{bottom:max(74px,env(safe-area-inset-bottom) + 74px)}}
+@media(prefers-reduced-motion:reduce){.wf-opening-bg,.wf-opening-mist,.wf-opening-caption{animation:none}.wf-opening,.wf-opening-title{transition:none}}

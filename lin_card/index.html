@@ -3,45 +3,68 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#0d1b19">
-  <meta name="description" content="慢慢好玩遊戲區｜lin_card 森林策略卡牌：你所捨棄的一切，終將成為你的敵人。">
-  <title>lin_card｜森林卡牌試煉・慢慢好玩遊戲區</title>
-  <!-- 軍火庫功能和動畫由 HTTPS 引用，不複製共用原始碼。 -->
+  <meta name="theme-color" content="#081c1d">
+  <meta name="description" content="霧林之契｜慢慢好玩遊戲區的十關策略卡牌試煉。你所捨棄的一切，終將成為你的敵人。">
+  <title>霧林之契｜Stillness by Slowly</title>
+  <!-- 慢慢軍火庫：HTTPS 絕對網址，零件功能由軍火庫提供，外觀由本專案控制。 -->
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/ui/responsive.css">
-  <link rel="stylesheet" href="./index.css">
-  <link rel="stylesheet" href="./index_style.css">
+  <link rel="stylesheet" href="./game/game.css">
+  <link rel="stylesheet" href="./game/game_ui.css">
+  <link rel="stylesheet" href="./site.css">
+  <link rel="stylesheet" href="./opening/opening.css">
   <script src="https://lib.stillnessbyslowly.com/state/tree_selection.js" defer></script>
   <script src="https://lib.stillnessbyslowly.com/game/card/deck.js" defer></script>
   <script src="https://lib.stillnessbyslowly.com/effects/background/pine_forest.js" defer></script>
   <script src="https://lib.stillnessbyslowly.com/effects/background/fog.js" defer></script>
-  <script src="./cards.js" defer></script>
-  <script src="./save.js" defer></script>
-  <script src="./battle_rules.js" defer></script>
-  <script src="./index.js" defer></script>
-  <script src="./index_style.js" defer></script>
+  <!-- 遊戲資料與戰鬥：不因更換開場而改變規則。 -->
+  <script src="./game/cards.js" defer></script>
+  <script src="./game/save.js" defer></script>
+  <script src="./game/battle_rules.js" defer></script>
+  <script src="./game/game.js" defer></script>
+  <script src="./game/game_ui.js" defer></script>
+  <!-- 獨立開場：風雨聲在玩家操作後才可播放。 -->
+  <script src="./opening/ambience.js" defer></script>
+  <script src="./opening/opening.js" defer></script>
 </head>
 <body>
-  <div class="lc-scene" aria-hidden="true"><canvas id="lin-forest"></canvas><canvas id="lin-fog"></canvas><div class="lc-scene-shade"></div></div>
-  <div class="lc-shell">
-    <header class="lc-site-header">
-      <a class="lc-brand" href="https://game.stillnessbyslowly.com/" title="慢慢好玩遊戲區"><span class="lc-brand-mark">✧</span><span><strong>慢慢好玩遊戲區</strong><small>STILLNESS BY SLOWLY</small></span></a>
-      <button id="reset-progress" class="lc-reset" type="button">↻ 重新開始</button>
-    </header>
-    <main>
-      <section class="lc-intro">
-        <p class="lc-eyebrow">LIN CARD / FOREST TRIAL</p>
-        <h1>林間<span>卡牌</span></h1>
-        <p class="lc-en">The Forest Keeps What You Leave Behind</p>
-        <div class="lc-line"></div>
-        <p class="lc-motto">你所捨棄的一切，終將成為你的敵人。</p>
-      </section>
-      <div class="lc-overview" id="game-overview"><div><span>已通過</span><strong id="chapter-count">0 / 10</strong></div><div><span>Boss 永久牌庫</span><strong id="boss-count">105</strong></div><div><span>遊戲狀態</span><strong>試玩版 v0.6.3</strong></div></div>
-      <div id="progress" aria-label="關卡進度"></div>
-      <p id="status-message" class="lc-message" role="status" aria-live="polite">載入遊戲中……</p>
-      <section id="app" class="lc-game" aria-label="卡牌遊戲"></section>
-      <section class="lc-guide" hidden><h2>遊戲說明</h2><div class="lc-guide-columns"><p><b>行動點＋魔法點</b><br>玩家初始行動點 5、魔法點 5；特殊牌免費補點，行動與魔法消耗分開計算。</p><p><b>牌庫不會自動循環</b><br>玩家無牌可用視為戰敗。戰鬥中棄牌不會送給 Boss。出戰最多 30 張，永久收藏上限 80 張。</p><p><b>戰後五選一獎勵</b><br>通關固定 +1 攻擊牌、下關初始行動點 +1；另五選一獎勵，本小遊戲不必打接龍。認輸或牌耗盡可重試同關。</p></div></section>
-    </main>
-    <footer class="lc-footer"><span>lin_card · Forest Strategy</span><a href="https://stillnessbyslowly.com/" target="_blank" rel="noopener noreferrer">慢慢 Stillness by Slowly ↗</a></footer>
+  <section class="wf-opening" id="wf-opening" aria-label="霧林之契開場">
+    <div class="wf-opening-bg" aria-hidden="true"></div>
+    <div class="wf-opening-tint" aria-hidden="true"></div>
+    <div class="wf-opening-mist is-far" aria-hidden="true"></div>
+    <div class="wf-opening-mist" aria-hidden="true"></div>
+    <canvas class="wf-opening-rain" id="wf-weather" aria-hidden="true"></canvas>
+    <div class="wf-opening-edge" aria-hidden="true"></div>
+    <div class="wf-opening-content">
+      <span class="wf-opening-ornament" aria-hidden="true">✦ ✧ ✦</span>
+      <button class="wf-opening-title" id="wf-enter" type="button" aria-label="進入霧林之契遊戲">霧林之契</button>
+      <span class="wf-opening-divider" aria-hidden="true"></span>
+      <p class="wf-opening-subtitle">The Forest Keeps What You Leave Behind</p>
+      <p class="wf-opening-caption">觸碰名字，踏入霧林</p>
+    </div>
+    <div class="wf-opening-controls">
+      <button id="wf-sound" class="wf-sound-btn" type="button" aria-pressed="false">♫ 開啟風雨聲</button>
+    </div>
+    <div class="wf-opening-footer">慢 慢 | Stillness by Slowly</div>
+  </section>
+
+  <!-- 進場後才顯示：保留既有的「旅人的選擇」主選單、關卡、個人牌組與戰鬥。 -->
+  <div class="wf-game" id="wf-game" tabindex="-1" hidden>
+    <div class="lc-scene" aria-hidden="true"><canvas id="lin-forest"></canvas><canvas id="lin-fog"></canvas><div class="lc-scene-shade"></div></div>
+    <div class="lc-shell">
+      <main>
+        <section class="lc-intro">
+          <h1>霧林之契</h1>
+          <p class="lc-en">The Forest Keeps What You Leave Behind</p>
+          <div class="lc-line" aria-hidden="true"></div>
+          <p class="lc-motto">你所捨棄的一切，終將成為你的敵人。</p>
+        </section>
+        <div class="lc-overview" id="game-overview"><div><span>已通過</span><strong id="chapter-count">0 / 10</strong></div><div><span>Boss 永久牌庫</span><strong id="boss-count">105</strong></div><div><span>遊戲狀態</span><strong>試玩版 v0.7</strong></div></div>
+        <div id="progress" aria-label="關卡進度"></div>
+        <p id="status-message" class="lc-message" role="status" aria-live="polite">載入遊戲中……</p>
+        <section id="app" class="lc-game" aria-label="卡牌遊戲"></section>
+      </main>
+      <footer class="lc-footer">慢 慢 | Stillness by Slowly</footer>
+    </div>
   </div>
 </body>
 </html>

@@ -1,8 +1,11 @@
-/* lin_card｜宿主視覺／布局。軍火庫不決定這裡的字型、色彩與尺寸。 */
+/* 霧林之契｜宿主視覺／布局。軍火庫不決定這裡的字型、色彩與尺寸。 */
+/* 首頁右上角重置鍵已移除，但選牌頁與返回用的 lc-quiet 仍需保留原樣。 */
+.lc-quiet{border:1px solid var(--lc-line);color:var(--lc-cream);background:rgba(7,26,24,.4);border-radius:7px;padding:10px 13px;cursor:pointer;font-size:12px;white-space:nowrap}
+.lc-quiet:hover{border-color:var(--lc-gold)}
 :root {color-scheme:dark;--lc-light:#edf4e7;--lc-muted:#adc4b8;--lc-green:#9ac8ac;--lc-cream:#e3d9b5;--lc-gold:#d4bc80;--lc-line:rgba(193,225,202,.25);--lc-panel:#112922;--lc-card-top:#173b33;--lc-card-bottom:#0b2423}
 * {box-sizing:border-box}
 html {min-height:100%;background:#091917;scroll-behavior:smooth}
-body {min-height:100vh;margin:0;color:var(--lc-light);font:14px/1.65 'Noto Serif TC','Songti TC','Microsoft JhengHei',sans-serif;background:#091917}
+body {min-height:100vh;margin:0;color:var(--lc-light);font:14px/1.65 "Noto Serif TC","Songti TC","Microsoft JhengHei",sans-serif;background:#091917}
 button,select {font:inherit}
 button {touch-action:manipulation}
 a {color:inherit;text-decoration:none}
@@ -13,13 +16,13 @@ button:disabled {opacity:.45;cursor:not-allowed!important;transform:none!importa
 .lc-scene #lin-fog {opacity:.32}
 .lc-scene-shade {position:absolute;inset:0;background:linear-gradient(180deg,rgba(4,19,19,.6),rgba(7,19,19,.78) 40%,rgba(6,17,16,.87)),radial-gradient(ellipse at center,transparent 30%,rgba(0,0,0,.45))}
 .lc-shell {position:relative;z-index:1;width:min(1050px,calc(100% - 34px));margin:auto}
-.lc-site-header {min-height:79px;display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:1px solid var(--lc-line)}
-.lc-brand {display:flex;align-items:center;gap:11px}
-.lc-brand-mark {display:grid;place-items:center;width:39px;height:39px;border:1px solid var(--lc-green);border-radius:50%;color:var(--lc-gold);font:28px Georgia,serif}
-.lc-brand strong {display:block;font-size:14px;font-weight:500;letter-spacing:.16em}
-.lc-brand small {display:block;font:9px Georgia,serif;letter-spacing:.14em;color:var(--lc-muted)}
-.lc-reset,.lc-quiet {border:1px solid var(--lc-line);color:var(--lc-cream);background:rgba(7,26,24,.4);border-radius:7px;padding:10px 13px;cursor:pointer;font-size:12px;white-space:nowrap}
-.lc-reset:hover,.lc-quiet:hover {border-color:var(--lc-gold)}
+
+
+
+
+
+
+
 .lc-intro {padding:52px 2px 35px;text-align:center}
 .lc-eyebrow {margin:0 0 10px;color:var(--lc-green);letter-spacing:.24em;font:11px Georgia,serif}
 .lc-intro h1 {margin:0;color:var(--lc-light);font-size:clamp(35px,6.3vw,63px);letter-spacing:.28em;font-weight:400}
@@ -71,19 +74,19 @@ button:disabled {opacity:.45;cursor:not-allowed!important;transform:none!importa
 .lc-finish-icon {margin:25px auto;color:var(--lc-gold);font:100px Georgia,serif;text-align:center}
 .lc-finish-text {max-width:520px;text-align:center;margin:14px auto 28px;line-height:2;color:var(--lc-muted)}
 .lc-actions-center {display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap}
-.lc-guide {margin:28px 0 0;padding:25px;background:rgba(8,28,26,.65);border:1px solid var(--lc-line);border-radius:9px}
-.lc-guide h2 {margin:0 0 18px;font-size:14px;color:var(--lc-cream);font-weight:500}
-.lc-guide-columns {display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
-.lc-guide-columns p {margin:0;color:var(--lc-muted);font-size:11px;line-height:1.9}
-.lc-guide-columns b {color:var(--lc-light);font-weight:500}
-.lc-footer {display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:33px 0 47px;color:var(--lc-muted);font:11px Georgia,serif;letter-spacing:.04em}
+
+
+
+
+
+
 @media(max-width:680px) {
  .lc-shell {width:min(100% - 20px,560px)}
- .lc-site-header {min-height:65px}
- .lc-brand strong {font-size:12px}
- .lc-brand small {font-size:8px}
- .lc-brand-mark {width:34px;height:34px;font-size:25px}
- .lc-reset {font-size:11px;padding:7px 10px}
+ 
+ 
+ 
+ 
+ 
  .lc-intro {padding:36px 0 27px}
  .lc-en {font-size:13px}
  .lc-motto {font-size:11px}
@@ -96,16 +99,16 @@ button:disabled {opacity:.45;cursor:not-allowed!important;transform:none!importa
  .lc-game {padding:15px 12px;min-height:450px}
  .lc-status-grid {grid-template-columns:repeat(2,1fr);gap:7px}
  .lc-sticky-actions .lc-primary {width:100%}
- .lc-guide-columns {grid-template-columns:1fr;gap:13px}
+ 
  .lc-reward-grid {grid-template-columns:repeat(2,minmax(0,1fr))}
  .lc-reward-choice {padding:12px;min-height:138px}
  .lc-reward-choice strong {font-size:12px}
- .lc-footer {font-size:10px}
+ 
 }
 @media(prefers-reduced-motion:reduce) {*,*::before,*::after {animation-duration:.01ms!important;transition-duration:.01ms!important}}
 
 /* =========================================================
-   林間卡牌｜鹿雨森 Demo 式戰鬥舞台 v0.2
+   霧林之契｜鹿雨森 Demo 式戰鬥舞台
    戰鬥畫面是宿主視覺；不修改慢慢軍火庫、也不影響選牌頁。
    Demo 參考：中央霧影、下方扇型手牌、底部玩家 HUD。
 ========================================================= */
@@ -180,7 +183,7 @@ button:disabled {opacity:.45;cursor:not-allowed!important;transform:none!importa
 .lc-battle-hand>.lc-card:first-child {margin-left:0}
 .lc-battle-hand>.lc-card:hover,.lc-battle-hand>.lc-card:focus-visible {z-index:45;transform:translateY(-21px) rotate(0deg);box-shadow:0 12px 32px #000a,0 0 16px rgba(154,223,190,.27)}
 .lc-battle-hand>.lc-card.is-selected {z-index:80;transform:translateY(-38px) rotate(0deg);border-color:#e4f6e3;box-shadow:0 20px 42px #000c,0 0 0 2px rgba(174,238,200,.7),0 0 24px rgba(122,230,194,.43)}
-.lc-battle-hand>.lc-card.is-selected::after {content:'✧ 已選取';display:block;width:auto;height:auto;bottom:auto;top:-26px;right:auto;left:50%;transform:translateX(-50%);white-space:nowrap;padding:2px 8px;border:1px solid rgba(163,234,205,.6);border-radius:20px;background:rgba(11,50,42,.96);font-size:10px;color:#e5f9e6}
+.lc-battle-hand>.lc-card.is-selected::after {content:"✧ 已選取";display:block;width:auto;height:auto;bottom:auto;top:-26px;right:auto;left:50%;transform:translateX(-50%);white-space:nowrap;padding:2px 8px;border:1px solid rgba(163,234,205,.6);border-radius:20px;background:rgba(11,50,42,.96);font-size:10px;color:#e5f9e6}
 .lc-battle-hand>.lc-card.is-unpayable:not(.is-selected) {opacity:.62;filter:saturate(.75)}
 .lc-battle-hand .lc-card-head {flex-direction:row-reverse}
 .lc-battle-hand .lc-card-symbol {min-height:48px;margin:1px 0;border-top:1px solid rgba(210,238,218,.09);border-bottom:1px solid rgba(210,238,218,.09);font-size:41px;background:radial-gradient(circle at center,color-mix(in srgb,var(--card-glow) 18%,transparent),transparent 68%)}
@@ -188,7 +191,7 @@ button:disabled {opacity:.45;cursor:not-allowed!important;transform:none!importa
 .lc-battle-hand .lc-card-description {font-size:11px;line-height:1.45}
 .lc-battle-hand .lc-card-foot {font-size:9px}
 /* 玩家：Demo 風格的小型 HUD，不佔用 Boss 的舞台。 */
-.lc-battle-player {grid-area:player;min-width:0;display:grid;grid-template-columns:58px minmax(0,1fr);grid-template-rows:auto auto;grid-template-areas:'avatar name' 'avatar hp';align-items:center;gap:1px 10px;padding:8px 2px 5px}
+.lc-battle-player {grid-area:player;min-width:0;display:grid;grid-template-columns:58px minmax(0,1fr);grid-template-rows:auto auto;grid-template-areas:"avatar name" "avatar hp";align-items:center;gap:1px 10px;padding:8px 2px 5px}
 .lc-player-emblem {grid-area:avatar;display:grid;place-items:center;align-self:center;width:50px;height:50px;font:29px Georgia,serif;color:#d5eccf;border:1px solid rgba(180,230,204,.38);border-radius:50%;box-shadow:inset 0 0 15px rgba(150,213,181,.10)}
 .lc-player-name {grid-area:name;color:#eaf9ed;font-size:14px;letter-spacing:.12em}
 .lc-battle-player .lc-hud-hp {grid-area:hp;min-width:0}
@@ -254,10 +257,10 @@ button:disabled {opacity:.45;cursor:not-allowed!important;transform:none!importa
 
 
 /* v0.6 第一階段｜入口、關卡選擇、個人牌組入口（宿主自行控制外觀） */
-.lc-guide[hidden],.lc-overview[hidden],#progress[hidden],#status-message[hidden]{display:none!important}
+
 .lc-intro.is-compact{padding:25px 2px 22px}
 .lc-intro.is-compact h1{font-size:clamp(30px,5vw,46px)}
-.lc-intro.is-compact .lc-en,.lc-intro.is-compact .lc-line,.lc-intro.is-compact .lc-motto{display:none}
+.lc-intro.is-compact .lc-line,.lc-intro.is-compact .lc-motto{display:none}
 .lc-game.is-home-panel{min-height:300px;display:flex;flex-direction:column;justify-content:center;padding:36px}
 .lc-home-heading{text-align:center;margin-bottom:24px}
 .lc-home-heading h2{margin:2px 0 8px;font-weight:400;font-size:clamp(24px,4vw,34px);letter-spacing:.16em}
