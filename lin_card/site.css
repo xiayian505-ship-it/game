@@ -22,3 +22,69 @@
 .lc-intro.is-home-art{padding-top:12px}
 .lc-intro.is-home-art .lc-en{margin-top:0}
 @media(max-width:680px){.lc-intro.is-home-art{padding-top:4px}.lc-intro.is-home-art .lc-title-art-frame{width:100%}}
+
+/* v0.8.2｜標語向量藝術字。僅首頁顯示，緊貼英文標語下方；宿主控制尺寸。 */
+.lc-intro.is-home-art .lc-motto {
+  display: block;
+  width: min(100%, 760px);
+  margin: 7px auto 0;
+  line-height: 1;
+}
+.lc-motto-art {display:block;width:100%;height:auto;object-fit:contain}
+.lc-motto-fallback {display:none}
+.lc-intro.is-motto-missing .lc-motto-art {display:none}
+.lc-intro.is-motto-missing .lc-motto-fallback {
+  display:block;
+  padding:12px 3px;
+  color:#ddc58a;
+  font-size:clamp(17px,3.1vw,26px);
+  letter-spacing:.09em;
+  line-height:1.5;
+}
+.lc-intro.is-home-art .lc-line {margin:5px auto 0}
+@media (max-width:680px) {
+  .lc-intro.is-home-art .lc-motto {width:100%;margin-top:5px}
+  .lc-intro.is-home-art .lc-line {margin-top:3px}
+}
+
+
+/* v0.8.5｜中文標語再縮小、再靠近主標，並退後成陪襯層。 */
+.lc-intro.is-home-art .lc-motto {
+  width: min(100%, 620px);
+  margin: -34px auto 0;
+  position: relative;
+  z-index: 2;
+  transform: translateX(10px);
+}
+.lc-intro.is-home-art .lc-motto-art {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  opacity: .72;
+  filter: blur(.95px) brightness(.95) saturate(.82);
+}
+.lc-intro.is-home-art .lc-en-under-motto {
+  margin: -2px 0 0;
+  font-size: clamp(11px, 2.15vw, 15px);
+  letter-spacing: .06em;
+  opacity: .9;
+}
+.lc-intro.is-home-art .lc-line {margin: 7px auto 0}
+@media (max-width:680px) {
+  .lc-intro.is-home-art .lc-motto {
+    width: 84%;
+    margin-top: -28px;
+    transform: translateX(8px);
+  }
+  .lc-intro.is-home-art .lc-motto-art {
+    opacity: .68;
+    filter: blur(1.05px) brightness(.94) saturate(.8);
+  }
+  .lc-intro.is-home-art .lc-en-under-motto {
+    margin-top: -2px;
+    font-size: 10.5px;
+    letter-spacing: .05em;
+  }
+  .lc-intro.is-home-art .lc-line {margin-top: 5px}
+}

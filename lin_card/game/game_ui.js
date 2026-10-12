@@ -195,7 +195,7 @@
     const bossAction = b.log.find(text => text.startsWith("Boss") || text.includes("Boss 牌庫")) || "迷霧正等待你的下一步。";
     return `${headline(v.save, `03 / BATTLE · ROUND ${b.round}`, `第 ${v.save.stage} 關｜${Data.CHAPTERS[v.save.stage - 1]}`, "沿用《鹿雨森》Demo 戰場：霧影在上，扇形手牌在下。點兩次出牌。魔法牌使用魔法點。")} 
       <div class="lc-battle-board" aria-label="霧林之契戰鬥舞台">
-        <div class="lc-battle-turn"><strong>ROUND ${String(b.round).padStart(2, "0")}</strong><span>✦</span><small>YOUR TURN · 玩家回合</small><button class="lc-battle-sound" type="button" data-act="toggle-battle-sound" aria-pressed="${window.MistBattleFX?.enabled !== false}">${window.MistBattleFX?.enabled !== false ? "♫ 音效開" : "♪ 音效關"}</button></div>
+        <div class="lc-battle-turn"><strong>ROUND ${String(b.round).padStart(2, "0")}</strong><span>✦</span><small>YOUR TURN · 玩家回合</small><div class="lc-battle-settings"><button class="lc-battle-sound" type="button" data-act="toggle-battle-sound" aria-pressed="${window.MistBattleFX?.enabled !== false}">${window.MistBattleFX?.enabled !== false ? "♫ 音效開" : "♪ 音效關"}</button><button class="lc-battle-sound lc-battle-vibration" type="button" data-act="toggle-battle-vibration" aria-pressed="${window.MistBattleHaptics?.enabled === true}" ${window.MistBattleHaptics?.supported ? "" : "disabled"}>${!window.MistBattleHaptics?.supported ? "震動不支援" : window.MistBattleHaptics?.enabled ? "▰ 震動開" : "▱ 震動關"}</button></div></div>
         <section class="lc-battle-boss" aria-label="Boss 狀態">
           ${bossFigure()}
           <div class="lc-boss-name">${esc(Data.CHAPTERS[v.save.stage - 1])}</div>
@@ -458,7 +458,7 @@
       deck: () => G.toggleDeck(id), "select-all": G.selectAllDeck,
       start: G.beginBattle, hand: () => playHand(Number(button.dataset.index), button),
       "close-target": G.closeTarget, target: () => confirmTarget(id),
-      "end-turn": bossTurn, "toggle-battle-sound": () => { window.MistBattleFX?.setEnabled(!window.MistBattleFX.enabled); render(); }, "opening-exchange": G.openingExchange, discard: G.freeDiscard, concede: G.concede,
+      "end-turn": bossTurn, "toggle-battle-sound": () => { window.MistBattleFX?.setEnabled(!window.MistBattleFX.enabled); render(); }, "toggle-battle-vibration": () => { window.MistBattleHaptics?.setEnabled(!window.MistBattleHaptics.enabled); render(); }, "opening-exchange": G.openingExchange, discard: G.freeDiscard, concede: G.concede,
       retry: G.retry, reward: () => G.chooseReward(button.dataset.mode),
       "keep-reward": () => G.acceptReward(), "reject-reward": G.rejectReward,
       replace: () => G.acceptReward(id)
@@ -487,6 +487,10 @@
   // 主選單藝術標題讀取失敗時，恢復原本的可閱讀文字標題。
   document.querySelector(".lc-title-art")?.addEventListener("error", () => {
     document.querySelector(".lc-intro")?.classList.add("is-art-missing");
+  });
+  // SVG 載入失敗時顯示等大文字，避免手機看到空白標語。
+  document.querySelector(".lc-motto-art")?.addEventListener("error", () => {
+    document.querySelector(".lc-intro")?.classList.add("is-motto-missing");
   });
   // 開場頁先隱藏遊戲區；等玩家真正進場、Canvas 有尺寸時才啟動軍火庫森林與霧。
   window.addEventListener("mistforest:enter", paintForest, { once: true });

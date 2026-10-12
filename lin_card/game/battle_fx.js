@@ -118,6 +118,7 @@
     if (!card) return;
     const kind = typeOf(card);
     sfx(kind);
+    window.MistBattleHaptics?.play(kind);
     const board = document.querySelector(".lc-battle-board");
     const target = document.querySelector(targetSelector(card, owner));
     if (!board || !target || reducedMotion()) return;

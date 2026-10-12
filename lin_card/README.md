@@ -1,3 +1,9 @@
+### v0.8.2 新增
+
+- 主選單中文標語使用本專案內 `assets/motto.svg`，為透明向量 SVG（已描成字形路徑，不必依賴使用者裝置字型）。不需要另傳圖床；上傳整個 `lin_card/` 到 GitHub Pages 即可。
+- 戰鬥有獨立「音效／震動」開關，設定各自保存在本機；不支援 Vibration API 的裝置可照常戰鬥。
+- 標語外觀／尺寸由 `site.css` 控制；震動模式由 `game/battle_haptics.js` 控制，不更動戰鬥判定。
+
 # 霧林之契｜Mistforest Pact v0.8.1
 
 > 你所捨棄的一切，終將成為你的敵人。

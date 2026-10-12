@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#081c1d">
-  <meta name="description" content="霧林之契｜慢慢好玩遊戲區的十關策略卡牌試煉。你所捨棄的一切，終將成為你的敵人。">
+  <meta name="description" content="霧林之契｜慢慢好玩遊戲區的十關策略卡牌試煉。昔日所棄，終將與你為敵">
   <title>霧林之契｜Stillness by Slowly</title>
   <!-- 慢慢軍火庫：HTTPS 絕對網址，零件功能由軍火庫提供，外觀由本專案控制。 -->
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/ui/responsive.css">
@@ -36,6 +36,7 @@
   <script src="./game/game.js" defer></script>
   <script src="./game/game_ui.js" defer></script>
   <script src="./game/boss_card_animation.js" defer></script>
+  <script src="./game/battle_haptics.js" defer></script>
   <script src="./game/battle_fx.js" defer></script>
   <!-- 獨立開場：風雨聲在玩家操作後才可播放。 -->
   <script src="./opening/ambience.js" defer></script>
@@ -74,11 +75,14 @@
             <img class="lc-title-art" src="https://img.stillnessbyslowly.com/images/2026/10/8fc36708-5295-4ac4-aa2f-0adb3f0c781d_%E9%9C%A7%E6%9E%97%E4%B9%8B%E5%A5%91001.png" alt="霧林之契" width="1400" height="560" decoding="async">
           </div>
           <h1>霧林之契</h1>
-          <p class="lc-en">The Forest Keeps What You Leave Behind</p>
+          <p class="lc-motto">
+            <img class="lc-motto-art" src="./assets/motto.svg" alt="昔日所棄，終將與你為敵" width="2000" height="395" decoding="async">
+            <span class="lc-motto-fallback" aria-hidden="true">昔日所棄，終將與你為敵</span>
+          </p>
+          <p class="lc-en lc-en-under-motto">The Forest Keeps What You Leave Behind</p>
           <div class="lc-line" aria-hidden="true"></div>
-          <p class="lc-motto">你所捨棄的一切，終將成為你的敵人。</p>
         </section>
-        <div class="lc-overview" id="game-overview"><div><span>已通過</span><strong id="chapter-count">0 / 10</strong></div><div><span>Boss 永久牌庫</span><strong id="boss-count">105</strong></div><div><span>遊戲狀態</span><strong>試玩版 v0.8.1</strong></div></div>
+        <div class="lc-overview" id="game-overview"><div><span>已通過</span><strong id="chapter-count">0 / 10</strong></div><div><span>Boss 永久牌庫</span><strong id="boss-count">105</strong></div><div><span>遊戲狀態</span><strong>試玩版 v0.8.5</strong></div></div>
         <div id="progress" aria-label="關卡進度"></div>
         <p id="status-message" class="lc-message" role="status" aria-live="polite">載入遊戲中……</p>
         <section id="app" class="lc-game" aria-label="卡牌遊戲"></section>

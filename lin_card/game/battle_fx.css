@@ -42,3 +42,12 @@
 @media (prefers-reduced-motion: reduce) {
   .lc-impact-slash { animation: none; display: none; }
 }
+
+/* v0.8.2｜音效與震動為獨立開關，手機窄螢幕可並排或自然換行。 */
+.lc-battle-settings {display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px}
+.lc-battle-vibration {letter-spacing:0}
+@media (max-width:680px) {
+  .lc-battle-turn {flex-wrap:wrap;justify-content:center;column-gap:9px;row-gap:3px}
+  .lc-battle-settings {gap:5px}
+  .lc-battle-sound {min-height:33px;padding:5px 7px;font-size:11px}
+}
