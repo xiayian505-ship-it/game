@@ -70,7 +70,7 @@
     }).join("")}</div>`;
   }
 
-  // 手牌沿用《鹿雨森》Demo 的重疊扇形邏輯；每張牌依位置計算傾斜角。
+  // 手牌採重疊扇形排列；每張牌依位置計算傾斜角。
   function fanHandMarkup(cards, selectedIndex, energy, mana, buff, foeShield) {
     if (!cards.length) return `<p class="lc-empty">手牌已空。若抽牌堆尚有牌，可結束回合後補牌。</p>`;
     return cards.map((c, i) => {
@@ -135,22 +135,47 @@
       <div class="lc-sticky-actions"><p>每場生命、行動點與魔法點重新補滿；牌的等級和 Boss 收到的棄牌則永久保留。</p><button class="lc-primary" data-act="start" ${v.chosenDeck.size === 0 || !v.hasLibrary ? "disabled" : ""}>帶 ${v.chosenDeck.size} 張牌出戰 →</button></div>
       ${v.hasLibrary ? "" : `<p class="lc-error">軍火庫 Deck 尚未載入。必須連上網路才能開戰；請確認 HTTPS 引用可用。</p>`}`;
   }
-  // 首頁導覽是暫時的畫面狀態，不寫入存檔，也不改動正在進行的戰鬥。
+  // 首頁三道霧林路徑互斥聚焦：第一次點選，第二次確認進入。
+  // 只是 UI 暫存狀態，不寫入存檔、不干涉遊戲或故事進度。
   let screen = new URL(window.location.href).searchParams.get("view") === "game" ? "game" : "home";
-  function homeView(v) {
-    const stage = Math.min(10, v.save.stage);
-    return `<div class="lc-home-heading"><p class="lc-eyebrow">FOREST JOURNEY</p><h2>旅人的選擇</h2><p>已通過 ${v.save.completed} / 10 關 · 目前第 ${stage} 關</p></div>
-      <div class="lc-home-options">
-        <button type="button" class="lc-home-option" data-act="open-levels"><span class="lc-home-option-symbol">✧</span><strong>選擇關卡</strong><small>查看十關試煉，繼續目前進度</small><span class="lc-home-option-arrow">進入試煉 →</span></button>
-        <button type="button" class="lc-home-option" data-act="open-profile"><span class="lc-home-option-symbol">♧</span><strong>查看個人資料</strong><small>永久收藏與三套自訂牌組</small><span class="lc-home-option-arrow">我的牌組 →</span></button>
-      </div>`;
+  let homeFocus = null;
+  const homePaths = Object.freeze([
+    { key: "profile", title: "關於旅人", symbol: Data.SYMBOLS.shield, subtitle: "回望你的收藏與足跡" },
+    { key: "levels", title: "開始試煉", symbol: Data.SYMBOLS.action, subtitle: "循著霧光，迎向下一場試煉" },
+    { key: "story", title: "旅程回顧", symbol: Data.SYMBOLS.special, subtitle: "重拾林中遺落的篇章" }
+  ]);
+  function homeView() {
+    return `<nav class="lc-home-paths ${homeFocus ? "has-focus" : ""}" aria-label="旅人的選擇">
+      ${homePaths.map(path => {
+        const selected = homeFocus === path.key;
+        return `<button type="button" class="lc-home-path ${selected ? "is-focused" : ""}" data-act="focus-home" data-dest="${path.key}" aria-label="${path.title}${selected ? "，再次點擊" + (path.key === "story" ? "；旅程回顧尚未開放" : "進入") : "，點擊選取"}" aria-pressed="${selected}">
+          <span class="lc-home-path-glow" aria-hidden="true"></span>
+          <span class="lc-home-path-symbol" aria-hidden="true">${path.symbol}</span>
+          <span class="lc-home-path-description" aria-hidden="${!selected}"><strong>${path.title}</strong><small>${path.subtitle}</small></span>
+        </button>`;
+      }).join("")}
+    </nav>`;
+  }
+  function focusHome(dest) {
+    if (screen !== "home" || !homePaths.some(path => path.key === dest)) return;
+    if (homeFocus !== dest) {
+      homeFocus = dest;
+      render();
+      return;
+    }
+    // 回顧入口的選取動畫正常，但故事尚未公開，第二次點擊不導頁。
+    if (dest === "story") return;
+    screen = dest;
+    homeFocus = null;
+    render();
+    window.scrollTo?.({ top: 0, behavior: "instant" });
   }
   function backHome() { return `<div class="lc-screen-bar"><button class="lc-quiet" type="button" data-act="open-home">← 回到主畫面</button></div>`; }
   function levelsView(v) {
     const save = v.save;
     const stage = save.stage;
     const finished = save.completed >= 10;
-    return `${backHome()}${headline(save, "CHAPTER SELECTION", "選擇關卡", "已通過的關卡保留紀錄；尚未解鎖的關卡不能提前挑戰。")}
+    return `${backHome()}${headline(save, "CHAPTER SELECTION", "開始試煉", "已通過的關卡保留紀錄；尚未解鎖的關卡不能提前挑戰。")}
       <div class="lc-chapter-choices">${Data.CHAPTERS.map((name, i) => {
         const number = i + 1;
         const cleared = number <= save.completed;
@@ -165,7 +190,7 @@
     const save = v.save;
     const busy = save.phase !== "deck";
     const own = new Map(save.player.map(card => [card.id, card]));
-    return `${backHome()}${headline(save, "TRAVELER PROFILE", "個人資料｜我的牌組", "三套出戰牌組共用永久收藏，每套最多 30 張；玩家自行選牌。")}
+    return `${backHome()}${headline(save, "TRAVELER PROFILE", "關於旅人", "三套出戰牌組共用永久收藏，每套最多 30 張；玩家自行選牌。")}
       <div class="lc-profile-stats"><div><small>永久收藏</small><strong>${save.player.length} / 80</strong></div><div><small>已通關</small><strong>${save.completed} / 10</strong></div><div><small>目前關卡</small><strong>${save.stage}</strong></div></div>
       <div class="lc-profile-decks">${save.deckPresets.map((ids, index) => {
         const cards = ids.map(id => own.get(id)).filter(Boolean);
@@ -182,7 +207,7 @@
       <div class="lc-health"><span style="width:${pct(side.hp, side.maxHP)}%"></span></div></div>`;
   }
   function bossFigure() {
-    // CSS 程式美術沿用 Demo「霧影」的舞台形式，獨立宿主不帶鹿雨森標誌。
+    // 以 CSS 繪製霧影對手，保持戰鬥舞台的獨立視覺。
     return `<div class="lc-foe" aria-hidden="true"><span class="lc-foe-halo"></span>
       <span class="lc-foe-antler left"></span><span class="lc-foe-antler right"></span>
       <span class="lc-foe-cloak"></span><span class="lc-foe-face"></span>
@@ -193,7 +218,7 @@
     const b = v.battle;
     const hand = b.player.hand;
     const bossAction = b.log.find(text => text.startsWith("Boss") || text.includes("Boss 牌庫")) || "迷霧正等待你的下一步。";
-    return `${headline(v.save, `03 / BATTLE · ROUND ${b.round}`, `第 ${v.save.stage} 關｜${Data.CHAPTERS[v.save.stage - 1]}`, "沿用《鹿雨森》Demo 戰場：霧影在上，扇形手牌在下。點兩次出牌。魔法牌使用魔法點。")} 
+    return `${headline(v.save, `03 / BATTLE · ROUND ${b.round}`, `第 ${v.save.stage} 關｜${Data.CHAPTERS[v.save.stage - 1]}`, "霧影在上，手牌在下。點擊卡牌選取，再點一次出牌；魔法牌消耗魔法點。")} 
       <div class="lc-battle-board" aria-label="霧林之契戰鬥舞台">
         <div class="lc-battle-turn"><strong>ROUND ${String(b.round).padStart(2, "0")}</strong><span>✦</span><small>YOUR TURN · 玩家回合</small><div class="lc-battle-settings"><button class="lc-battle-sound" type="button" data-act="toggle-battle-sound" aria-pressed="${window.MistBattleFX?.enabled !== false}">${window.MistBattleFX?.enabled !== false ? "♫ 音效開" : "♪ 音效關"}</button><button class="lc-battle-sound lc-battle-vibration" type="button" data-act="toggle-battle-vibration" aria-pressed="${window.MistBattleHaptics?.enabled === true}" ${window.MistBattleHaptics?.supported ? "" : "disabled"}>${!window.MistBattleHaptics?.supported ? "震動不支援" : window.MistBattleHaptics?.enabled ? "▰ 震動開" : "▱ 震動關"}</button></div></div>
         <section class="lc-battle-boss" aria-label="Boss 狀態">
@@ -288,6 +313,7 @@
     document.getElementById("status-message").hidden = !isGame;
     document.querySelector(".lc-intro")?.classList.toggle("is-compact", screen !== "home");
     document.querySelector(".lc-intro")?.classList.toggle("is-home-art", screen === "home");
+    document.getElementById("wf-game")?.classList.toggle("is-home-screen", screen === "home");
     document.getElementById("progress").innerHTML = stageIndicator(v.save);
     document.getElementById("chapter-count").textContent = `${v.save.completed} / 10`;
     document.getElementById("boss-count").textContent = String(v.save.boss.length);
@@ -435,9 +461,10 @@
     const act = button.dataset.act;
     const id = button.dataset.id;
     const slot = Number(button.dataset.slot);
-    const open = dest => { screen = dest; render(); window.scrollTo?.({ top: 0, behavior: "instant" }); };
+    const open = dest => { screen = dest; homeFocus = null; render(); window.scrollTo?.({ top: 0, behavior: "instant" }); };
     const map = {
       "open-home": () => open("home"), "open-levels": () => open("levels"), "open-profile": () => open("profile"),
+      "focus-home": () => focusHome(button.dataset.dest),
       "enter-stage": () => open("game"),
       "activate-preset": () => G.activateDeck(slot),
       "edit-preset": () => { if (G.activateDeck(slot)) open("game"); },
@@ -490,7 +517,7 @@
   });
   // SVG 載入失敗時顯示等大文字，避免手機看到空白標語。
   document.querySelector(".lc-motto-art")?.addEventListener("error", () => {
-    document.querySelector(".lc-intro")?.classList.add("is-motto-missing");
+    document.querySelector(".lc-footer-motto")?.classList.add("is-motto-missing");
   });
   // 開場頁先隱藏遊戲區；等玩家真正進場、Canvas 有尺寸時才啟動軍火庫森林與霧。
   window.addEventListener("mistforest:enter", paintForest, { once: true });

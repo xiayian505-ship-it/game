@@ -108,9 +108,9 @@ button:disabled {opacity:.45;cursor:not-allowed!important;transform:none!importa
 @media(prefers-reduced-motion:reduce) {*,*::before,*::after {animation-duration:.01ms!important;transition-duration:.01ms!important}}
 
 /* =========================================================
-   霧林之契｜鹿雨森 Demo 式戰鬥舞台
+   霧林之契｜霧影戰鬥舞台
    戰鬥畫面是宿主視覺；不修改慢慢軍火庫、也不影響選牌頁。
-   Demo 參考：中央霧影、下方扇型手牌、底部玩家 HUD。
+   舞台配置：中央霧影、下方扇形手牌、底部玩家 HUD。
 ========================================================= */
 .lc-battle-board {
   display:grid;
@@ -150,7 +150,7 @@ button:disabled {opacity:.45;cursor:not-allowed!important;transform:none!importa
 .lc-battle-boss .lc-health {height:8px;margin:5px 0 0;border:1px solid rgba(211,183,218,.38);background:rgba(3,14,19,.9);box-shadow:0 3px 12px rgba(0,0,0,.3)}
 .lc-battle-boss .lc-health>span {background:linear-gradient(90deg,#82516a,#c39bbf)}
 .lc-boss-report {min-height:25px;max-width:min(410px,93%);margin:8px 0 0;padding:4px 10px;color:#cedfd5;font-size:10px;line-height:1.5;letter-spacing:.03em;background:rgba(5,23,27,.48);border:1px solid rgba(187,223,204,.12)}
-/* Demo 的 CSS 程式美術：不帶鹿雨森專屬品牌字樣或外部圖檔。 */
+/* 霧影以 CSS 繪製，不依賴外部圖檔。 */
 .lc-foe {position:relative;width:clamp(175px,23vw,248px);height:clamp(195px,26vw,265px);margin:0 auto;filter:drop-shadow(0 15px 18px rgba(0,0,0,.5));animation:lc-foe-float 5.6s ease-in-out infinite}
 .lc-foe-halo {position:absolute;inset:0 -30%;background:radial-gradient(ellipse at 50% 52%,rgba(154,175,187,.21),transparent 55%);filter:blur(5px)}
 .lc-foe-antler {position:absolute;z-index:1;top:4%;left:50%;width:4px;height:34%;transform-origin:bottom center;border-radius:5px;background:linear-gradient(180deg,rgba(141,179,184,.67),rgba(66,98,111,.49));box-shadow:0 0 14px rgba(184,226,214,.16)}
@@ -165,7 +165,7 @@ button:disabled {opacity:.45;cursor:not-allowed!important;transform:none!importa
 .lc-foe-ground {position:absolute;left:-18%;right:-18%;bottom:-5px;height:27px;z-index:-1;border-radius:50%;background:radial-gradient(ellipse,rgba(152,181,185,.27),transparent 68%);filter:blur(5px)}
 @keyframes lc-foe-float {0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
 @keyframes lc-foe-eyes {0%,100%{opacity:.65}45%{opacity:1}}
-/* 真正的扇型排列：與鹿雨森 Demo 一樣，卡牌重疊而不是水平捲軸。 */
+/* 扇形手牌採重疊排列，不使用水平捲軸。 */
 .lc-battle-hand-zone {grid-area:hand;min-width:0;margin:0 0 9px;padding:0 0 3px;text-align:center;position:relative}
 .lc-hand-title {color:#bbdbca;font:italic 15px Georgia,serif;letter-spacing:.17em}
 .lc-hand-title>span {font-style:normal;color:var(--lc-gold)}
@@ -190,7 +190,7 @@ button:disabled {opacity:.45;cursor:not-allowed!important;transform:none!importa
 .lc-battle-hand .lc-card-name {font-size:15px}
 .lc-battle-hand .lc-card-description {font-size:11px;line-height:1.45}
 .lc-battle-hand .lc-card-foot {font-size:9px}
-/* 玩家：Demo 風格的小型 HUD，不佔用 Boss 的舞台。 */
+/* 玩家使用精簡 HUD，不佔用 Boss 的舞台。 */
 .lc-battle-player {grid-area:player;min-width:0;display:grid;grid-template-columns:58px minmax(0,1fr);grid-template-rows:auto auto;grid-template-areas:"avatar name" "avatar hp";align-items:center;gap:1px 10px;padding:8px 2px 5px}
 .lc-player-emblem {grid-area:avatar;display:grid;place-items:center;align-self:center;width:50px;height:50px;font:29px Georgia,serif;color:#d5eccf;border:1px solid rgba(180,230,204,.38);border-radius:50%;box-shadow:inset 0 0 15px rgba(150,213,181,.10)}
 .lc-player-name {grid-area:name;color:#eaf9ed;font-size:14px;letter-spacing:.12em}
@@ -355,3 +355,117 @@ button:disabled {opacity:.45;cursor:not-allowed!important;transform:none!importa
 .lc-exchange-button {flex:none;min-height:34px;padding:6px 12px;font-size:11px;white-space:nowrap}
 .lc-exchange-button:disabled {opacity:.46;cursor:not-allowed}
 @media(max-width:580px) {.lc-opening-exchange{padding:8px;gap:7px;font-size:10px}.lc-exchange-button{min-height:36px;width:100%;font-size:11px}}
+
+
+/* 既有資料容器帶有 display 規則，明確尊重 hidden，首頁才不會殘留進度資訊。 */
+#game-overview[hidden],#progress[hidden],#status-message[hidden] {display:none!important}
+
+/* v0.8.6｜霧林三路徑主選單：無切塊框線，互斥聚焦、二次點擊進入。 */
+#app.lc-game.is-home-panel {
+  display:block;
+  width:100%;
+  min-height:300px;
+  margin:0 auto;
+  padding:10px 3px 7px;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+}
+.lc-home-paths {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  width:min(100%,880px);
+  min-height:285px;
+  margin:0 auto;
+  gap:clamp(4px,1.6vw,21px);
+  align-items:stretch;
+  isolation:isolate;
+}
+.lc-home-path {
+  display:flex;
+  flex-direction:column;
+  position:relative;
+  min-width:0;
+  min-height:285px;
+  padding:34px 5px 28px;
+  align-items:center;
+  justify-content:center;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  color:#d2ead6;
+  cursor:pointer;
+  text-align:center;
+  outline-offset:-7px;
+  transition:filter .35s ease,opacity .35s ease,transform .35s ease;
+}
+.lc-home-path-glow {
+  position:absolute;
+  inset:12% -9%;
+  z-index:-1;
+  pointer-events:none;
+  background:radial-gradient(ellipse at center,rgba(88,169,142,.19) 0%,rgba(57,120,101,.06) 44%,transparent 70%);
+  opacity:.72;
+  transition:opacity .35s ease,transform .35s ease;
+}
+.lc-home-path:nth-child(2) .lc-home-path-glow {
+  background:radial-gradient(ellipse at center,rgba(214,190,126,.19),rgba(65,130,106,.08) 45%,transparent 72%);
+}
+.lc-home-path-symbol {
+  display:block;
+  position:relative;
+  width:100%;
+  font:normal clamp(55px,8vw,99px)/1.2 Georgia,"Noto Serif TC",serif;
+  color:#a8d3b7;
+  text-shadow:0 0 18px rgba(89,208,172,.30),0 5px 26px rgba(2,12,11,.48);
+  transition:transform .35s ease,color .35s ease,text-shadow .35s ease;
+}
+.lc-home-path:nth-child(2) .lc-home-path-symbol {color:#d9c597;text-shadow:0 0 19px rgba(225,202,132,.28)}
+.lc-home-path-description {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+  width:100%;
+  max-height:0;
+  opacity:0;
+  overflow:hidden;
+  transform:translateY(9px);
+  transition:max-height .35s ease,opacity .28s ease,transform .35s ease;
+  pointer-events:none;
+}
+.lc-home-path-description strong {
+  margin-top:8px;
+  color:#f0e3bf;
+  font-size:clamp(17px,2.7vw,25px);
+  font-weight:400;
+  line-height:1.35;
+  letter-spacing:.13em;
+  white-space:nowrap;
+}
+.lc-home-path-description small {
+  color:#afc6b6;
+  font-size:clamp(10px,1.35vw,12px);
+  line-height:1.6;
+  letter-spacing:.035em;
+}
+.lc-home-paths.has-focus .lc-home-path:not(.is-focused) {opacity:.48;filter:blur(2.4px) saturate(.65);transform:scale(.94)}
+.lc-home-path.is-focused .lc-home-path-symbol {transform:scale(1.12);color:#e8d4a6;text-shadow:0 0 29px rgba(223,194,119,.45)}
+.lc-home-path.is-focused .lc-home-path-glow {opacity:1;transform:scale(1.14)}
+.lc-home-path.is-focused .lc-home-path-description {max-height:95px;opacity:1;transform:translateY(0)}
+.lc-home-path:hover .lc-home-path-glow {opacity:1}
+.lc-home-path:focus-visible {outline:2px solid rgba(236,214,159,.84);border-radius:10px}
+@media(max-width:680px) {
+  #app.lc-game.is-home-panel {min-height:244px;padding:2px 0 0}
+  .lc-home-paths {min-height:240px;gap:2px}
+  .lc-home-path {min-height:240px;padding:22px 0 18px}
+  .lc-home-path-glow {inset:12% -16%}
+  .lc-home-path-symbol {font-size:clamp(48px,14vw,66px)}
+  .lc-home-path-description {gap:6px}
+  .lc-home-path-description strong {font-size:clamp(15px,4.4vw,19px);letter-spacing:.05em}
+  .lc-home-path-description small {max-width:115px;font-size:10px;line-height:1.4}
+}
+@media(prefers-reduced-motion:reduce) {
+  .lc-home-path,.lc-home-path-glow,.lc-home-path-symbol,.lc-home-path-description {transition:none}
+}

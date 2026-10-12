@@ -1,4 +1,4 @@
-/** 霧林之契 v0.8｜故事資料、進度及跳轉核心。參照鹿雨森 schema，戰鬥通關才解鎖，不因閱讀而開關。 */
+/** 霧林之契 v0.8｜故事資料、進度及跳轉核心。採 JSON 事件格式，僅戰鬥通關才解鎖故事，不因閱讀而解鎖關卡。 */
 (() => {
   "use strict";
   const SAVE_KEY = "mistforest_pact_story_progress_v2";
