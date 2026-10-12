@@ -156,51 +156,197 @@
       }).join("")}
     </nav>`;
   }
-  function focusHome(dest) {
-    if (screen !== "home" || !homePaths.some(path => path.key === dest)) return;
-    if (homeFocus !== dest) {
-      homeFocus = dest;
-      render();
-      return;
-    }
-    // 回顧入口的選取動畫正常，但故事尚未公開，第二次點擊不導頁。
-    if (dest === "story") return;
+  // v1.0.0｜兩大內頁與首頁共用無框、互斥聚焦、再點進入的路徑模式。
+  // 這些只是目前開啟的 UI 層級；不寫入存檔、不變更關卡進度。
+  const sectionPaths = Object.freeze({
+    profile: [
+      { key: "collection", symbol: "✦", title: "永久收藏", subtitle: "留在掌心的，皆有來處。" },
+      { key: "decks", symbol: "❈", title: "個人牌組", subtitle: "以手中之牌，編織自己的戰術。" },
+      { key: "catalog", symbol: "♧", title: "霧林圖鑑", subtitle: "每一張牌，都藏著未竟的可能。" }
+    ],
+    levels: [
+      { key: "marks", symbol: "◈", title: "試煉刻痕", subtitle: "踏過的每一重霧，都留有印記。" },
+      { key: "trials", symbol: "✥", title: "十重試煉", subtitle: "霧幕之後，下一道命運正等著你。" }
+    ],
+    trials: [
+      { key: "challenge", symbol: "⚔", title: "試煉挑戰", subtitle: "十重霧障，終有一途通往真相。" },
+      { key: "boss", symbol: "♜", title: "霧影牌鑑", subtitle: "知曉對手的底牌，未必能改寫命運。" }
+    ]
+  });
+  const sectionFocus = { profile: null, levels: null, trials: null };
+  let profileSection = null;
+  let levelsSection = null;
+  let trialSection = null;
+
+  function scrollToTop() { window.scrollTo?.({ top: 0, behavior: "instant" }); }
+  function openScreen(dest) {
     screen = dest;
     homeFocus = null;
+    profileSection = null;
+    levelsSection = null;
+    trialSection = null;
+    for (const area of Object.keys(sectionFocus)) sectionFocus[area] = null;
     render();
-    window.scrollTo?.({ top: 0, behavior: "instant" });
+    scrollToTop();
+  }
+  function focusHome(dest) {
+    if (screen !== "home" || !homePaths.some(path => path.key === dest)) return;
+    if (homeFocus !== dest) { homeFocus = dest; render(); return; }
+    // 「旅程回顧」目前僅顯示選取效果，未正式開放。
+    if (dest !== "story") openScreen(dest);
+  }
+  function sectionMenu(area) {
+    const entries = sectionPaths[area];
+    const focused = sectionFocus[area];
+    return `<nav class="lc-home-paths lc-sub-paths ${entries.length === 2 ? "is-pair" : ""} ${focused ? "has-focus" : ""}" aria-label="${area === "profile" ? "關於旅人" : area === "levels" ? "開始試煉" : "十重試煉"}">
+      ${entries.map(path => {
+        const selected = focused === path.key;
+        return `<button type="button" class="lc-home-path ${selected ? "is-focused" : ""}" data-act="focus-section" data-area="${area}" data-dest="${path.key}" aria-pressed="${selected}" aria-label="${esc(path.title)}，${selected ? "再次點擊進入" : "點擊選取"}">
+          <span class="lc-home-path-glow" aria-hidden="true"></span>
+          <span class="lc-home-path-symbol" aria-hidden="true">${esc(path.symbol)}</span>
+          <span class="lc-home-path-description" aria-hidden="${!selected}"><strong>${esc(path.title)}</strong><small>${esc(path.subtitle)}</small></span>
+        </button>`;
+      }).join("")}
+    </nav>`;
+  }
+  function focusSection(area, dest) {
+    if (!sectionPaths[area]?.some(path => path.key === dest)) return;
+    if ((area === "profile" && (screen !== "profile" || profileSection)) ||
+        (area === "levels" && (screen !== "levels" || levelsSection)) ||
+        (area === "trials" && (screen !== "levels" || levelsSection !== "trials" || trialSection))) return;
+    if (sectionFocus[area] !== dest) { sectionFocus[area] = dest; render(); return; }
+    if (area === "profile") profileSection = dest;
+    if (area === "levels") levelsSection = dest;
+    if (area === "trials") trialSection = dest;
+    sectionFocus[area] = null;
+    render();
+    scrollToTop();
+  }
+  function backSection(area) {
+    if (area === "profile") {
+      if (profileSection === "editor") profileSection = "decks";
+      else profileSection = null;
+    } else if (area === "levels") {
+      if (trialSection) trialSection = null;
+      else levelsSection = null;
+    }
+    render();
+    scrollToTop();
+  }
+  function sectionBack(label, area) {
+    return `<button class="lc-section-back" type="button" data-act="back-section" data-area="${area}"><span aria-hidden="true">‹</span> ${esc(label)}</button>`;
+  }
+  function sectionTitle(path) {
+    return `<header class="lc-sub-heading"><span class="lc-sub-heading-symbol" aria-hidden="true">${esc(path.symbol)}</span><h2>${esc(path.title)}</h2><p>${esc(path.subtitle)}</p></header>`;
   }
   function backHome() { return `<div class="lc-screen-bar"><button class="lc-quiet" type="button" data-act="open-home">← 回到主畫面</button></div>`; }
-  function levelsView(v) {
+
+  // 圖鑑只看資料定義，不呼叫 battle／reward，也不讀寫牌組存檔。
+  const allCardSamples = Data.TYPES.flatMap(type => Data.NAMES[type].map((name, i) =>
+    ({ id: `archive-${type}-${i}`, type, name, level: 0, branch: "標準" })));
+  // 使用現有卡池建立一次只讀的初始牌鑑；105 張基礎牌＋40 張初選候選牌。
+  // 禁止與會成長的 save.boss 混用，否則會把旅人後續棄牌誤列在初始牌鑑。
+  const bossOpeningCards = Data.bossBase();
+  const travelerOpeningPool = Data.initialPool();
+  function groupedCards(cards) {
+    const grouped = new Map();
+    for (const card of cards) {
+      const key = `${card.type}:${card.name}:${card.level || 0}:${card.branch || "標準"}`;
+      if (grouped.has(key)) grouped.get(key).count++;
+      else grouped.set(key, { card, count: 1 });
+    }
+    return [...grouped.values()];
+  }
+  function cardGallery(cards, { grouped = false } = {}) {
+    if (!cards.length) return `<p class="lc-archive-empty">尚無卡牌</p>`;
+    const rows = grouped ? groupedCards(cards) : cards.map(card => ({ card, count: 1 }));
+    return `<div class="lc-archive-gallery">${rows.map(({ card, count }) => `<div class="lc-archive-card">${cardMarkup(card)}${count > 1 ? `<span class="lc-archive-quantity" aria-label="共 ${count} 張">× ${count}</span>` : ""}</div>`).join("")}</div>`;
+  }
+  function archiveGroups(cards, groupCounts = false) {
+    return `<div class="lc-archive-groups">${Data.TYPES.map(type => {
+      const members = cards.filter(card => card.type === type);
+      if (!members.length) return "";
+      return `<details class="lc-archive-group"><summary><span class="lc-archive-symbol" aria-hidden="true">${esc(Data.SYMBOLS[type])}</span><strong>${esc(Data.LABELS[type])}牌</strong><small>${members.length} 張</small><span class="lc-archive-chevron" aria-hidden="true">⌄</span></summary>${cardGallery(members, { grouped: groupCounts })}</details>`;
+    }).join("")}</div>`;
+  }
+  function collectionView(v) {
+    return `${sectionBack("關於旅人", "profile")}${sectionTitle(sectionPaths.profile[0])}
+      <div class="lc-archive-count">已收藏 <strong>${v.save.player.length}</strong> / 80</div>
+      ${v.save.player.length ? archiveGroups(v.save.player) : `<p class="lc-archive-empty">尚未建立收藏</p>`}`;
+  }
+  function catalogView() {
+    return `${sectionBack("關於旅人", "profile")}${sectionTitle(sectionPaths.profile[2])}
+      <div class="lc-archive-count">七大類・<strong>${allCardSamples.length}</strong> 種卡牌</div>
+      ${archiveGroups(allCardSamples)}`;
+  }
+  function presetsView(v) {
     const save = v.save;
-    const stage = save.stage;
+    const busy = save.phase !== "deck";
+    const own = new Map(save.player.map(card => [card.id, card]));
+    return `${sectionBack("關於旅人", "profile")}${sectionTitle(sectionPaths.profile[1])}
+      <div class="lc-profile-decks">${save.deckPresets.map((ids, index) => {
+        const cards = ids.map(id => own.get(id)).filter(Boolean);
+        const active = index === save.activeDeckIndex;
+        const summary = cards.length ? cards.slice(0, 6).map(card => esc(card.name)).join("、") + (cards.length > 6 ? `……等 ${cards.length} 張` : "") : "尚未放入卡牌";
+        return `<section class="lc-profile-deck ${active ? "is-active" : ""}"><div class="lc-profile-deck-head"><div><small>0${index + 1}</small><h3>牌組${["一", "二", "三"][index]}</h3></div><span>${cards.length} / 30 張</span></div>
+          <p class="lc-profile-deck-preview">${summary}</p>
+          <div class="lc-profile-actions"><button class="lc-secondary" type="button" data-act="activate-preset" data-slot="${index}" ${busy || active ? "disabled" : ""}>${active ? "目前使用" : "設為出戰牌組"}</button><button class="lc-primary" type="button" data-act="edit-preset" data-slot="${index}" ${busy ? "disabled" : ""}>編輯牌組 →</button></div></section>`;
+      }).join("")}</div>
+      ${busy ? `<p class="lc-archive-empty">完成目前的選牌或戰鬥流程後，即可編輯三套牌組。</p>` : ""}`;
+  }
+  function profileEditorView(v) {
+    const number = ["一", "二", "三"][v.save.activeDeckIndex];
+    return `${sectionBack("個人牌組", "profile")}
+      <header class="lc-sub-heading"><span class="lc-sub-heading-symbol">❈</span><h2>牌組${number}</h2><p>已選 ${v.chosenDeck.size} / 30 張</p></header>
+      <div class="lc-count-line"><strong>${v.chosenDeck.size} / 30</strong><button class="lc-quiet" type="button" data-act="select-all">快速選前 30 張</button></div>
+      ${selectionTree(v.save.player, "deck", v.chosenDeck)}
+      <div class="lc-editor-finish"><button class="lc-secondary" type="button" data-act="back-section" data-area="profile">完成編輯 ✓</button></div>`;
+  }
+  function profileView(v) {
+    if (profileSection === "collection") return collectionView(v);
+    if (profileSection === "catalog") return catalogView();
+    if (profileSection === "decks") return presetsView(v);
+    if (profileSection === "editor") return profileEditorView(v);
+    return sectionMenu("profile");
+  }
+  function marksView(v) {
+    const save = v.save;
     const finished = save.completed >= 10;
-    return `${backHome()}${headline(save, "CHAPTER SELECTION", "開始試煉", "已通過的關卡保留紀錄；尚未解鎖的關卡不能提前挑戰。")}
+    return `${sectionBack("開始試煉", "levels")}${sectionTitle(sectionPaths.levels[0])}
+      <div class="lc-marks-summary"><div><small>已通過</small><strong>${save.completed}<span> / 10</span></strong></div><div><small>${finished ? "旅程" : "目前試煉"}</small><strong>${finished ? "完成" : String(save.stage).padStart(2, "0")}</strong></div></div>
+      <div class="lc-marks-list" aria-label="十關通關刻痕">${Data.CHAPTERS.map((name, i) => {
+        const cleared = i < save.completed;
+        const current = !finished && i + 1 === save.stage;
+        return `<div class="lc-mark-row ${cleared ? "is-cleared" : current ? "is-current" : "is-locked"}"><span class="lc-mark-num">${String(i + 1).padStart(2, "0")}</span><span class="lc-mark-name">${esc(name)}</span><span class="lc-mark-state">${cleared ? "✓ 已通過" : current ? "目前關卡" : "未解鎖"}</span></div>`;
+      }).join("")}</div>`;
+  }
+  function challengeView(v) {
+    const save = v.save;
+    const finished = save.completed >= 10;
+    return `${sectionBack("十重試煉", "levels")}${sectionTitle(sectionPaths.trials[0])}
       <div class="lc-chapter-choices">${Data.CHAPTERS.map((name, i) => {
         const number = i + 1;
         const cleared = number <= save.completed;
-        const current = !finished && number === stage;
+        const current = !finished && number === save.stage;
         const label = cleared ? "✓ 已通關" : current ? "開始挑戰 →" : "尚未解鎖";
         return `<button type="button" class="lc-chapter-choice ${cleared ? "is-cleared" : current ? "is-current" : "is-locked"}" data-act="enter-stage" ${current ? "" : "disabled"}>
           <span>CHAPTER ${String(number).padStart(2, "0")}</span><strong>${esc(name)}</strong><small>${label}</small></button>`;
       }).join("")}</div>
       ${finished ? `<div class="lc-actions-center"><button class="lc-primary" data-act="enter-stage">查看通關紀錄 →</button></div>` : ""}`;
   }
-  function profileView(v) {
-    const save = v.save;
-    const busy = save.phase !== "deck";
-    const own = new Map(save.player.map(card => [card.id, card]));
-    return `${backHome()}${headline(save, "TRAVELER PROFILE", "關於旅人", "三套出戰牌組共用永久收藏，每套最多 30 張；玩家自行選牌。")}
-      <div class="lc-profile-stats"><div><small>永久收藏</small><strong>${save.player.length} / 80</strong></div><div><small>已通關</small><strong>${save.completed} / 10</strong></div><div><small>目前關卡</small><strong>${save.stage}</strong></div></div>
-      <div class="lc-profile-decks">${save.deckPresets.map((ids, index) => {
-        const cards = ids.map(id => own.get(id)).filter(Boolean);
-        const active = index === save.activeDeckIndex;
-        const summary = cards.length ? cards.slice(0, 6).map(card => esc(card.name)).join("、") + (cards.length > 6 ? `……等 ${cards.length} 張` : "") : "尚未放入卡牌";
-        return `<section class="lc-profile-deck ${active ? "is-active" : ""}"><div class="lc-profile-deck-head"><div><small>DECK 0${index + 1}</small><h3>牌組${["一", "二", "三"][index]}</h3></div><span>${cards.length} / 30 張</span></div>
-          <p class="lc-profile-deck-preview">${summary}</p>
-          <div class="lc-profile-actions"><button class="lc-secondary" type="button" data-act="activate-preset" data-slot="${index}" ${busy || active ? "disabled" : ""}>${active ? "目前使用" : "設為出戰牌組"}</button><button class="lc-primary" type="button" data-act="edit-preset" data-slot="${index}" ${busy ? "disabled" : ""}>編輯牌組 →</button></div></section>`;
-      }).join("")}</div>
-      <p class="lc-profile-hint">${busy ? "目前正在初始選牌、戰鬥、領獎或結算中。完成目前流程後，即可編輯三套牌組。" : "切換牌組後，從「選擇關卡」進入目前關卡，即可使用所選牌組出戰。"}</p>`;
+  function bossArchiveView() {
+    return `${sectionBack("十重試煉", "levels")}${sectionTitle(sectionPaths.trials[1])}
+      <section class="lc-archive-part"><h3>霧影原始牌庫 <span>${bossOpeningCards.length} 張</span></h3>${archiveGroups(bossOpeningCards, true)}</section>
+      <section class="lc-archive-part"><h3>旅人初選卡池 <span>${travelerOpeningPool.length} 張</span></h3>${archiveGroups(travelerOpeningPool, true)}</section>`;
+  }
+  function levelsView(v) {
+    if (levelsSection === "marks") return marksView(v);
+    if (levelsSection === "trials") {
+      if (trialSection === "challenge") return challengeView(v);
+      if (trialSection === "boss") return bossArchiveView();
+      return `${sectionBack("開始試煉", "levels")}${sectionTitle(sectionPaths.levels[1])}${sectionMenu("trials")}`;
+    }
+    return sectionMenu("levels");
   }
   function healthMeter(side, isBoss = false) {
     return `<div class="lc-hud-hp"><div class="lc-health-line"><span>生命 HP</span><strong>${side.hp} / ${side.maxHP}</strong></div>
@@ -309,7 +455,7 @@
     const view = screen === "home" ? homeView : screen === "levels" ? levelsView : screen === "profile" ? profileView : phaseView;
     const isGame = screen === "game";
     document.getElementById("progress").hidden = !isGame;
-    document.getElementById("game-overview").hidden = screen === "home" || screen === "profile";
+    document.getElementById("game-overview").hidden = !isGame;
     document.getElementById("status-message").hidden = !isGame;
     const intro = document.querySelector(".lc-intro");
     intro?.classList.toggle("is-compact", screen !== "home");
@@ -318,19 +464,21 @@
     intro?.classList.toggle("is-trial-heading", screen === "levels");
     // 兩個內頁沿用首頁三路徑的圖示、四字標題和副文，不再顯示英文標語。
     const pagePath = homePaths.find(path => path.key === screen);
-    const pageTitle = intro?.querySelector("h1");
+    const pageTitle = intro?.querySelector(".lc-page-home-link h1");
     const pageSymbol = intro?.querySelector(".lc-page-symbol");
     const pageSubtitle = intro?.querySelector(".lc-page-subtitle");
     if (pageTitle) pageTitle.textContent = pagePath?.title || "霧林之契";
     if (pageSymbol) pageSymbol.textContent = pagePath?.symbol || "";
     if (pageSubtitle) pageSubtitle.textContent = pagePath?.subtitle || "";
     document.getElementById("wf-game")?.classList.toggle("is-home-screen", screen === "home");
+    document.getElementById("wf-game")?.classList.toggle("is-journey-screen", screen === "profile" || screen === "levels");
     document.getElementById("progress").innerHTML = stageIndicator(v.save);
     document.getElementById("chapter-count").textContent = `${v.save.completed} / 10`;
     document.getElementById("boss-count").textContent = String(v.save.boss.length);
     document.getElementById("status-message").textContent = v.notice || "卡牌牌庫不會自動洗回；行動與魔法點每場重置，但回合不重置。";
     root.classList.toggle("is-home-panel", screen === "home");
     root.classList.toggle("is-page-heading", screen === "levels" || screen === "profile");
+    root.classList.toggle("is-journey-panel", screen === "levels" || screen === "profile");
     root.innerHTML = (isGame ? backHome() : "") + view(v);
   }
   function flightGeometry(source, card) {
@@ -473,13 +621,15 @@
     const act = button.dataset.act;
     const id = button.dataset.id;
     const slot = Number(button.dataset.slot);
-    const open = dest => { screen = dest; homeFocus = null; render(); window.scrollTo?.({ top: 0, behavior: "instant" }); };
+    const open = dest => openScreen(dest);
     const map = {
       "open-home": () => open("home"), "open-levels": () => open("levels"), "open-profile": () => open("profile"),
       "focus-home": () => focusHome(button.dataset.dest),
+      "focus-section": () => focusSection(button.dataset.area, button.dataset.dest),
+      "back-section": () => backSection(button.dataset.area),
       "enter-stage": () => open("game"),
       "activate-preset": () => G.activateDeck(slot),
-      "edit-preset": () => { if (G.activateDeck(slot)) open("game"); },
+      "edit-preset": () => { if (G.view().save.phase !== "deck") return; profileSection = "editor"; if (!G.activateDeck(slot)) profileSection = "decks"; scrollToTop(); },
       "tree-category": () => {
         const mode = button.dataset.mode;
         if (!treeStates[mode]) return;
@@ -504,12 +654,18 @@
     };
     map[act]?.();
   });
+  document.querySelector(".lc-page-home-link")?.addEventListener("click", () => {
+    if (screen === "profile" || screen === "levels") openScreen("home");
+  });
   root?.addEventListener("change", event => {
     const select = event.target.closest("select[data-branch-id]");
     if (select) window.LinCardGame.changeBranch(select.dataset.branchId, select.value);
   });
   document.addEventListener("keydown", event => {
-    if (event.key === "Escape" && window.LinCardGame?.view().targetPrompt) window.LinCardGame.closeTarget();
+    if (event.key !== "Escape") return;
+    if (window.LinCardGame?.view().targetPrompt) window.LinCardGame.closeTarget();
+    else if (screen === "profile" && profileSection) backSection("profile");
+    else if (screen === "levels" && levelsSection) backSection("levels");
   });
   function paintForest() {
     try {

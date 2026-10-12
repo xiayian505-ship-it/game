@@ -188,3 +188,22 @@
   .lc-intro.is-page-title .lc-page-symbol {margin-bottom:6px;font-size:58px}
   .lc-intro.is-page-title .lc-page-subtitle {margin-top:8px;font-size:12px}
 }
+
+/* v1.0.0｜點擊圖示／四字大標／副文，兩頁皆返回三選一主畫面。 */
+.lc-page-home-link {display:none;margin:0 auto;padding:0 16px 5px;border:0;background:transparent;color:inherit;cursor:pointer;text-align:center;max-width:100%;touch-action:manipulation}
+.lc-intro.is-page-title .lc-page-home-link {display:block}
+.lc-intro.is-page-title .lc-default-title {display:none}
+.lc-intro.is-page-title .lc-page-home-link:hover .lc-page-symbol {filter:brightness(1.22)}
+.lc-intro.is-page-title .lc-page-home-link:focus-visible {outline:1px solid var(--lc-gold);outline-offset:6px;border-radius:6px}
+.lc-intro.is-page-title .lc-page-home-link h1 {margin:0}
+.lc-intro.is-page-title .lc-page-home-link .lc-page-subtitle {display:block}
+
+/* v1.0.0｜兩個選單內頁與主畫面相同：頁尾金線、慢慢 Logo 貼底；內容超高時自然下移。 */
+.wf-game.is-journey-screen .lc-shell {display:flex;flex-direction:column;min-height:100vh;min-height:100svh}
+.wf-game.is-journey-screen .lc-shell > main {flex:1 0 auto;display:flex;flex-direction:column}
+.wf-game.is-journey-screen .lc-footer {flex:none;margin-top:auto;padding:26px 10px max(25px,env(safe-area-inset-bottom) + 17px)}
+.wf-game.is-journey-screen .lc-footer-line {display:block;margin:0 auto 17px}
+@media(max-width:680px) {
+  .wf-game.is-journey-screen .lc-footer {padding:20px 4px max(25px,env(safe-area-inset-bottom) + 17px)}
+  .wf-game.is-journey-screen .lc-footer-line {margin-bottom:13px}
+}
