@@ -10,6 +10,15 @@
   let selectedCard = null;
   let targetPrompt = null;
   let notice = "";
+  // 預留獎勵式廣告驗證；v0.8 測試期間全部直接領取。
+  // 正式開通時必須在廣告平台核發獎勵後才解除檢查，不能單純把此開關改為 false。
+  const REWARD_TEST_MODE = true;
+  const REWARD_MODES = Object.freeze({
+    card1: { requiresAd: false, cards: 1 },
+    deck_up: { requiresAd: false, upgrade: "lastDeck" },
+    card4: { requiresAd: true, cards: 4 },
+    collection_up: { requiresAd: true, upgrade: "collection" }
+  });
 
   function fresh() {
     return {
@@ -94,6 +103,7 @@
   }
   function beginBattle() {
     if (save.phase !== "deck" || chosenDeck.size === 0 || chosenDeck.size > 30) return refresh("請至少帶一張卡牌出戰。 ");
+    if (window.MistStoryBridge?.beforeBattle?.(save)) return;
     if (!window.Deck?.create) return refresh("軍火庫 Deck 尚未載入。請確認網路可連線 https://lib.stillnessbyslowly.com/ 再重新整理。 ");
     try {
       const cards = save.player.filter(c => chosenDeck.has(c.id));
@@ -109,7 +119,7 @@
       refresh(`開戰失敗：${err.message}`);
     }
   }
-  function syncBattle() {
+  function syncBattle(deferRender = false) {
     if (!battle) return;
     selectedCard = null;
     targetPrompt = null;
@@ -117,12 +127,14 @@
       save.phase = "reward";
       save.pendingReward = { mode: null, queue: [], cursor: 0, fixedAttack: Data.victoryAttack(), fixedAttackAdded: true };
       persist();
-      refresh("戰鬥勝利！固定獲得攻擊牌 1 張，下一場初始行動點 +1；再選一種額外獎勵。 ");
+      if (!deferRender) refresh("戰鬥勝利！固定獲得攻擊牌 1 張，下一場初始行動點 +1；再選一種額外獎勵。 ");
+      else notice = "戰鬥勝利！固定獲得攻擊牌 1 張，下一場初始行動點 +1；再選一種額外獎勵。 ";
     } else if (battle.outcome === "lose") {
       save.phase = "defeat";
       persist();
-      refresh("本關戰敗。所有永久牌庫與進度仍保留。 ");
-    } else refresh();
+      if (!deferRender) refresh("本關戰敗。所有永久牌庫與進度仍保留。 ");
+      else notice = "本關戰敗。所有永久牌庫與進度仍保留。 ";
+    } else if (!deferRender) refresh();
   }
   function cardClick(index) {
     if (save.phase !== "battle" || !battle || battle.outcome) return;
@@ -144,9 +156,13 @@
     syncBattle();
   }
   function closeTarget() { targetPrompt = null; refresh(); }
-  function endTurn() {
-    if (save.phase !== "battle" || !battle) return;
-    battle.endTurn(); syncBattle();
+  function endTurn(options = {}) {
+    if (save.phase !== "battle" || !battle) return null;
+    if (!battle.endTurn()) return null;
+    // 動畫期間 UI 不重繪，玩家可以先看完 Boss 翻出的真卡，再顯示結算。
+    const action = battle.lastBossAction;
+    syncBattle(options.deferRender === true);
+    return action;
   }
   function openingExchange() {
     if (save.phase !== "battle" || !battle) return;
@@ -173,26 +189,32 @@
   }
   function chooseReward(mode) {
     if (save.phase !== "reward" || save.pendingReward?.mode) return;
-    const available = ["classic1", "classic3", "spider1", "freecell", "spider2"];
-    if (!available.includes(mode)) return;
+    const policy = REWARD_MODES[mode];
+    if (!policy) return;
+    // 測試期四種全可直接領；正式廣告尚未接入，一旦關閉測試模式就先禁止廣告獎勵。
+    if (policy.requiresAd && !REWARD_TEST_MODE) return refresh("此獎勵需要完成廣告驗證，目前尚未開放。 ");
     const pending = save.pendingReward;
     pending.mode = mode;
-    // 固定攻擊牌優先領取；其餘五選一獎勵完全照舊。
+    // 每關固定的攻擊牌維持一張，此外才處理四選一獎勵。
     pending.queue = [pending.fixedAttack || Data.victoryAttack()];
     pending.cursor = 0;
     delete pending.fixedAttack;
     pending.fixedAttackAdded = true;
-    if (mode === "classic3") {
+    if (policy.upgrade) {
       const ids = new Set(save.lastDeckIds);
       let upgraded = 0;
       for (const card of save.player) {
-        if (ids.has(card.id) && Data.LEVEL_TYPES.includes(card.type) && card.level < 5) { card.level += 1; upgraded++; }
+        if ((policy.upgrade === "collection" || ids.has(card.id)) &&
+            Data.LEVEL_TYPES.includes(card.type) && card.level < 5) {
+          card.level += 1;
+          upgraded++;
+        }
       }
       persist();
-      return refresh(`本場出戰牌組有 ${upgraded} 張升級；還有固定攻擊牌待領取。`);
+      return refresh(`${policy.upgrade === "collection" ? "永久收藏" : "本場出戰牌組"}有 ${upgraded} 張可升等卡牌提升 1 級（最高 Lv.5）；固定攻擊牌仍待領取。`);
     }
-    pending.queue.push(...Data.rewardCards({ classic1: 1, spider1: 2, freecell: 3, spider2: 4 }[mode]));
-    persist(); refresh(`固定攻擊牌 1 張，加上選定的額外獎勵，共 ${pending.queue.length} 張待處理。`);
+    pending.queue.push(...Data.rewardCards(policy.cards));
+    persist(); refresh(`固定攻擊牌 1 張，加上額外的 ${policy.cards} 張卡牌，共 ${pending.queue.length} 張待處理。`);
   }
   function currentReward() { return save.phase === "reward" ? save.pendingReward?.queue?.[save.pendingReward.cursor] : null; }
   function acceptReward(replaceId = null) {
@@ -234,11 +256,13 @@
       const owned = new Set(save.player.map(c => c.id));
       chosenDeck = new Set([...chosenDeck].filter(id => owned.has(id)));
     }
-    persist(); refresh(save.completed >= 10 ? "十關全勝，試煉通關！" : `已通過 ${save.completed} 關。下一場玩家初始行動點為 ${5 + save.completed}。`);
+    persist();
+    if (window.MistStoryBridge?.afterReward?.(save)) return;
+    refresh(save.completed >= 10 ? "十關全勝，試煉通關！" : `已通過 ${save.completed} 關。下一場玩家初始行動點為 ${5 + save.completed}。`);
   }
   function newGame() {
     if (!window.confirm("確定重新開始？目前十關進度與雙方永久牌庫將被清除。")) return;
-    Storage.remove(); save = fresh(); chosenInitial = new Set(); chosenDeck = new Set(); battle = null;
+    Storage.remove(); window.MistStoryBridge?.reset?.(); save = fresh(); chosenInitial = new Set(); chosenDeck = new Set(); battle = null;
     selectedCard = null; targetPrompt = null; persist(); refresh("已建立新的 40 張初始候選牌池。 ");
   }
   function view() { return { save, battle: battle?.state() || null, selectedCard, targetPrompt, chosenInitial, chosenDeck, notice, hasLibrary: !!window.Deck?.create }; }

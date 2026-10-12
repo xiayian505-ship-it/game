@@ -1,0 +1,12 @@
+/* 霧林之契自己的小說視覺。後續可以自由更換，不影響 story.js 故事資料與解鎖規則。 */
+.mist-background{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 20%,rgba(42,95,76,.45),transparent 65%),linear-gradient(145deg,#061511,#152e29 55%,#060f12)}
+.story-header{text-align:center;padding:12px 0 16px}.story-kicker{font:11px Georgia,serif;letter-spacing:.23em;color:#b5cfa9}.story-header h1{font-size:clamp(27px,6vw,45px);letter-spacing:.23em;font-weight:400;margin:7px 0}.story-subtitle,.story-note{color:#b4c8b9;font-size:12px}
+.story-screen h2{font-size:22px;font-weight:400;letter-spacing:.12em}.story-entry{background:rgba(12,35,31,.78);color:#e8f1e9}.story-entry:disabled{opacity:.64}.story-entry:not(:disabled):hover{border-color:#d6c48f}.story-entry-status{color:#b4c8b9}
+.story-button{background:linear-gradient(140deg,#d4c18b,#a9925e);color:#152820}.story-button.secondary{background:rgba(8,35,29,.8);color:#e6e1c8;border-color:rgba(192,221,199,.33)}
+.story-reader-head{color:#dfd3ad}.story-progress{background:rgba(180,211,193,.13)}.story-progress span{background:#d3c18c;transition:width .2s}
+.story-stage{background:radial-gradient(ellipse at 50% 48%,rgba(100,154,123,.17),transparent 55%),linear-gradient(120deg,rgba(17,61,57,.92),rgba(5,26,29,.97));box-shadow:inset 0 0 85px rgba(0,0,0,.38)}
+.story-stage[data-scene="rain"]{background:linear-gradient(135deg,#1d3940,#061c21)}.story-stage[data-scene="tree"]{background:linear-gradient(125deg,#2d4d35,#0b241d)}.story-stage[data-scene="swamp"]{background:linear-gradient(125deg,#263d35,#102422)}
+#sceneKicker{font:italic 12px Georgia,serif;letter-spacing:.2em;color:#b5c69c}#sceneTitle{color:#e3e9d8}#stageSpeaker{color:#cab48a;font-size:12px}
+.story-dialogue{background:rgba(6,21,20,.95)}.story-speaker{color:#d8c897;font-size:13px;min-height:21px;margin:0}.story-text{color:#edf4e8;line-height:2.1}.story-choices button{padding:10px;border:1px solid #a0b7a2;background:rgba(33,65,55,.65);color:#eee9dc;border-radius:7px;min-height:44px}
+.story-dialogue .story-button{display:block;margin-left:auto}.story-error{color:#ffaab0}.story-footer{color:#a7c3b3}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}

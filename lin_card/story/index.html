@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#081c1d">
+  <meta name="description" content="霧林之契｜視覺小說故事播放器。">
+  <title>霧林之契｜故事紀錄</title>
+  <!-- 沿用鹿雨森的資料夾與跳轉技術，軍火庫直接以 HTTPS 原址載入。 -->
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/ui/responsive.css">
+  <link rel="stylesheet" href="./story.css">
+  <link rel="stylesheet" href="./story_style.css">
+  <script src="https://lib.stillnessbyslowly.com/state/navigation/navigation.js" defer></script>
+  <script src="./story.js" defer></script>
+  <script src="./story_style.js" defer></script>
+</head>
+<body>
+  <div class="mist-background" aria-hidden="true"></div>
+  <main class="story-shell">
+    <header class="story-header">
+      <p class="story-kicker">MISTFOREST PACT · STORY</p>
+      <h1>霧林之契</h1>
+      <p class="story-subtitle">你所捨棄的一切，終將成為你的敵人。</p>
+    </header>
+    <section id="catalogScreen" class="story-screen" aria-label="故事目錄">
+      <h2>故事紀錄</h2>
+      <p class="story-note">序章在第一關之前；通關後才解鎖下一段故事。尚未填入的段落不會開放。</p>
+      <div id="catalogList" class="story-catalog"></div>
+      <button id="resumeButton" class="story-button secondary" type="button" hidden>繼續上次閱讀</button>
+      <button id="catalogBack" class="story-button secondary" type="button">返回霧林</button>
+    </section>
+    <section id="readerScreen" class="story-screen" hidden aria-label="視覺小說閱讀器">
+      <div class="story-reader-head"><span id="readerHeading"></span><span id="readingPosition"></span></div>
+      <div class="story-progress"><span id="progressFill"></span></div>
+      <div id="visualStage" class="story-stage" data-scene="mist"><span id="sceneKicker">MIST</span><strong id="sceneTitle">霧林深處</strong><span id="stageSpeaker"></span></div>
+      <div id="dialoguePanel" class="story-dialogue" role="group" aria-label="點按對話框可閱讀下一句">
+        <p id="speakerName" class="story-speaker"></p>
+        <p id="storyText" class="story-text"></p>
+        <div id="storyChoices" class="story-choices"></div>
+        <button id="nextButton" class="story-button" type="button">下一句 →</button>
+      </div>
+      <p id="readerNotice" class="story-error" role="alert" hidden></p>
+      <div class="story-controls"><button id="returnCatalog" class="story-button secondary" type="button">返回目錄</button><button id="skipButton" class="story-button secondary" type="button">略過劇情 →</button></div>
+    </section>
+    <section id="statusScreen" class="story-screen" hidden aria-live="polite">
+      <h2 id="statusTitle">正在整理故事</h2>
+      <p id="statusText" class="story-note"></p>
+      <button id="statusBack" class="story-button secondary" type="button">返回目錄</button>
+      <button id="returnGame" class="story-button" type="button">返回遊戲 →</button>
+    </section>
+    <footer class="story-footer">慢 慢 | Stillness by Slowly</footer>
+  </main>
+</body>
+</html>

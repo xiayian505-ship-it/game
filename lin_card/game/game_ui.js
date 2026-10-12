@@ -5,7 +5,13 @@
   const root = document.getElementById("app");
   const esc = value => String(value ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
   const pct = (a, b) => Math.max(0, Math.min(100, (100 * a) / (b || 1)));
-  const names = { classic1: "經典接龍・翻 1 張", classic3: "經典接龍・翻 3 張", spider1: "連環新接龍・初階", freecell: "新接龍", spider2: "連環新接龍・中階" };
+  const names = {
+    card1: "額外獲得 1 張新卡", deck_up: "出戰牌組升 1 級",
+    card4: "額外獲得 4 張新卡", collection_up: "永久收藏升 1 級",
+    // 兼容 v0.7.2 已選完、尚未領取的舊式存檔，不重新發獎。
+    classic1: "舊版獎勵｜新卡 1 張", classic3: "舊版獎勵｜出戰牌升級",
+    spider1: "舊版獎勵｜新卡 2 張", freecell: "舊版獎勵｜新卡 3 張", spider2: "舊版獎勵｜新卡 4 張"
+  };
 
 
   // 軍火庫 Tree Selection 專管展開狀態；卡牌資料、畫面樣式與點擊行為由宿主處理。
@@ -130,7 +136,7 @@
       ${v.hasLibrary ? "" : `<p class="lc-error">軍火庫 Deck 尚未載入。必須連上網路才能開戰；請確認 HTTPS 引用可用。</p>`}`;
   }
   // 首頁導覽是暫時的畫面狀態，不寫入存檔，也不改動正在進行的戰鬥。
-  let screen = "home";
+  let screen = new URL(window.location.href).searchParams.get("view") === "game" ? "game" : "home";
   function homeView(v) {
     const stage = Math.min(10, v.save.stage);
     return `<div class="lc-home-heading"><p class="lc-eyebrow">FOREST JOURNEY</p><h2>旅人的選擇</h2><p>已通過 ${v.save.completed} / 10 關 · 目前第 ${stage} 關</p></div>
@@ -242,19 +248,18 @@
     const current = window.LinCardGame.currentReward();
     if (!pending.mode) {
       const info = [
-        ["classic1", "經典接龍・翻 1 張", "獲得 1 張新卡"],
-        ["classic3", "經典接龍・翻 3 張", "整副出戰牌組升 1 級"],
-        ["spider1", "連環新接龍・初階", "獲得 2 張新卡"],
-        ["freecell", "新接龍", "獲得 3 張新卡"],
-        ["spider2", "連環新接龍・中階", "獲得 4 張新卡"]
+        ["card1", "額外獲得 1 張新卡", "隨機獲得一張七大類卡牌"],
+        ["deck_up", "出戰牌組升 1 級", "本場出戰的可升等卡牌全部 +1 級"],
+        ["card4", "額外獲得 4 張新卡", "一次領取四張隨機卡牌"],
+        ["collection_up", "永久收藏升 1 級", "所有可升等收藏卡牌全部 +1 級"]
       ];
-      return `${headline(v.save, "04 / VICTORY · REWARD", "戰後試煉", `本關固定獲得攻擊牌 1 張，下一場玩家初始行動點 +1（${5 + v.save.completed} → ${6 + v.save.completed}）。另外從五種獎勵中選一種；不用打接龍。`)}
+      return `${headline(v.save, "04 / VICTORY · REWARD", "戰後試煉", `本關固定獲得攻擊牌 1 張，下一場玩家初始行動點 +1（${5 + v.save.completed} → ${6 + v.save.completed}）。另選一種獎勵；測試期四種皆可直接領取。`)}
         <div class="lc-reward-grid">${info.map(([key, title, value]) => `<button class="lc-reward-choice" data-act="reward" data-mode="${key}"><span>選擇獎勵</span><strong>${esc(title)}</strong><small>${esc(value)}</small><b>領取獎勵 →</b></button>`).join("")}</div>`;
     }
     const full = v.save.player.length >= 80;
-    const rewardLabel = names[pending.mode];
+    const rewardLabel = names[pending.mode] || "戰後獎勵";
     return `${headline(v.save, "04 / REWARD ALLOCATION", `${esc(rewardLabel)}｜獎勵 ${pending.cursor + 1} / ${pending.queue.length}`, "每次過關固定多一張攻擊牌。保留、替換或放棄都遵循原本的收藏規則；永久棄牌歸 Boss。")}
-      ${current?.source === "victory-guarantee" ? `<div class="lc-starter-note">✦ ${"本關固定補給：攻擊牌 +1"}（不佔五選一的額度）</div>` : ""}
+      ${current?.source === "victory-guarantee" ? `<div class="lc-starter-note">✦ ${"本關固定補給：攻擊牌 +1"}（不佔四選一的額度）</div>` : ""}
       <div class="lc-reward-card">${current ? cardMarkup(current) : ""}</div>
       <div class="lc-status-grid"><div><span>玩家收藏</span><strong>${v.save.player.length} / 80</strong></div><div><span>Boss 收藏</span><strong>${v.save.boss.length} 張</strong></div></div>
       <div class="lc-reward-actions">${!full ? `<button class="lc-primary" data-act="keep-reward">保留新卡 ✓</button>` : ""}<button class="lc-secondary" data-act="reject-reward">放棄新卡 → 交給 Boss</button></div>
@@ -263,7 +268,7 @@
   function defeatView(v) {
     return `${headline(v.save, "DEFEAT / THE FOREST REMEMBERS", `第 ${v.save.stage} 關・戰敗`, "已獲得的卡牌、等級、關卡進度與 Boss 永久收藏全部保留。")}
       <div class="lc-finish-icon">☾</div><p class="lc-finish-text">你可以從當前關卡重新挑戰，不必重打之前的關卡。</p>
-      <div class="lc-actions-center"><button class="lc-primary" data-act="retry">重試第 ${v.save.stage} 關 →</button><button disabled class="lc-secondary" title="尚未開放">復活｜Spider 高階試煉 · 尚未開放</button></div>`;
+      <div class="lc-actions-center"><button class="lc-primary" data-act="retry">重試第 ${v.save.stage} 關 →</button><button disabled class="lc-secondary" title="尚未開放">復活｜尚未開放</button></div>`;
   }
   function completeView(v) {
     return `${headline(v.save, "THE END / TEN CHAPTERS", "十關試煉通關", "你擊敗了同一位對手的十個稱號。那些被捨棄的牌，都成了這場旅程的一部分。")}
@@ -346,24 +351,28 @@
     G.playTarget(id);
     if (card && G.view().battle?.log[0] !== log) cardFlight(source, card, geometry);
   }
-  function bossTurn() {
+  let bossAnimating = false;
+  async function bossTurn() {
+    if (bossAnimating) return;
     const G = window.LinCardGame;
-    const before = G.view();
-    G.endTurn();
-    const after = G.view();
-    const changed = before.battle?.log[0] !== after.battle?.log[0];
-    const foe = document.querySelector('.lc-battle-boss .lc-foe');
-    if (changed && foe?.animate && !window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches) {
-      foe.animate([
-        { transform: 'translateY(0) scale(1)', filter: 'brightness(1)' },
-        { transform: 'translateY(-9px) scale(1.065)', filter: 'brightness(1.6)', offset: .5 },
-        { transform: 'translateY(0) scale(1)', filter: 'brightness(1)' }
-      ], { duration: 600, easing: 'ease-in-out' });
+    if (G.view().save.phase !== "battle") return;
+    bossAnimating = true;
+    try {
+      // 規則原樣一次結算；延後 UI 重畫以完整顯示實際打出的卡牌。
+      const played = G.endTurn({ deferRender: true });
+      if (played?.card && window.MistBossCardAnimation) {
+        await window.MistBossCardAnimation.play(played.card, cardMarkup(played.card));
+      }
+    } catch (error) {
+      console.warn("Boss 出牌演出失敗，仍正常完成戰鬥結算。", error);
+    } finally {
+      bossAnimating = false;
+      render();
     }
   }
   root?.addEventListener("click", event => {
     const button = event.target.closest("[data-act]");
-    if (!button || button.disabled) return;
+    if (!button || button.disabled || bossAnimating) return;
     const G = window.LinCardGame;
     const act = button.dataset.act;
     const id = button.dataset.id;

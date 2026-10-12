@@ -24,6 +24,7 @@
       this.outcome = null;
       this.turn = "player";
       this.log = [];
+      this.lastBossAction = null; // 只記錄實際出牌卡片供 UI 動畫，絕不參與傷害判定。
       this.freeDiscardUsed = false;
       this.openingExchangeAvailable = true; // 回合開始免費換牌：出牌或整理後就失效。
       const hp = D().HEALTH[stage - 1];
@@ -260,11 +261,17 @@
       if (this.outcome || this.turn !== "player") return false;
       this.openingExchangeAvailable = false;
       this.turn = "boss";
+      this.lastBossAction = null;
       this.boss.guard = 0; this.boss.counter = false;
       this.boss.deck.drawToHand(4);
       const before = cardList(this.boss).hand;
       const legal = before.map((_, i) => i).filter(i => this.valid(this.boss, i));
-      if (legal.length) this.play("boss", pick(legal));
+      if (legal.length) {
+        const index = pick(legal);
+        const playedCard = { ...before[index] };
+        this.play("boss", index); // 保留原本隨機選合法牌與完整戰鬥判定。
+        this.lastBossAction = { card: playedCard, description: this.log[0] || "" };
+      }
       else if (before.length) {
         const gone = this.boss.deck.discardAt(Math.floor(Math.random() * before.length));
         this.note(`Boss 暫無可用牌，整理手牌「${gone.name}」。`);
