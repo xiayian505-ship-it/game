@@ -195,7 +195,7 @@
     const bossAction = b.log.find(text => text.startsWith("Boss") || text.includes("Boss 牌庫")) || "迷霧正等待你的下一步。";
     return `${headline(v.save, `03 / BATTLE · ROUND ${b.round}`, `第 ${v.save.stage} 關｜${Data.CHAPTERS[v.save.stage - 1]}`, "沿用《鹿雨森》Demo 戰場：霧影在上，扇形手牌在下。點兩次出牌。魔法牌使用魔法點。")} 
       <div class="lc-battle-board" aria-label="霧林之契戰鬥舞台">
-        <div class="lc-battle-turn"><strong>ROUND ${String(b.round).padStart(2, "0")}</strong><span>✦</span><small>YOUR TURN · 玩家回合</small></div>
+        <div class="lc-battle-turn"><strong>ROUND ${String(b.round).padStart(2, "0")}</strong><span>✦</span><small>YOUR TURN · 玩家回合</small><button class="lc-battle-sound" type="button" data-act="toggle-battle-sound" aria-pressed="${window.MistBattleFX?.enabled !== false}">${window.MistBattleFX?.enabled !== false ? "♫ 音效開" : "♪ 音效關"}</button></div>
         <section class="lc-battle-boss" aria-label="Boss 狀態">
           ${bossFigure()}
           <div class="lc-boss-name">${esc(Data.CHAPTERS[v.save.stage - 1])}</div>
@@ -296,15 +296,20 @@
     root.innerHTML = (isGame ? backHome() : "") + view(v);
   }
   function flightGeometry(source, card) {
-    const destination = document.querySelector((card?.type === "attack" || card?.name === "裂盾") ? ".lc-battle-boss .lc-foe" : ".lc-battle-player");
+    const destination = document.querySelector((card?.type === "attack" || ["裂盾", "行動封印"].includes(card?.name)) ? ".lc-battle-boss .lc-foe" : ".lc-battle-player");
     return source && destination ? { from: source.getBoundingClientRect(), to: destination.getBoundingClientRect() } : null;
   }
   function cardFlight(source, card, geometry) {
-    if (!source || !geometry || window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) return;
-    if (!source.animate) return;
+    if (!source || !geometry || window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches || !source.animate) {
+      void window.MistBattleFX?.play(card, "player");
+      return;
+    }
     const a = geometry.from;
     const b = geometry.to;
-    if (!a.width || !b.width) return;
+    if (!a.width || !b.width) {
+      void window.MistBattleFX?.play(card, "player");
+      return;
+    }
     const dx = b.left + b.width / 2 - (a.left + a.width / 2);
     const dy = b.top + b.height / 2 - (a.top + a.height / 2);
     const clone = source.cloneNode(true);
@@ -323,7 +328,8 @@
     ], { duration: 470, easing: "cubic-bezier(.22,.67,.3,1)", fill: "forwards" });
     animation.finished.catch(() => {}).finally(() => {
       clone.remove();
-      const target = document.querySelector((card.type === "attack" || card.name === "裂盾") ? ".lc-battle-boss" : ".lc-battle-player");
+      void window.MistBattleFX?.play(card, "player");
+      const target = document.querySelector((card.type === "attack" || ["裂盾", "行動封印"].includes(card.name)) ? ".lc-battle-boss" : ".lc-battle-player");
       if (target?.animate) target.animate([
         { filter: "brightness(1)" }, { filter: "brightness(1.75)", offset: .4 }, { filter: "brightness(1)" }
       ], { duration: 420, easing: "ease-out" });
@@ -336,6 +342,7 @@
     const isSecondTap = before.selectedCard === index;
     const prevLog = before.battle?.log[0];
     const geometry = card ? flightGeometry(element, card) : null;
+    if (isSecondTap) void window.MistBattleFX?.unlock();
     G.cardClick(index);
     const after = G.view();
     // 有指定目標的特殊牌，確認目標後才動畫；不能在第一次點選時飛牌。
@@ -348,24 +355,75 @@
     const source = document.querySelector('.lc-battle-hand .lc-card.is-selected');
     const log = before.battle?.log[0];
     const geometry = card ? flightGeometry(source, card) : null;
+    void window.MistBattleFX?.unlock();
     G.playTarget(id);
     if (card && G.view().battle?.log[0] !== log) cardFlight(source, card, geometry);
   }
+  // Boss 的規則逐張結算，卡面逐張飛出，命中後再更新戰場 HUD。
+  // 避免把最終結果提前畫出來，也避免一口氣閃三次或重複觸發回合。
+  function previewBossAction(action) {
+    if (!action?.after) return;
+    const state = action.after;
+    const text = (selector, value) => {
+      const el = document.querySelector(selector);
+      if (el) el.textContent = String(value);
+    };
+    for (const side of ["boss", "player"]) {
+      const who = state[side];
+      const base = side === "boss" ? ".lc-battle-boss" : ".lc-battle-player";
+      text(`${base} .lc-health-line strong`, `${who.hp} / ${who.maxHP}`);
+      const bar = document.querySelector(`${base} .lc-health > span`);
+      if (bar) bar.style.width = `${pct(who.hp, who.maxHP)}%`;
+    }
+    const energyAndMana = document.querySelectorAll(".lc-battle-resources .lc-resource-energy strong");
+    if (energyAndMana[0]) energyAndMana[0].textContent = state.player.energy;
+    if (energyAndMana[1]) energyAndMana[1].textContent = state.player.mana;
+    const tags = document.querySelector(".lc-boss-tags");
+    if (tags) {
+      tags.innerHTML = `<span>❖ 護盾 ${state.boss.shield}</span><span>♧ 防禦 ${state.boss.guard}</span><span>✧ 行動 ${state.boss.energy}</span><span>✺ 魔法 ${state.boss.mana}</span>${state.boss.buff ? `<span>✦ 共鳴 +${state.boss.buff}</span>` : ""}${state.boss.pierceNext ? `<span>⌁ 穿盾待發</span>` : ""}`;
+    }
+    text(".lc-boss-report", action.description);
+    text(".lc-battle-boss .lc-boss-card-count strong", state.boss.drawPile.length + state.boss.hand.length);
+  }
+
   let bossAnimating = false;
   async function bossTurn() {
     if (bossAnimating) return;
     const G = window.LinCardGame;
     if (G.view().save.phase !== "battle") return;
     bossAnimating = true;
+    // 由真實點擊事件啟動音訊；Chrome / Android 不允許程式自行自動播放。
+    void window.MistBattleFX?.unlock();
+    const started = G.startBossTurn();
+    if (!started) { bossAnimating = false; return; }
+    const roundTag = document.querySelector(".lc-battle-turn small");
+    if (roundTag) roundTag.textContent = "BOSS TURN · 對手回合";
+    const limit = G.view().battle?.stage <= 3 ? 1 : G.view().battle?.stage <= 7 ? 2 : 3;
+    let count = 0;
     try {
-      // 規則原樣一次結算；延後 UI 重畫以完整顯示實際打出的卡牌。
-      const played = G.endTurn({ deferRender: true });
-      if (played?.card && window.MistBossCardAnimation) {
-        await window.MistBossCardAnimation.play(played.card, cardMarkup(played.card));
+      while (count < limit) {
+        const action = G.nextBossCard();
+        if (!action) break;
+        count++;
+        const impact = () => window.MistBattleFX?.play(action.card, "boss");
+        try {
+          if (window.MistBossCardAnimation?.play) {
+            await window.MistBossCardAnimation.play(action.card, cardMarkup(action.card), {
+              countLabel: `${count}/${limit}`,
+              onImpact: impact
+            });
+          } else await impact();
+        } catch (error) {
+          console.warn("Boss 卡牌動畫失敗，仍繼續結算其他合法卡牌。", error);
+          await impact();
+        }
+        previewBossAction(action);
+        if (action.after.outcome) break;
       }
     } catch (error) {
-      console.warn("Boss 出牌演出失敗，仍正常完成戰鬥結算。", error);
+      console.error("Boss 回合出牌出現問題；仍會結束回合以避免畫面卡住。", error);
     } finally {
+      G.finishBossTurn();
       bossAnimating = false;
       render();
     }
@@ -400,7 +458,7 @@
       deck: () => G.toggleDeck(id), "select-all": G.selectAllDeck,
       start: G.beginBattle, hand: () => playHand(Number(button.dataset.index), button),
       "close-target": G.closeTarget, target: () => confirmTarget(id),
-      "end-turn": bossTurn, "opening-exchange": G.openingExchange, discard: G.freeDiscard, concede: G.concede,
+      "end-turn": bossTurn, "toggle-battle-sound": () => { window.MistBattleFX?.setEnabled(!window.MistBattleFX.enabled); render(); }, "opening-exchange": G.openingExchange, discard: G.freeDiscard, concede: G.concede,
       retry: G.retry, reward: () => G.chooseReward(button.dataset.mode),
       "keep-reward": () => G.acceptReward(), "reject-reward": G.rejectReward,
       replace: () => G.acceptReward(id)

@@ -1,8 +1,8 @@
 /** 霧林之契 v0.8｜故事資料、進度及跳轉核心。參照鹿雨森 schema，戰鬥通關才解鎖，不因閱讀而開關。 */
 (() => {
   "use strict";
-  const SAVE_KEY = "mistforest_pact_story_progress_v1";
-  const GAME_SAVE_KEY = "mistforest_pact_save_v1";
+  const SAVE_KEY = "mistforest_pact_story_progress_v2";
+  const GAME_SAVE_KEY = "mistforest_pact_save_v2";
   const DATA_BASE = new URL("./data/", window.location.href);
   const listeners = new Set();
   const fresh = () => ({ completedSections: [], seenSections: [], bookmark: null });

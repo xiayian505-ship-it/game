@@ -24,7 +24,8 @@
       this.outcome = null;
       this.turn = "player";
       this.log = [];
-      this.lastBossAction = null; // 只記錄實際出牌卡片供 UI 動畫，絕不參與傷害判定。
+      this.lastBossAction = null; // 相容舊 UI；最新一次的 Boss 實際出牌。
+      this.lastBossActions = []; // 供 UI 依序播放，本身不參與戰鬥判定。
       this.freeDiscardUsed = false;
       this.openingExchangeAvailable = true; // 回合開始免費換牌：出牌或整理後就失效。
       const hp = D().HEALTH[stage - 1];
@@ -37,7 +38,7 @@
       this.checkExhaustion();
     }
     createSide(key, hp, cards, startingEnergy = 5) {
-      return { key, hp, maxHP: hp, shield: 0, guard: 0, energy: startingEnergy, mana: 5,
+      return { key, hp, maxHP: hp, shield: 0, guard: 0, energy: startingEnergy, baseEnergy: startingEnergy, mana: 5,
         buff: 0, pierceNext: false, counter: false,
         deck: window.Deck.create({ items: cards.map(x => ({ ...x })), handSize: 4, recycleDiscard: false }) };
     }
@@ -46,7 +47,7 @@
     enemy(side) { return side === "boss" ? this.player : this.boss; }
     state() {
       const pack = who => ({ hp: who.hp, maxHP: who.maxHP, shield: who.shield, guard: who.guard,
-        energy: who.energy, mana: who.mana, buff: who.buff, pierceNext: who.pierceNext, ...cardList(who) });
+        energy: who.energy, baseEnergy: who.baseEnergy, mana: who.mana, buff: who.buff, pierceNext: who.pierceNext, ...cardList(who) });
       return { stage: this.stage, round: this.round, turn: this.turn, outcome: this.outcome,
         player: pack(this.player), boss: pack(this.boss), log: [...this.log],
         freeDiscardUsed: this.freeDiscardUsed, openingExchangeAvailable: this.openingExchangeAvailable };
@@ -70,6 +71,8 @@
       if (kind === "foe_one") return theirs.hand.length >= 1;
       if (kind === "revive") return own.discardPile.length + theirs.discardPile.length >= 1;
       if (kind === "resonance") return own.hand.length >= 1; // 本場可重複施放；全牌已 Lv5 則不再強化。
+      if (kind === "energy_seal") return foe.energy > 0;
+      if (kind === "energy_restore") return who.energy < who.baseEnergy;
       return false;
     }
     targets(index) {
@@ -217,6 +220,16 @@
         return `從${fromEnemy ? "對方" : "自己"}的棄牌堆取回「${revived.name}」（僅限本場）`;
       }
       if (type === "resonance") { who.buff += 1; return `本場自己的可升級卡牌效果等級 +1（累積加成 ${who.buff}，最高 Lv.5；費用不變）`; }
+      if (type === "energy_seal") {
+        const removed = foe.energy;
+        foe.energy = 0;
+        return `封印對方全部 ${removed} 點行動點，降為 0`;
+      }
+      if (type === "energy_restore") {
+        const gained = Math.max(0, who.baseEnergy - who.energy);
+        who.energy += gained;
+        return `補充 ${gained} 點行動點，恢復至本場預設 ${who.baseEnergy} 點`;
+      }
       return "魔法效果已發動";
     }
     checkHP() {
@@ -257,34 +270,68 @@
       this.checkExhaustion();
       return true;
     }
-    endTurn() {
+    bossPlayLimit() {
+      // 1～3 關最多 1 張、4～7 關最多 2 張、8～10 關最多 3 張。
+      return this.stage <= 3 ? 1 : this.stage <= 7 ? 2 : 3;
+    }
+    beginBossTurn() {
       if (this.outcome || this.turn !== "player") return false;
       this.openingExchangeAvailable = false;
       this.turn = "boss";
       this.lastBossAction = null;
-      this.boss.guard = 0; this.boss.counter = false;
+      this.lastBossActions = [];
+      this.bossPlaysThisTurn = 0;
+      this.boss.guard = 0;
+      this.boss.counter = false;
       this.boss.deck.drawToHand(4);
-      const before = cardList(this.boss).hand;
-      const legal = before.map((_, i) => i).filter(i => this.valid(this.boss, i));
-      if (legal.length) {
-        const index = pick(legal);
-        const playedCard = { ...before[index] };
-        this.play("boss", index); // 保留原本隨機選合法牌與完整戰鬥判定。
-        this.lastBossAction = { card: playedCard, description: this.log[0] || "" };
+      return true;
+    }
+    bossStep() {
+      if (this.turn !== "boss" || this.outcome || this.bossPlaysThisTurn >= this.bossPlayLimit()) return null;
+      const beforeHand = cardList(this.boss).hand;
+      const legal = beforeHand.map((_, index) => index).filter(index => this.valid(this.boss, index));
+      if (!legal.length) {
+        // 本回合至少打過一張就直接收手，不因出完一張才沒牌而額外棄牌。
+        if (this.bossPlaysThisTurn === 0) {
+          if (beforeHand.length) {
+            const gone = this.boss.deck.discardAt(Math.floor(Math.random() * beforeHand.length));
+            this.note(`Boss 暫無可用牌，整理手牌「${gone.name}」。`);
+          } else if (cardList(this.boss).drawPile.length === 0) this.win("Boss 牌庫已耗盡");
+        }
+        return null;
       }
-      else if (before.length) {
-        const gone = this.boss.deck.discardAt(Math.floor(Math.random() * before.length));
-        this.note(`Boss 暫無可用牌，整理手牌「${gone.name}」。`);
-      } else if (cardList(this.boss).drawPile.length === 0) this.win("Boss 牌庫已耗盡");
+      const index = pick(legal);
+      const playedCard = { ...beforeHand[index] };
+      const before = this.state();
+      const worked = this.play("boss", index); // 每一張都使用 v0.8 原本的判定方法。
+      if (!worked) return null;
+      this.bossPlaysThisTurn += 1;
+      const action = { card: playedCard, description: this.log[0] || "", before, after: this.state() };
+      this.lastBossAction = action;
+      this.lastBossActions.push(action);
+      return action;
+    }
+    finishBossTurn() {
+      if (this.turn !== "boss" && !this.outcome) return false;
       this.checkHP();
       if (this.outcome) return true;
-      this.turn = "player"; this.round += 1;
+      this.turn = "player";
+      this.round += 1;
       this.freeDiscardUsed = false;
-      this.player.guard = 0; this.player.counter = false;
+      this.player.guard = 0;
+      this.player.counter = false;
       this.player.deck.drawToHand(4);
       this.openingExchangeAvailable = true;
       this.checkExhaustion();
       return true;
+    }
+    endTurn() {
+      // 非動畫呼叫也會完整執行此回合（UI 會用分步 API 逐張播放）。
+      if (!this.beginBossTurn()) return false;
+      while (!this.outcome && this.bossPlaysThisTurn < this.bossPlayLimit()) {
+        if (!this.bossStep()) break;
+      }
+      return this.finishBossTurn();
     }
   }
   window.LinCardBattle = Object.freeze({ Battle });

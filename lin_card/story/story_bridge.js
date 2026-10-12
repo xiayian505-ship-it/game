@@ -1,7 +1,7 @@
 /** 故事 ↔ 主遊戲跳轉橋接：只判斷是否進故事，不修改任何戰鬥／通關結果。 */
 (() => {
   "use strict";
-  const SAVE_KEY = "mistforest_pact_story_progress_v1";
+  const SAVE_KEY = "mistforest_pact_story_progress_v2";
   const enabled = () => window.MistStoryConfig?.autoStory === true;
   function seen(section) {
     try { return JSON.parse(localStorage.getItem(SAVE_KEY) || "null")?.seenSections?.includes(section) === true; }

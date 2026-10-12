@@ -22,13 +22,13 @@
 
   function fresh() {
     return {
-      version: 3, phase: "choose", stage: 1, completed: 0,
+      version: 4, phase: "choose", stage: 1, completed: 0,
       player: [], starter: Data.starterAttacks(), boss: Data.bossBase(), pool: Data.initialPool(),
       pendingReward: null, selectedDeckIds: [], lastDeckIds: [],
       activeDeckIndex: 0, deckPresets: [[], [], []]
     };
   }
-  // v0.7 已使用獨立儲存 key；不載入舊版存檔，也不執行跨版遷移。
+  // v0.8.1 測試期採用全新 v2 key，自第 1 關重新開始；不執行舊版存檔遷移。
   if (!save || !Array.isArray(save.pool) || !Array.isArray(save.player) ||
       !Array.isArray(save.deckPresets) || save.deckPresets.length !== 3 ||
       !save.deckPresets.every(Array.isArray) || !Array.isArray(save.selectedDeckIds)) {
@@ -156,13 +156,26 @@
     syncBattle();
   }
   function closeTarget() { targetPrompt = null; refresh(); }
+  function startBossTurn() {
+    if (save.phase !== "battle" || !battle) return false;
+    return battle.beginBossTurn();
+  }
+  function nextBossCard() {
+    if (save.phase !== "battle" || !battle || battle.turn !== "boss") return null;
+    return battle.bossStep();
+  }
+  function finishBossTurn() {
+    if (save.phase !== "battle" || !battle || (battle.turn !== "boss" && !battle.outcome)) return false;
+    battle.finishBossTurn();
+    syncBattle();
+    return true;
+  }
   function endTurn(options = {}) {
-    if (save.phase !== "battle" || !battle) return null;
-    if (!battle.endTurn()) return null;
-    // 動畫期間 UI 不重繪，玩家可以先看完 Boss 翻出的真卡，再顯示結算。
-    const action = battle.lastBossAction;
+    // 非動畫環境的備援路徑；動畫 UI 使用上方三個分步方法。
+    if (save.phase !== "battle" || !battle || !battle.endTurn()) return null;
+    const actions = [...battle.lastBossActions];
     syncBattle(options.deferRender === true);
-    return action;
+    return actions;
   }
   function openingExchange() {
     if (save.phase !== "battle" || !battle) return;
@@ -266,7 +279,7 @@
     selectedCard = null; targetPrompt = null; persist(); refresh("已建立新的 40 張初始候選牌池。 ");
   }
   function view() { return { save, battle: battle?.state() || null, selectedCard, targetPrompt, chosenInitial, chosenDeck, notice, hasLibrary: !!window.Deck?.create }; }
-  window.LinCardGame = Object.freeze({ view, pickInitial, confirmInitial, toggleDeck, selectAllDeck, activateDeck, changeBranch, beginBattle, cardClick, playTarget, closeTarget, endTurn, openingExchange, freeDiscard, concede, retry, chooseReward, acceptReward, rejectReward, newGame, currentReward });
+  window.LinCardGame = Object.freeze({ view, pickInitial, confirmInitial, toggleDeck, selectAllDeck, activateDeck, changeBranch, beginBattle, cardClick, playTarget, closeTarget, endTurn, startBossTurn, nextBossCard, finishBossTurn, openingExchange, freeDiscard, concede, retry, chooseReward, acceptReward, rejectReward, newGame, currentReward });
   persist();
   window.addEventListener("DOMContentLoaded", () => window.LinCardUI?.render());
 })();

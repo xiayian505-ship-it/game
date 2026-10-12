@@ -11,7 +11,7 @@
     heal: ["雨聲", "鹿角餘音", "春芽", "林泉", "暮雨"],
     action: ["裂盾", "穿盾"],
     special: ["林間微光", "風息", "流螢", "葉脈", "回聲", "星露", "月泉", "銀蕨", "夜螢", "霜光", "同命之契"],
-    magic: ["一葉歸塵", "萬葉歸根", "借影易形", "斷枝奪葉", "枯木逢春", "移花接木", "萬木共鳴"]
+    magic: ["一葉歸塵", "萬葉歸根", "借影易形", "斷枝奪葉", "枯木逢春", "移花接木", "萬木共鳴", "行動封印", "行動復甦"]
   };
   const ACTIONS = {
     "裂盾": { key: "shatter", cost: 3, desc: "清除敵方全部護盾。" },
@@ -29,7 +29,9 @@
     "斷枝奪葉": { key: "foe_one", cost: 3, desc: "強制對方隨機棄一張手牌。" },
     "枯木逢春": { key: "revive", cost: 4, desc: "從雙方任一棄牌堆取回一張卡牌至自己手牌（僅限本場）。" },
     "移花接木": { key: "swap_all", cost: 5, desc: "交換雙方當前手牌，不改變永久收藏。" },
-    "萬木共鳴": { key: "resonance", cost: 6, desc: "僅自己：本場所有可升級卡牌效果等級 +1（累積至 Lv.5），費用不變。" }
+    "萬木共鳴": { key: "resonance", cost: 6, desc: "僅自己：本場所有可升級卡牌效果等級 +1（累積至 Lv.5），費用不變。" },
+    "行動封印": { key: "energy_seal", cost: 4, desc: "對方目前所有行動點直接歸零。" },
+    "行動復甦": { key: "energy_restore", cost: 4, desc: "自己行動點補足至本場預設值；高於預設值時不扣除。" }
   };
   const BRANCHES = {
     attack: ["標準", "破盾", "汲取"], defense: ["標準", "堅守", "反震"],
@@ -49,7 +51,7 @@
       defense: NAMES.defense, shield: NAMES.shield, heal: NAMES.heal,
       action: ["裂盾", "穿盾", "裂盾", "穿盾", "裂盾", "穿盾", "裂盾", "穿盾"],
       special: ["林間微光", "風息", "流螢", "星露", "月泉", "銀蕨", "同命之契", "同命之契", "同命之契"],
-      magic: [...NAMES.magic, "萬木共鳴"]
+      magic: ["一葉歸塵", "借影易形", "斷枝奪葉", "枯木逢春", "移花接木", "萬木共鳴", "行動封印", "行動復甦"]
     };
     return Object.entries(BONUS_POOL).flatMap(([type, count]) =>
       Array.from({ length: count }, (_, i) => make(type, initialNames[type][i], "initial")));
@@ -61,7 +63,10 @@
         // 行動補充、魔法補充、犧牲：各五張。
         names = [...NAMES.special.slice(0, 5), ...NAMES.special.slice(5, 10), ...Array(5).fill("同命之契")];
       } else if (type === "action") names = Array.from({ length: 15 }, (_, i) => NAMES.action[i % 2]);
-      else if (type === "magic") names = [...NAMES.magic, ...NAMES.magic, "萬木共鳴"];
+      else if (type === "magic") {
+        // 魔法牌仍為 15 張，確保 Boss 基礎牌庫 105 張不變。
+        names = [...NAMES.magic, ...NAMES.magic.slice(0, 4), "萬木共鳴", "行動封印"];
+      }
       else names = Array.from({ length: 15 }, (_, i) => NAMES[type][i % NAMES[type].length]);
       return names.map(name => make(type, name, "boss-base"));
     });

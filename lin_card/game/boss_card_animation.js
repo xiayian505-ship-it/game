@@ -3,24 +3,30 @@
   "use strict";
   const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
   function towardPlayer(card) {
-    return card.type === "attack" || ["裂盾", "斷枝奪葉", "借影易形", "移花接木", "同命之契"].includes(card.name);
+    return card.type === "attack" || ["裂盾", "斷枝奪葉", "借影易形", "移花接木", "行動封印", "同命之契"].includes(card.name);
   }
-  async function play(card, markup) {
+  async function play(card, markup, options = {}) {
     const boss = document.querySelector(".lc-battle-boss .lc-foe");
     const player = document.querySelector(".lc-battle-player");
-    if (!boss || !player || !card) return;
+    if (!boss || !player || !card) {
+      await options.onImpact?.();
+      return;
+    }
     const scene = document.createElement("div");
     scene.className = "lc-boss-card-scene";
     scene.setAttribute("aria-label", `Boss 使用「${card.name}」`);
     scene.setAttribute("role", "status");
     const label = document.createElement("p");
     label.className = "lc-boss-card-label";
-    label.textContent = `BOSS 使出 · ${card.name}`;
+    label.textContent = `BOSS ${options.countLabel ? `${options.countLabel} · ` : ""}使出 · ${card.name}`;
     const holder = document.createElement("div");
     holder.className = "lc-boss-card-holder";
     holder.innerHTML = markup; // 由既有 cardMarkup() 產生，沿用玩家卡牌的七大類樣式。
     const cardFace = holder.querySelector(".lc-card");
-    if (!cardFace) return;
+    if (!cardFace) {
+      await options.onImpact?.();
+      return;
+    }
     scene.append(holder, label);
     document.body.append(scene);
     const bossBox = boss.getBoundingClientRect();
@@ -40,7 +46,11 @@
     const animate = (element, frames, options) => element.animate
       ? element.animate(frames, options).finished.catch(() => {}) : pause(options.duration);
     try {
-      if (reduced) { await pause(700); return; }
+      if (reduced) {
+        await pause(450);
+        await options.onImpact?.();
+        return;
+      }
       await Promise.all([
         animate(holder, [
           { transform: "rotateY(90deg) scale(.65)", opacity: .4 },
@@ -57,9 +67,13 @@
         { transform: `translate(${dx * .48}px,${dy * .48 - 20}px) scale(.80) rotate(7deg)`, opacity: 1, offset: .53 },
         { transform: `translate(${dx}px,${dy}px) scale(.20) rotate(-8deg)`, opacity: 0 }
       ], { duration: 580, easing: "cubic-bezier(.24,.64,.24,1)", fill: "forwards" });
-      if (target.animate) await animate(target, [
+      // 命中點同步觸發聲光：戰鬥結算則已由規則引擎逐張完成。
+      await Promise.all([
+        Promise.resolve().then(() => options.onImpact?.()),
+        target.animate ? animate(target, [
         { filter: "brightness(1)" }, { filter: "brightness(1.55)" }, { filter: "brightness(1)" }
-      ], { duration: 330, easing: "ease-out" });
+      ], { duration: 330, easing: "ease-out" }) : Promise.resolve()
+      ]);
     } finally { scene.remove(); }
   }
   window.MistBossCardAnimation = Object.freeze({ play });
