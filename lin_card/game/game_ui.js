@@ -311,14 +311,26 @@
     document.getElementById("progress").hidden = !isGame;
     document.getElementById("game-overview").hidden = screen === "home" || screen === "profile";
     document.getElementById("status-message").hidden = !isGame;
-    document.querySelector(".lc-intro")?.classList.toggle("is-compact", screen !== "home");
-    document.querySelector(".lc-intro")?.classList.toggle("is-home-art", screen === "home");
+    const intro = document.querySelector(".lc-intro");
+    intro?.classList.toggle("is-compact", screen !== "home");
+    intro?.classList.toggle("is-home-art", screen === "home");
+    intro?.classList.toggle("is-page-title", screen === "levels" || screen === "profile");
+    intro?.classList.toggle("is-trial-heading", screen === "levels");
+    // 兩個內頁沿用首頁三路徑的圖示、四字標題和副文，不再顯示英文標語。
+    const pagePath = homePaths.find(path => path.key === screen);
+    const pageTitle = intro?.querySelector("h1");
+    const pageSymbol = intro?.querySelector(".lc-page-symbol");
+    const pageSubtitle = intro?.querySelector(".lc-page-subtitle");
+    if (pageTitle) pageTitle.textContent = pagePath?.title || "霧林之契";
+    if (pageSymbol) pageSymbol.textContent = pagePath?.symbol || "";
+    if (pageSubtitle) pageSubtitle.textContent = pagePath?.subtitle || "";
     document.getElementById("wf-game")?.classList.toggle("is-home-screen", screen === "home");
     document.getElementById("progress").innerHTML = stageIndicator(v.save);
     document.getElementById("chapter-count").textContent = `${v.save.completed} / 10`;
     document.getElementById("boss-count").textContent = String(v.save.boss.length);
     document.getElementById("status-message").textContent = v.notice || "卡牌牌庫不會自動洗回；行動與魔法點每場重置，但回合不重置。";
     root.classList.toggle("is-home-panel", screen === "home");
+    root.classList.toggle("is-page-heading", screen === "levels" || screen === "profile");
     root.innerHTML = (isGame ? backHome() : "") + view(v);
   }
   function flightGeometry(source, card) {

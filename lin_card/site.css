@@ -90,21 +90,29 @@
 }
 
 
-/* v0.8.6｜首頁主標保留英文；原中文向量字移至頁尾慢慢標誌上方。 */
+/* v0.8.9｜三路徑主畫面：標語留在內容後方，金線與慢慢一起置底。 */
 .lc-intro.is-home-art .lc-en {
-  margin: -3px 0 0;
-  font-size: clamp(12px, 2.5vw, 18px);
-  letter-spacing: .07em;
+  margin:-3px 0 0;
+  font-size:clamp(12px,2.5vw,18px);
+  letter-spacing:.07em;
 }
-.lc-intro.is-home-art .lc-line {margin: 14px auto 0}
-.lc-footer-motto {display:none}
-.wf-game.is-home-screen .lc-footer {
-  padding: 8px 10px 32px;
+.lc-intro.is-home-art .lc-line {margin:14px auto 0}
+.lc-footer-motto,.lc-footer-line {display:none}
+.wf-game.is-home-screen .lc-shell {
+  display:flex;
+  flex-direction:column;
+  min-height:100vh;
+  min-height:100svh;
+}
+.wf-game.is-home-screen .lc-shell > main {
+  flex:1 0 auto;
+  display:flex;
+  flex-direction:column;
 }
 .wf-game.is-home-screen .lc-footer-motto {
   display:block;
   width:min(100%,620px);
-  margin:0 auto;
+  margin:clamp(30px,5vh,62px) auto 0;
   text-align:center;
 }
 .wf-game.is-home-screen .lc-footer-motto .lc-motto-art {
@@ -115,19 +123,68 @@
   filter:none;
   transform:none;
 }
-.wf-game.is-home-screen .lc-footer-motto.is-motto-missing .lc-motto-art{display:none}
-.wf-game.is-home-screen .lc-footer-motto.is-motto-missing .lc-motto-fallback{
+.wf-game.is-home-screen .lc-footer-motto.is-motto-missing .lc-motto-art {display:none}
+.wf-game.is-home-screen .lc-footer-motto.is-motto-missing .lc-motto-fallback {
   display:block;
   padding:6px 3px;
   color:#ddc58a;
   font-size:clamp(17px,3.1vw,26px);
   letter-spacing:.09em;
 }
-.wf-game.is-home-screen .lc-footer-motto .lc-line {margin: 0 auto 14px}
-@media (max-width:680px) {
+.wf-game.is-home-screen .lc-footer {
+  flex:none;
+  margin-top:auto;
+  padding:26px 10px max(25px,env(safe-area-inset-bottom) + 17px);
+}
+.wf-game.is-home-screen .lc-footer-line {
+  display:block;
+  margin:0 auto 17px;
+}
+/* 僅「關於旅人／開始試煉」使用與入口一致的最上方大標。 */
+.lc-intro.is-page-title h1 {
+  color:#f0e3bf;
+  font-size:clamp(30px,5vw,48px);
+  font-weight:400;
+  letter-spacing:.13em;
+  padding-left:.13em;
+}
+.lc-game.is-page-heading .lc-section-heading h2 {display:none}
+@media(max-width:680px) {
   .lc-intro.is-home-art .lc-en {font-size:12px;margin-top:-2px}
   .lc-intro.is-home-art .lc-line {margin-top:11px}
-  .wf-game.is-home-screen .lc-footer {padding: 5px 4px 29px}
-  .wf-game.is-home-screen .lc-footer-motto {width:84%}
-  .wf-game.is-home-screen .lc-footer-motto .lc-line {margin-bottom:12px}
+  .wf-game.is-home-screen .lc-footer-motto {width:84%;margin-top:30px}
+  .wf-game.is-home-screen .lc-footer {padding:20px 4px max(25px,env(safe-area-inset-bottom) + 17px)}
+  .wf-game.is-home-screen .lc-footer-line {margin-bottom:13px}
+}
+
+/* v0.8.10｜內頁標題與主選單入口同源：圖示／四字標題／副文。 */
+.lc-page-symbol,.lc-page-subtitle {display:none}
+.lc-intro.is-page-title {
+  text-align:center;
+}
+.lc-intro.is-page-title .lc-page-symbol {
+  display:block;
+  margin:0 auto 8px;
+  color:#a8d3b7;
+  font:normal clamp(50px,7vw,76px)/1.15 Georgia,"Noto Serif TC",serif;
+  text-shadow:0 0 18px rgba(89,208,172,.30),0 5px 26px rgba(2,12,11,.48);
+}
+.lc-intro.is-page-title.is-trial-heading .lc-page-symbol {
+  color:#d9c597;
+  text-shadow:0 0 19px rgba(225,202,132,.28),0 5px 26px rgba(2,12,11,.48);
+}
+.lc-intro.is-page-title .lc-page-subtitle {
+  display:block;
+  margin:11px auto 0;
+  color:#afc6b6;
+  font-size:clamp(12px,1.6vw,15px);
+  line-height:1.6;
+  letter-spacing:.035em;
+}
+/* 英文只從這兩頁的標題區移除，其他遊戲畫面不受影響。 */
+.lc-intro.is-page-title .lc-en {display:none}
+.lc-game.is-page-heading .lc-section-heading .lc-eyebrow {display:none}
+@media(max-width:680px) {
+  .lc-intro.is-page-title .lc-page-symbol {margin-bottom:6px;font-size:58px}
+  .lc-intro.is-page-title .lc-page-subtitle {margin-top:8px;font-size:12px}
 }
