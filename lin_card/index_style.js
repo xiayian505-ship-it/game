@@ -8,27 +8,31 @@
   const names = { classic1: "經典接龍・翻 1 張", classic3: "經典接龍・翻 3 張", spider1: "連環新接龍・初階", freecell: "新接龍", spider2: "連環新接龍・中階" };
 
   // 手牌沿用《鹿雨森》Demo 的重疊扇形邏輯；每張牌依位置計算傾斜角。
-  function fanHandMarkup(cards, selectedIndex, energy) {
+  function fanHandMarkup(cards, selectedIndex, energy, mana, buff, foeShield) {
     if (!cards.length) return `<p class="lc-empty">手牌已空。若抽牌堆尚有牌，可結束回合後補牌。</p>`;
     return cards.map((c, i) => {
       const mid = (cards.length - 1) / 2;
       const angle = (i - mid) * (cards.length <= 4 ? 4.6 : 15 / (cards.length - 1));
       const rise = Math.round(Math.abs(i - mid) * 5);
       return cardMarkup(c, { action: "hand", index: i, selected: i === selectedIndex,
-        unpayable: Data.cost(c) > energy, angle, rise });
+        unpayable: (Data.resource(c) === "mana" ? Data.cost(c) > mana : Data.cost(c) > energy) || (c.type === "special" && Data.SPECIALS[c.name]?.key === "sacrifice" && energy + mana === 0) || (c.name === "裂盾" && foeShield === 0), buff, angle, rise });
     }).join("");
   }
 
   function cardMarkup(card, opts = {}) {
     const action = opts.action || "";
-    const level = card.type === "special" ? "固定效果" : `Lv.${card.level}`;
+    const hasLevel = Data.LEVEL_TYPES.includes(card.type);
+    const level = hasLevel ? `Lv.${Data.effectiveLevel(card, opts.buff || 0)}${opts.buff ? " ✦" : ""}` : "固定效果";
     const cost = Data.cost(card);
     const selected = !!opts.selected;
     const unpayable = !!opts.unpayable;
-    const inner = `<span class="lc-card-head"><span class="lc-family">${esc(Data.LABELS[card.type])}</span><span class="lc-cost" title="行動點費用">✧ ${cost}</span></span>
+    const resource = Data.resource(card);
+    const costLabel = card.name === "同命之契" ? "雙歸零" : resource === "none" ? "免費" : `${resource === "mana" ? "✺" : "✧"} ${cost}`;
+    const costTitle = resource === "mana" ? "魔法點費用" : resource === "energy" ? "行動點費用" : "不需預付點數";
+    const inner = `<span class="lc-card-head"><span class="lc-family">${esc(Data.LABELS[card.type])}</span><span class="lc-cost" title="${costTitle}">${costLabel}</span></span>
       <span class="lc-card-symbol" aria-hidden="true">${esc(Data.SYMBOLS[card.type])}</span>
       <span class="lc-card-name">${esc(card.name)}</span>
-      <span class="lc-card-description">${esc(Data.describe(card))}</span>
+      <span class="lc-card-description">${esc(Data.describe(card, opts.buff || 0))}</span>
       <span class="lc-card-foot"><span>${level}</span><span>${card.branch && card.branch !== "標準" ? esc(card.branch) : "✦"}</span></span>`;
     const style = Number.isFinite(opts.angle) ? ` style="--fan-tilt:${opts.angle.toFixed(2)}deg;--fan-rise:${opts.rise || 0}px"` : "";
     const attr = action ? ` type="button" data-act="${esc(action)}" data-id="${esc(card.id)}" ${Number.isInteger(opts.index) ? `data-index="${opts.index}"` : ""}${style}` : "";
@@ -44,11 +48,11 @@
   }
   function chooseView(v) {
     const cards = v.save.pool;
-    return `${headline(v.save, "01 / THE FIRST DIVISION", "初始選牌", "攻擊牌 5 張直接配發；其餘五類各五張共 25 張，請選 10 張。沒選的 15 張歸 Boss。")}
+    return `${headline(v.save, "01 / THE FIRST DIVISION", "初始選牌", "攻擊牌 5 張直接配發；其餘六類共 40 張候選牌，請自選 25 張。沒選的 15 張歸 Boss。")}
       <div class="lc-starter-note">✦ 已保留你的 5 張專屬攻擊牌：${v.save.starter.map(c => esc(c.name)).join("、")}</div>
-      <div class="lc-count-line"><strong>${v.chosenInitial.size} / 10</strong><span>從 25 張非攻擊牌中自選 10 張</span></div>
+      <div class="lc-count-line"><strong>${v.chosenInitial.size} / 25</strong><span>從 40 張非攻擊牌中自選 25 張</span></div>
       <div class="lc-card-grid">${cards.map(c => cardMarkup(c, { action: "choose", selected: v.chosenInitial.has(c.id) })).join("")}</div>
-      <div class="lc-sticky-actions"><p>注意：選剩的卡牌會加入 Boss 原有 72 張牌庫。</p><button class="lc-primary" data-act="confirm-initial" ${v.chosenInitial.size !== 10 ? "disabled" : ""}>領取 5 張攻擊＋10 張自選，開始遊戲 →</button></div>`;
+      <div class="lc-sticky-actions"><p>注意：選剩的卡牌會加入 Boss 原有 105 張牌庫。</p><button class="lc-primary" data-act="confirm-initial" ${v.chosenInitial.size !== 25 ? "disabled" : ""}>領取 5 張攻擊＋25 張自選，開始遊戲 →</button></div>`;
   }
   function deckView(v) {
     const save = v.save;
@@ -57,13 +61,14 @@
       <div class="lc-status-grid">
         <div><span>你的生命</span><strong>${Data.HEALTH[stage - 1]}</strong></div>
         <div><span>Boss 生命</span><strong>${Data.HEALTH[stage - 1] / 2}</strong></div>
-        <div><span>永久收藏</span><strong>${save.player.length} / 60</strong></div>
+        <div><span>永久收藏</span><strong>${save.player.length} / 80</strong></div>
         <div><span>Boss 牌庫</span><strong>${save.boss.length} 張</strong></div>
       </div>
+      <div class="lc-starter-note">✧ 本關玩家初始行動點 ${5 + save.completed}（已通關 ${save.completed} 次）；Boss 仍是 5 點；雙方開場魔法點皆為 5。${save.retroBonusQueue?.length ? ` <button class="lc-quiet" data-act="claim-retro">補領舊版攻擊牌 ${save.retroBonusQueue.length} 張</button>` : ""}</div>
       <div class="lc-count-line"><strong>已帶 ${v.chosenDeck.size} / 30 張</strong><button class="lc-quiet" data-act="select-all">快速選前 30 張</button></div>
       <div class="lc-card-grid">${save.player.map(c => `<div class="lc-deck-item">${cardMarkup(c, { action: "deck", selected: v.chosenDeck.has(c.id) })}
-        ${c.level > 0 && c.type !== "special" ? `<label class="lc-branch-label">戰術分支 <select data-branch-id="${esc(c.id)}">${Data.BRANCHES[c.type].map(b => `<option value="${esc(b)}" ${c.branch === b ? "selected" : ""}>${esc(b)}</option>`).join("")}</select></label>` : ""}</div>`).join("")}</div>
-      <div class="lc-sticky-actions"><p>每場生命及行動點補滿；牌的等級和 Boss 收到的棄牌則永久保留。</p><button class="lc-primary" data-act="start" ${v.chosenDeck.size === 0 || !v.hasLibrary ? "disabled" : ""}>帶 ${v.chosenDeck.size} 張牌出戰 →</button></div>
+        ${c.level > 0 && Data.BRANCHES[c.type] ? `<label class="lc-branch-label">戰術分支 <select data-branch-id="${esc(c.id)}">${Data.BRANCHES[c.type].map(b => `<option value="${esc(b)}" ${c.branch === b ? "selected" : ""}>${esc(b)}</option>`).join("")}</select></label>` : ""}</div>`).join("")}</div>
+      <div class="lc-sticky-actions"><p>每場生命、行動點與魔法點重新補滿；牌的等級和 Boss 收到的棄牌則永久保留。</p><button class="lc-primary" data-act="start" ${v.chosenDeck.size === 0 || !v.hasLibrary ? "disabled" : ""}>帶 ${v.chosenDeck.size} 張牌出戰 →</button></div>
       ${v.hasLibrary ? "" : `<p class="lc-error">軍火庫 Deck 尚未載入。必須連上網路才能開戰；請確認 HTTPS 引用可用。</p>`}`;
   }
   function healthMeter(side, isBoss = false) {
@@ -82,20 +87,20 @@
     const b = v.battle;
     const hand = b.player.hand;
     const bossAction = b.log.find(text => text.startsWith("Boss") || text.includes("Boss 牌庫")) || "迷霧正等待你的下一步。";
-    return `${headline(v.save, `03 / BATTLE · ROUND ${b.round}`, `第 ${v.save.stage} 關｜${Data.CHAPTERS[v.save.stage - 1]}`, "沿用《鹿雨森》Demo 戰場：霧影在上，扇形手牌在下。點兩次出牌。")} 
+    return `${headline(v.save, `03 / BATTLE · ROUND ${b.round}`, `第 ${v.save.stage} 關｜${Data.CHAPTERS[v.save.stage - 1]}`, "沿用《鹿雨森》Demo 戰場：霧影在上，扇形手牌在下。點兩次出牌。魔法牌使用魔法點。")} 
       <div class="lc-battle-board" aria-label="林間卡牌戰鬥舞台">
         <div class="lc-battle-turn"><strong>ROUND ${String(b.round).padStart(2, "0")}</strong><span>✦</span><small>YOUR TURN · 玩家回合</small></div>
         <section class="lc-battle-boss" aria-label="Boss 狀態">
           ${bossFigure()}
           <div class="lc-boss-name">${esc(Data.CHAPTERS[v.save.stage - 1])}</div>
-          <div class="lc-boss-tags"><span>❖ 護盾 ${b.boss.shield}</span><span>♧ 防禦 ${b.boss.guard}</span><span>✧ 行動 ${b.boss.energy}</span></div>
+          <div class="lc-boss-tags"><span>❖ 護盾 ${b.boss.shield}</span><span>♧ 防禦 ${b.boss.guard}</span><span>✧ 行動 ${b.boss.energy}</span><span>✺ 魔法 ${b.boss.mana}</span>${b.boss.buff ? `<span>✦ 共鳴 +${b.boss.buff}</span>` : ""}${b.boss.pierceNext ? `<span>⌁ 穿盾待發</span>` : ""}</div>
           ${healthMeter(b.boss, true)}
           <p class="lc-boss-report" aria-live="polite">${esc(bossAction)}</p>
         </section>
         <section class="lc-battle-hand-zone" aria-label="玩家手牌">
           <div class="lc-hand-title">YOUR HAND <span>·</span> 手中之牌</div>
           <p class="lc-selection-hint">${v.selectedCard === null ? "點一下選牌，再點同一張出牌" : `已選取「${esc(hand[v.selectedCard]?.name || "卡牌")}」 · 再點一次出牌`}</p>
-          <div class="lc-battle-hand">${fanHandMarkup(hand, v.selectedCard, b.player.energy)}</div>
+          <div class="lc-battle-hand">${fanHandMarkup(hand, v.selectedCard, b.player.energy, b.player.mana, b.player.buff, b.boss.shield)}</div>
         </section>
         <section class="lc-battle-player" aria-label="玩家狀態">
           <div class="lc-player-emblem" aria-hidden="true">✧</div>
@@ -105,11 +110,14 @@
         <div class="lc-battle-actions"><button class="lc-primary" data-act="end-turn">結束回合 <span aria-hidden="true">→</span></button><button class="lc-surrender" data-act="concede" type="button" title="認輸本場戰鬥，保留永久進度">敗北／認輸</button></div>
         <div class="lc-battle-resources">
           <div class="lc-resource-energy"><span>✧ 行動點</span><strong>${b.player.energy}</strong></div>
+          <div class="lc-resource-energy"><span>✺ 魔法點</span><strong>${b.player.mana}</strong></div>
+          ${b.player.buff ? `<span>✦ 萬木共鳴 +${b.player.buff}（效果 Lv.5 封頂）</span>` : ""}
+          ${b.player.pierceNext ? `<span>⌁ 下次攻擊穿盾</span>` : ""}
           <span>♧ 防禦 ${b.player.guard}</span><span>❖ 護盾 ${b.player.shield}</span>
           <span>抽牌 ${b.player.drawPile.length} · 棄牌 ${b.player.discardPile.length}</span>
           <button class="lc-quiet lc-battle-discard" data-act="discard" ${v.selectedCard === null || b.freeDiscardUsed ? "disabled" : ""} title="本回合可免費整理一張">整理選中手牌</button>
         </div>
-        <p class="lc-battle-status">牌庫不會自動洗回 · 行動點只在新的一場戰鬥開始時重置</p>
+        <p class="lc-battle-status">牌庫不會自動洗回 · 行動點與魔法點只在新的一場戰鬥開始時重置</p>
       </div>
       <details class="lc-log"><summary>戰鬥紀錄 <span>最近 ${Math.min(12, b.log.length)} 則</span></summary><ol>${b.log.slice(0, 12).map(x => `<li>${esc(x)}</li>`).join("")}</ol></details>
       ${v.targetPrompt ? targetView(v.targetPrompt) : ""}`;
@@ -130,13 +138,15 @@
         ["freecell", "新接龍", "獲得 3 張新卡"],
         ["spider2", "連環新接龍・中階", "獲得 4 張新卡"]
       ];
-      return `${headline(v.save, "04 / VICTORY · REWARD", "戰後試煉", "挑選一種戰後獎勵，立即領取；這款小遊戲不用另外通關接龍。")}
+      return `${headline(v.save, "04 / VICTORY · REWARD", "戰後試煉", `本關固定獲得攻擊牌 1 張，下一場玩家初始行動點 +1（${5 + v.save.completed} → ${6 + v.save.completed}）。另外從五種獎勵中選一種；不用打接龍。`)}
         <div class="lc-reward-grid">${info.map(([key, title, value]) => `<button class="lc-reward-choice" data-act="reward" data-mode="${key}"><span>選擇獎勵</span><strong>${esc(title)}</strong><small>${esc(value)}</small><b>領取獎勵 →</b></button>`).join("")}</div>`;
     }
     const full = v.save.player.length >= 60;
-    return `${headline(v.save, "04 / REWARD ALLOCATION", `${esc(names[pending.mode])}｜獎勵 ${pending.cursor + 1} / ${pending.queue.length}`, "保留新卡、捨棄舊卡，或直接放棄新卡；被永久捨棄的牌都會加入 Boss。")}
+    const rewardLabel = pending.mode === "retro" ? "舊版通關補發" : names[pending.mode];
+    return `${headline(v.save, "04 / REWARD ALLOCATION", `${esc(rewardLabel)}｜獎勵 ${pending.cursor + 1} / ${pending.queue.length}`, "每次過關固定多一張攻擊牌。保留、替換或放棄都遵循原本的收藏規則；永久棄牌歸 Boss。")}
+      ${current?.source === "victory-guarantee" ? `<div class="lc-starter-note">✦ ${pending.mode === "retro" ? "補領舊版通關攻擊牌" : "本關固定補給：攻擊牌 +1"}（不佔五選一的額度）</div>` : ""}
       <div class="lc-reward-card">${current ? cardMarkup(current) : ""}</div>
-      <div class="lc-status-grid"><div><span>玩家收藏</span><strong>${v.save.player.length} / 60</strong></div><div><span>Boss 收藏</span><strong>${v.save.boss.length} 張</strong></div></div>
+      <div class="lc-status-grid"><div><span>玩家收藏</span><strong>${v.save.player.length} / 80</strong></div><div><span>Boss 收藏</span><strong>${v.save.boss.length} 張</strong></div></div>
       <div class="lc-reward-actions">${!full ? `<button class="lc-primary" data-act="keep-reward">保留新卡 ✓</button>` : ""}<button class="lc-secondary" data-act="reject-reward">放棄新卡 → 交給 Boss</button></div>
       ${full ? `<h3 class="lc-replace-heading">收藏已滿：請選一張舊卡替換</h3><div class="lc-card-grid">${v.save.player.map(c => `<div class="lc-deck-item">${cardMarkup(c)}<button class="lc-replace-button" data-act="replace" data-id="${esc(c.id)}">換掉此牌 → Boss</button></div>`).join("")}</div>` : ""}`;
   }
@@ -147,7 +157,7 @@
   }
   function completeView(v) {
     return `${headline(v.save, "THE END / TEN CHAPTERS", "十關試煉通關", "你擊敗了同一位對手的十個稱號。那些被捨棄的牌，都成了這場旅程的一部分。")}
-      <div class="lc-finish-icon">✧</div><div class="lc-status-grid"><div><span>完成關卡</span><strong>10 / 10</strong></div><div><span>最後玩家收藏</span><strong>${v.save.player.length} 張</strong></div><div><span>Boss 最終牌庫</span><strong>${v.save.boss.length} 張</strong></div></div><p class="lc-finish-text">要重新體驗不同的 30 選 15，可以按上方「重新開始」。</p>`;
+      <div class="lc-finish-icon">✧</div><div class="lc-status-grid"><div><span>完成關卡</span><strong>10 / 10</strong></div><div><span>最後玩家收藏</span><strong>${v.save.player.length} 張</strong></div><div><span>Boss 最終牌庫</span><strong>${v.save.boss.length} 張</strong></div></div><p class="lc-finish-text">要重新體驗不同的 40 選 25，可以按上方「重新開始」。</p>${v.save.retroBonusQueue?.length ? `<div class="lc-actions-center"><button class="lc-secondary" data-act="claim-retro">補領舊版攻擊牌 ${v.save.retroBonusQueue.length} 張</button></div>` : ""}`;
   }
   function render() {
     if (!root || !window.LinCardGame) return;
@@ -159,11 +169,11 @@
     document.getElementById("progress").innerHTML = stageIndicator(v.save);
     document.getElementById("chapter-count").textContent = `${v.save.completed} / 10`;
     document.getElementById("boss-count").textContent = String(v.save.boss.length);
-    document.getElementById("status-message").textContent = v.notice || "卡牌牌庫不會自動洗回；行動點每場重置，但回合不重置。";
+    document.getElementById("status-message").textContent = v.notice || "卡牌牌庫不會自動洗回；行動與魔法點每場重置，但回合不重置。";
     root.innerHTML = view(v);
   }
   function flightGeometry(source, card) {
-    const destination = document.querySelector(card?.type === "attack" ? ".lc-battle-boss .lc-foe" : ".lc-battle-player");
+    const destination = document.querySelector((card?.type === "attack" || card?.name === "裂盾") ? ".lc-battle-boss .lc-foe" : ".lc-battle-player");
     return source && destination ? { from: source.getBoundingClientRect(), to: destination.getBoundingClientRect() } : null;
   }
   function cardFlight(source, card, geometry) {
@@ -190,7 +200,7 @@
     ], { duration: 470, easing: "cubic-bezier(.22,.67,.3,1)", fill: "forwards" });
     animation.finished.catch(() => {}).finally(() => {
       clone.remove();
-      const target = document.querySelector(card.type === "attack" ? ".lc-battle-boss" : ".lc-battle-player");
+      const target = document.querySelector((card.type === "attack" || card.name === "裂盾") ? ".lc-battle-boss" : ".lc-battle-player");
       if (target?.animate) target.animate([
         { filter: "brightness(1)" }, { filter: "brightness(1.75)", offset: .4 }, { filter: "brightness(1)" }
       ], { duration: 420, easing: "ease-out" });
@@ -247,7 +257,7 @@
       "end-turn": bossTurn, discard: G.freeDiscard, concede: G.concede,
       retry: G.retry, reward: () => G.chooseReward(button.dataset.mode),
       "keep-reward": () => G.acceptReward(), "reject-reward": G.rejectReward,
-      replace: () => G.acceptReward(id)
+      replace: () => G.acceptReward(id), "claim-retro": G.claimRetroBonus
     };
     map[act]?.();
   });

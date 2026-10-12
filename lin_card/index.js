@@ -13,15 +13,63 @@
 
   function fresh() {
     return {
-      version: 1, phase: "choose", stage: 1, completed: 0,
+      version: 2, bonusSystemV1: true, phase: "choose", stage: 1, completed: 0,
       player: [], starter: Data.starterAttacks(), boss: Data.bossBase(), pool: Data.initialPool(),
-      pendingReward: null, selectedDeckIds: [], lastDeckIds: []
+      pendingReward: null, retroBonusQueue: [], selectedDeckIds: [], lastDeckIds: []
     };
   }
   if (!save || !Array.isArray(save.pool) || !Array.isArray(save.selectedDeckIds)) save = fresh();
   if (save.phase === "battle") save.phase = "deck"; // 暫不恢復半場戰鬥；永久成長完整保留。
-  // 舊版尚未完成的 30 選 15 初始選牌改用新版 25 選 10；已開局存檔不清除。
-  if (save.phase === "choose" && (save.pool?.length !== 25 || save.starter?.length !== 5)) save = fresh();
+  // 新玩家從 40 張候選牌挑 25 張；舊版尚未開局者直接切至新牌池。
+  if (save.phase === "choose" && (save.pool?.length !== 40 || save.starter?.length !== 5)) save = fresh();
+  // v0.3 舊存檔相容：依已通過關卡一次性補發攻擊牌；不刪除現有牌庫或重置進度。
+  // 收藏已達上限者保留補領清單，之後可自己決定換牌或拒領，絕不擅自把牌送 Boss。
+  if (!save.bonusSystemV1) {
+    const owed = Math.min(10, Math.max(0, Number.isInteger(save.completed) ? save.completed : 0));
+    save.retroBonusQueue = Array.isArray(save.retroBonusQueue) ? save.retroBonusQueue : [];
+    for (let i = 0; i < owed; i++) {
+      const bonus = Data.victoryAttack();
+      if (save.player.length < 80) save.player.push(bonus);
+      else save.retroBonusQueue.push(bonus);
+    }
+    save.bonusSystemV1 = true;
+  }
+  // 兼容 v0.3 領獎途中升級：僅補上一張固定攻擊獎勵，不重抽先前獎勵。
+  if (save.phase === "reward" && save.pendingReward && !save.pendingReward.fixedAttackAdded) {
+    if (save.pendingReward.mode && save.pendingReward.mode !== "retro") {
+      save.pendingReward.queue.splice(save.pendingReward.cursor, 0, Data.victoryAttack());
+      save.pendingReward.fixedAttackAdded = true;
+    } else if (!save.pendingReward.mode) {
+      save.pendingReward.fixedAttack = Data.victoryAttack();
+      save.pendingReward.fixedAttackAdded = true;
+    }
+  }
+  // v0.4 → v0.5：保留舊存檔進度、升級、已選牌、Boss 收下的棄牌，不清檔。
+  // 舊行動牌→特殊補點；舊特殊牌→魔法。將 Boss 固定牌組換成七類各 15 張。
+  // 已完成初始選牌的玩家直接補 15 張功能牌至原來的 15 張，不會強迫重選或打掉戰績。
+  if ((save.version || 1) < 2) {
+    const migrate = items => { for (const card of items || []) Data.migrateCard(card); };
+    migrate(save.player); migrate(save.boss); migrate(save.starter); migrate(save.pool);
+    migrate(save.pendingReward?.queue); migrate(save.retroBonusQueue);
+    if (save.pendingReward?.fixedAttack) Data.migrateCard(save.pendingReward.fixedAttack);
+    if (save.phase !== "choose") {
+      const candidates = Data.initialPool();
+      const picks = [
+        ...candidates.filter(c => c.type === "action").slice(0, 4),
+        ...candidates.filter(c => c.type === "special" && Data.SPECIALS[c.name]?.key === "energy").slice(0, 2),
+        ...candidates.filter(c => c.type === "special" && Data.SPECIALS[c.name]?.key === "mana").slice(0, 2),
+        ...candidates.filter(c => c.type === "special" && Data.SPECIALS[c.name]?.key === "sacrifice").slice(0, 2),
+        ...candidates.filter(c => c.type === "magic").slice(-5)
+      ];
+      save.player.push(...picks.map(c => ({ ...c, source: "v0.5-migration" })));
+      const existingSelected = new Set(save.selectedDeckIds || []);
+      for (const c of picks) if (existingSelected.size < 30) existingSelected.add(c.id);
+      save.selectedDeckIds = [...existingSelected];
+      save.boss = [...Data.bossBase(), ...save.boss.filter(c => c.source !== "boss-base")];
+      notice = "已保留舊版進度，補入 15 張新功能牌；Boss 固定牌庫更新為七類各 15 張。";
+    }
+    save.version = 2;
+  }
   chosenInitial = new Set(save.chosenInitialIds || []);
   chosenDeck = new Set(save.selectedDeckIds.length ? save.selectedDeckIds : save.player.map(c => c.id).slice(0, 30));
   function persist() {
@@ -37,12 +85,12 @@
   function pickInitial(id) {
     if (save.phase !== "choose") return;
     if (chosenInitial.has(id)) chosenInitial.delete(id);
-    else if (chosenInitial.size < 10) chosenInitial.add(id);
-    else return refresh("另外 10 張只能選 10 張，要換牌請先取消一張。 ");
+    else if (chosenInitial.size < 25) chosenInitial.add(id);
+    else return refresh("另外 25 張只能選 25 張，要換牌請先取消一張。 ");
     persist(); refresh();
   }
   function confirmInitial() {
-    if (save.phase !== "choose" || chosenInitial.size !== 10) return refresh("請從選牌池選滿 10 張牌。 ");
+    if (save.phase !== "choose" || chosenInitial.size !== 25) return refresh("請從選牌池選滿 25 張牌。 ");
     save.player = [...save.starter, ...save.pool.filter(c => chosenInitial.has(c.id))];
     save.boss.push(...save.pool.filter(c => !chosenInitial.has(c.id)));
     save.pool = [];
@@ -50,7 +98,7 @@
     chosenDeck = new Set(save.player.map(c => c.id));
     save.selectedDeckIds = [...chosenDeck];
     setPhase("deck");
-    refresh("5 張專屬攻擊牌＋10 張自選牌已入手，剩下的 15 張已交給 Boss。 ");
+    refresh("5 張專屬攻擊牌＋25 張自選牌已入手，剩下的 15 張已交給 Boss。 ");
   }
   function toggleDeck(id) {
     if (save.phase !== "deck" || !save.player.some(c => c.id === id)) return;
@@ -67,7 +115,7 @@
   function changeBranch(id, branch) {
     if (save.phase !== "deck") return;
     const card = save.player.find(c => c.id === id);
-    if (!card || card.level === 0 || card.type === "special" || !Data.BRANCHES[card.type]?.includes(branch)) return;
+    if (!card || card.level === 0 || !Data.BRANCHES[card.type]?.includes(branch)) return;
     card.branch = branch;
     persist(); refresh(`「${card.name}」戰術調整為「${branch}」。`);
   }
@@ -77,7 +125,7 @@
     try {
       const cards = save.player.filter(c => chosenDeck.has(c.id));
       save.lastDeckIds = cards.map(c => c.id);
-      battle = new window.LinCardBattle.Battle(cards, save.boss, save.stage);
+      battle = new window.LinCardBattle.Battle(cards, save.boss, save.stage, 5 + save.completed);
       save.phase = "battle";
       persist();
       selectedCard = null;
@@ -94,9 +142,9 @@
     targetPrompt = null;
     if (battle.outcome === "win") {
       save.phase = "reward";
-      save.pendingReward = { mode: null, queue: [], cursor: 0 };
+      save.pendingReward = { mode: null, queue: [], cursor: 0, fixedAttack: Data.victoryAttack(), fixedAttackAdded: true };
       persist();
-      refresh("你擊敗了 Boss！請選擇一種接龍模擬獎勵。 ");
+      refresh("戰鬥勝利！固定獲得攻擊牌 1 張，下一場初始行動點 +1；再選一種額外獎勵。 ");
     } else if (battle.outcome === "lose") {
       save.phase = "defeat";
       persist();
@@ -113,7 +161,7 @@
       targetPrompt = { index, ...target };
       return refresh();
     }
-    if (!battle.play("player", index)) return refresh("行動點不足，或卡牌條件不成立。 ");
+    if (!battle.play("player", index)) return refresh("行動點／魔法點不足，或卡牌條件不成立。 ");
     syncBattle();
   }
   function playTarget(id) {
@@ -150,26 +198,30 @@
     if (!available.includes(mode)) return;
     const pending = save.pendingReward;
     pending.mode = mode;
+    // 固定攻擊牌優先領取；其餘五選一獎勵完全照舊。
+    pending.queue = [pending.fixedAttack || Data.victoryAttack()];
+    pending.cursor = 0;
+    delete pending.fixedAttack;
+    pending.fixedAttackAdded = true;
     if (mode === "classic3") {
       const ids = new Set(save.lastDeckIds);
       let upgraded = 0;
       for (const card of save.player) {
-        if (ids.has(card.id) && card.type !== "special" && card.level < 5) { card.level += 1; upgraded++; }
+        if (ids.has(card.id) && Data.LEVEL_TYPES.includes(card.type) && card.level < 5) { card.level += 1; upgraded++; }
       }
-      finishReward();
-      return refresh(`模擬翻三張通關：本場出戰牌組有 ${upgraded} 張升級了。`);
+      persist();
+      return refresh(`本場出戰牌組有 ${upgraded} 張升級；還有固定攻擊牌待領取。`);
     }
-    pending.queue = Data.rewardCards({ classic1: 1, spider1: 2, freecell: 3, spider2: 4 }[mode]);
-    pending.cursor = 0;
-    persist(); refresh(`已模擬接龍通關，請逐張處理 ${pending.queue.length} 張獎勵卡。`);
+    pending.queue.push(...Data.rewardCards({ classic1: 1, spider1: 2, freecell: 3, spider2: 4 }[mode]));
+    persist(); refresh(`固定攻擊牌 1 張，加上選定的額外獎勵，共 ${pending.queue.length} 張待處理。`);
   }
   function currentReward() { return save.phase === "reward" ? save.pendingReward?.queue?.[save.pendingReward.cursor] : null; }
   function acceptReward(replaceId = null) {
     const card = currentReward();
     if (!card) return;
-    if (save.player.length >= 60) {
+    if (save.player.length >= 80) {
       const idx = save.player.findIndex(c => c.id === replaceId);
-      if (idx < 0) return refresh("收藏已滿 60 張，請先選擇一張舊卡換掉，或放棄新卡。 ");
+      if (idx < 0) return refresh("收藏已滿 80 張，請先選擇一張舊卡換掉，或放棄新卡。 ");
       const [old] = save.player.splice(idx, 1);
       save.boss.push({ ...old, source: "donation" });
       chosenDeck.delete(old.id);
@@ -189,6 +241,13 @@
     else { persist(); refresh("繼續處理下一張獎勵卡。 "); }
   }
   function finishReward() {
+    if (save.pendingReward?.mode === "retro") {
+      save.phase = save.pendingReward.returnPhase || "deck";
+      save.pendingReward = null;
+      persist();
+      return refresh("舊版通關的攻擊牌已補領完畢。");
+    }
+    if (save.phase !== "reward" || !save.pendingReward) return;
     save.completed += 1;
     save.stage = Math.min(10, save.completed + 1);
     save.pendingReward = null;
@@ -198,15 +257,22 @@
       save.phase = "deck";
       chosenDeck = new Set(save.lastDeckIds.filter(id => save.player.some(c => c.id === id)));
     }
-    persist(); refresh(save.completed >= 10 ? "十關全勝，試煉通關！" : `已通過 ${save.completed} 關。請準備下一關。`);
+    persist(); refresh(save.completed >= 10 ? "十關全勝，試煉通關！" : `已通過 ${save.completed} 關。下一場玩家初始行動點為 ${5 + save.completed}。`);
+  }
+  function claimRetroBonus() {
+    if (!["deck", "complete"].includes(save.phase) || !save.retroBonusQueue?.length) return;
+    const returnPhase = save.phase;
+    save.phase = "reward";
+    save.pendingReward = { mode: "retro", queue: save.retroBonusQueue.splice(0), cursor: 0, returnPhase, fixedAttackAdded: true };
+    persist(); refresh("請處理舊版通關補發的攻擊牌；每張仍可保留、替換或放棄。");
   }
   function newGame() {
     if (!window.confirm("確定重新開始？目前十關進度與雙方永久牌庫將被清除。")) return;
     Storage.remove(); save = fresh(); chosenInitial = new Set(); chosenDeck = new Set(); battle = null;
-    selectedCard = null; targetPrompt = null; persist(); refresh("已建立新的 30 張共同牌池。 ");
+    selectedCard = null; targetPrompt = null; persist(); refresh("已建立新的 40 張初始候選牌池。 ");
   }
   function view() { return { save, battle: battle?.state() || null, selectedCard, targetPrompt, chosenInitial, chosenDeck, notice, hasLibrary: !!window.Deck?.create }; }
-  window.LinCardGame = Object.freeze({ view, pickInitial, confirmInitial, toggleDeck, selectAllDeck, changeBranch, beginBattle, cardClick, playTarget, closeTarget, endTurn, freeDiscard, concede, retry, chooseReward, acceptReward, rejectReward, newGame, currentReward });
+  window.LinCardGame = Object.freeze({ view, pickInitial, confirmInitial, toggleDeck, selectAllDeck, changeBranch, beginBattle, cardClick, playTarget, closeTarget, endTurn, freeDiscard, concede, retry, chooseReward, acceptReward, rejectReward, claimRetroBonus, newGame, currentReward });
   persist();
   window.addEventListener("DOMContentLoaded", () => window.LinCardUI?.render());
 })();

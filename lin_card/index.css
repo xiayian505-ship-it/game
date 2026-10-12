@@ -20,6 +20,7 @@ button.lc-card:focus-visible {outline:2px solid var(--lc-cream);outline-offset:3
 .lc-card[data-type="heal"] {--card-glow:#8eb793}
 .lc-card[data-type="action"] {--card-glow:#e0bd7b}
 .lc-card[data-type="special"] {--card-glow:#d1a8c9}
+.lc-card[data-type="magic"] {--card-glow:#8caad7}
 .lc-card-head,.lc-card-foot {display:flex;align-items:center;justify-content:space-between;gap:5px;white-space:nowrap}
 .lc-family {font-size:10px;letter-spacing:.13em;color:var(--lc-muted)}
 .lc-cost {display:inline-flex;gap:3px;align-items:center;justify-content:center;min-width:33px;height:26px;padding:0 5px;border:1px solid rgba(228,216,168,.35);border-radius:20px;background:rgba(9,22,19,.6);color:var(--lc-gold);font-size:11px;font-weight:700}

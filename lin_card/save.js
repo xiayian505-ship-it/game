@@ -7,7 +7,7 @@
       const raw = localStorage.getItem(KEY);
       if (!raw) return null;
       const parsed = JSON.parse(raw);
-      if (parsed?.version !== 1 || !Array.isArray(parsed.player) || !Array.isArray(parsed.boss) || !Number.isInteger(parsed.stage)) return null;
+      if (![1, 2].includes(parsed?.version) || !Array.isArray(parsed.player) || !Array.isArray(parsed.boss) || !Number.isInteger(parsed.stage)) return null;
       return parsed;
     } catch (error) {
       console.warn("lin_card：讀取存檔失敗", error);
@@ -16,7 +16,7 @@
   }
   function write(data) {
     try {
-      localStorage.setItem(KEY, JSON.stringify({ ...data, version: 1 }));
+      localStorage.setItem(KEY, JSON.stringify({ ...data, version: 2 }));
       return true;
     } catch (error) {
       console.error("lin_card：寫入存檔失敗", error);
