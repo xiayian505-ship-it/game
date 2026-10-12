@@ -25,6 +25,7 @@
       this.turn = "player";
       this.log = [];
       this.freeDiscardUsed = false;
+      this.openingExchangeAvailable = true; // 回合開始免費換牌：出牌或整理後就失效。
       const hp = D().HEALTH[stage - 1];
       this.player = this.createSide("player", hp, playerCards, playerStartingEnergy);
       this.boss = this.createSide("boss", hp / 2, bossCards.map(card => card.source === "boss-base" && D().LEVEL_TYPES.includes(card.type)
@@ -46,7 +47,8 @@
       const pack = who => ({ hp: who.hp, maxHP: who.maxHP, shield: who.shield, guard: who.guard,
         energy: who.energy, mana: who.mana, buff: who.buff, pierceNext: who.pierceNext, ...cardList(who) });
       return { stage: this.stage, round: this.round, turn: this.turn, outcome: this.outcome,
-        player: pack(this.player), boss: pack(this.boss), log: [...this.log], freeDiscardUsed: this.freeDiscardUsed };
+        player: pack(this.player), boss: pack(this.boss), log: [...this.log],
+        freeDiscardUsed: this.freeDiscardUsed, openingExchangeAvailable: this.openingExchangeAvailable };
     }
     valid(who, index) {
       const card = cardList(who).hand[index];
@@ -65,7 +67,7 @@
       if (kind === "swap_one") return own.hand.length >= 2 && theirs.hand.length >= 1;
       if (kind === "swap_all") return own.hand.length >= 2 || theirs.hand.length >= 1;
       if (kind === "foe_one") return theirs.hand.length >= 1;
-      if (kind === "revive") return own.discardPile.length >= 1;
+      if (kind === "revive") return own.discardPile.length + theirs.discardPile.length >= 1;
       if (kind === "resonance") return own.hand.length >= 1; // 本場可重複施放；全牌已 Lv5 則不再強化。
       return false;
     }
@@ -77,7 +79,14 @@
         return { type: "hand", cards: cardList(this.player).hand.filter((_, i) => i !== index),
           label: kind === "swap_one" ? "選擇自己要交換的手牌（對方隨機）" : "選擇自己要棄掉的手牌" };
       }
-      if (kind === "revive") return { type: "discard", cards: cardList(this.player).discardPile, label: "選擇從棄牌堆取回的卡牌" };
+      if (kind === "revive") {
+        const mine = cardList(this.player).discardPile;
+        const theirs = cardList(this.boss).discardPile;
+        return { type: "discard", cards: [...mine, ...theirs],
+          piles: [{ owner: "player", label: "自己的棄牌堆", cards: mine },
+                  { owner: "boss", label: "Boss 的棄牌堆", cards: theirs }],
+          label: "選擇從哪一方棄牌堆取回卡牌" };
+      }
       return null;
     }
     damage(from, target, amount, branch = "標準", ignoreShield = false) {
@@ -100,6 +109,7 @@
       if (!this.valid(who, index)) return false;
       const targetInfo = side === "player" ? this.targets(index) : null;
       if (targetInfo && !targetInfo.cards.some(c => c.id === choiceId)) return false;
+      if (side === "player") this.openingExchangeAvailable = false;
       const card = takeHand(who, index);
       const fee = D().cost(card);
       if (D().resource(card) === "mana") who.mana -= fee;
@@ -190,11 +200,20 @@
         return `交換雙方手牌（${my.length} ⇄ ${their.length}）`;
       }
       if (type === "revive") {
-        const snap = who.deck.snapshot();
-        const idx = who.key === "player" ? snap.discardPile.findIndex(c => c.id === choiceId) : Math.floor(Math.random() * snap.discardPile.length);
-        const [revived] = snap.discardPile.splice(idx, 1);
-        snap.hand.push(revived); who.deck.restore(snap);
-        return `從棄牌堆取回「${revived.name}」`;
+        // 雙方棄牌堆都能取回。轉入施法者手牌僅限本場，不修改永久收藏。
+        const own = who.deck.snapshot();
+        const enemy = foe.deck.snapshot();
+        const candidates = [...own.discardPile, ...enemy.discardPile];
+        const chosenId = who.key === "player" ? choiceId : pick(candidates)?.id;
+        const ownIndex = own.discardPile.findIndex(c => c.id === chosenId);
+        const enemyIndex = enemy.discardPile.findIndex(c => c.id === chosenId);
+        if (ownIndex < 0 && enemyIndex < 0) return "沒有可取回的卡牌";
+        const fromEnemy = ownIndex < 0;
+        const [revived] = fromEnemy ? enemy.discardPile.splice(enemyIndex, 1) : own.discardPile.splice(ownIndex, 1);
+        own.hand.push(revived);
+        who.deck.restore(own);
+        if (fromEnemy) foe.deck.restore(enemy);
+        return `從${fromEnemy ? "對方" : "自己"}的棄牌堆取回「${revived.name}」（僅限本場）`;
       }
       if (type === "resonance") { who.buff += 1; return `本場自己的可升級卡牌效果等級 +1（累積加成 ${who.buff}，最高 Lv.5；費用不變）`; }
       return "魔法效果已發動";
@@ -214,10 +233,24 @@
     win(reason) { if (this.outcome) return; this.outcome = "win"; this.turn = "done"; this.note(`勝利：${reason}`); }
     lose(reason) { if (this.outcome) return; this.outcome = "lose"; this.turn = "done"; this.note(`戰敗：${reason}`); }
     concede() { if (this.outcome || this.turn !== "player") return false; this.lose("玩家主動認輸"); return true; }
+    openingExchange(index) {
+      // 玩家限定：每回合開始最多一次，需仍有抽牌；交換本身不消耗點數，
+      // 不佔原本「整理手牌」次數；兩者分別計算。
+      if (this.outcome || this.turn !== "player" || !this.openingExchangeAvailable) return false;
+      const before = cardList(this.player);
+      if (!Number.isInteger(index) || index < 0 || index >= before.hand.length || before.drawPile.length === 0) return false;
+      const discarded = this.player.deck.discardAt(index);
+      const [drawn] = this.player.deck.draw(1);
+      this.openingExchangeAvailable = false;
+      this.note(`回合開始換牌：你棄掉「${discarded.name}」，從抽牌堆抽到「${drawn.name}」（不消耗點數）。`);
+      this.checkExhaustion();
+      return true;
+    }
     freeDiscard(index) {
       if (this.outcome || this.turn !== "player" || this.freeDiscardUsed) return false;
       if (index < 0 || index >= cardList(this.player).hand.length) return false;
       const card = this.player.deck.discardAt(index);
+      this.openingExchangeAvailable = false;
       this.freeDiscardUsed = true;
       this.note(`整理手牌：你放下「${card.name}」（僅進本場棄牌堆）。`);
       this.checkExhaustion();
@@ -225,6 +258,7 @@
     }
     endTurn() {
       if (this.outcome || this.turn !== "player") return false;
+      this.openingExchangeAvailable = false;
       this.turn = "boss";
       this.boss.guard = 0; this.boss.counter = false;
       this.boss.deck.drawToHand(4);
@@ -241,6 +275,7 @@
       this.freeDiscardUsed = false;
       this.player.guard = 0; this.player.counter = false;
       this.player.deck.drawToHand(4);
+      this.openingExchangeAvailable = true;
       this.checkExhaustion();
       return true;
     }

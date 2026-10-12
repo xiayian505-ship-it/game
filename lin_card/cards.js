@@ -27,7 +27,7 @@
     "萬葉歸根": { key: "self_all", cost: 2, desc: "棄掉自己剩餘的所有手牌。" },
     "借影易形": { key: "swap_one", cost: 3, desc: "選自己一張手牌，與對方隨機一張交換。" },
     "斷枝奪葉": { key: "foe_one", cost: 3, desc: "強制對方隨機棄一張手牌。" },
-    "枯木逢春": { key: "revive", cost: 4, desc: "從本場棄牌堆取回一張卡牌。" },
+    "枯木逢春": { key: "revive", cost: 4, desc: "從雙方任一棄牌堆取回一張卡牌至自己手牌（僅限本場）。" },
     "移花接木": { key: "swap_all", cost: 5, desc: "交換雙方當前手牌，不改變永久收藏。" },
     "萬木共鳴": { key: "resonance", cost: 6, desc: "僅自己：本場所有可升級卡牌效果等級 +1（累積至 Lv.5），費用不變。" }
   };

@@ -198,6 +198,12 @@
     if (save.phase !== "battle" || !battle) return;
     battle.endTurn(); syncBattle();
   }
+  function openingExchange() {
+    if (save.phase !== "battle" || !battle) return;
+    if (selectedCard === null) return refresh("請先選取要換掉的手牌。 ");
+    if (!battle.openingExchange(selectedCard)) return refresh("只有回合開始、尚未出牌或整理前，而且抽牌堆還有牌時，才能棄一抽一。 ");
+    syncBattle();
+  }
   function freeDiscard() {
     if (save.phase !== "battle" || selectedCard === null) return refresh("先選取一張手牌，才能整理。 ");
     if (!battle.freeDiscard(selectedCard)) return refresh("本回合已經整理過一張手牌。 ");
@@ -299,7 +305,7 @@
     selectedCard = null; targetPrompt = null; persist(); refresh("已建立新的 40 張初始候選牌池。 ");
   }
   function view() { return { save, battle: battle?.state() || null, selectedCard, targetPrompt, chosenInitial, chosenDeck, notice, hasLibrary: !!window.Deck?.create }; }
-  window.LinCardGame = Object.freeze({ view, pickInitial, confirmInitial, toggleDeck, selectAllDeck, activateDeck, changeBranch, beginBattle, cardClick, playTarget, closeTarget, endTurn, freeDiscard, concede, retry, chooseReward, acceptReward, rejectReward, claimRetroBonus, newGame, currentReward });
+  window.LinCardGame = Object.freeze({ view, pickInitial, confirmInitial, toggleDeck, selectAllDeck, activateDeck, changeBranch, beginBattle, cardClick, playTarget, closeTarget, endTurn, openingExchange, freeDiscard, concede, retry, chooseReward, acceptReward, rejectReward, claimRetroBonus, newGame, currentReward });
   persist();
   window.addEventListener("DOMContentLoaded", () => window.LinCardUI?.render());
 })();

@@ -195,11 +195,15 @@
           <div class="lc-boss-name">${esc(Data.CHAPTERS[v.save.stage - 1])}</div>
           <div class="lc-boss-tags"><span>❖ 護盾 ${b.boss.shield}</span><span>♧ 防禦 ${b.boss.guard}</span><span>✧ 行動 ${b.boss.energy}</span><span>✺ 魔法 ${b.boss.mana}</span>${b.boss.buff ? `<span>✦ 共鳴 +${b.boss.buff}</span>` : ""}${b.boss.pierceNext ? `<span>⌁ 穿盾待發</span>` : ""}</div>
           ${healthMeter(b.boss, true)}
+          <p class="lc-boss-card-count" aria-label="Boss 剩餘牌數">剩餘可用 <strong>${b.boss.drawPile.length + b.boss.hand.length}</strong> 張 <span>｜抽牌 ${b.boss.drawPile.length} · 手牌 ${b.boss.hand.length} · 棄牌 ${b.boss.discardPile.length}</span></p>
           <p class="lc-boss-report" aria-live="polite">${esc(bossAction)}</p>
         </section>
         <section class="lc-battle-hand-zone" aria-label="玩家手牌">
           <div class="lc-hand-title">YOUR HAND <span>·</span> 手中之牌</div>
           <p class="lc-selection-hint">${v.selectedCard === null ? "點一下選牌，再點同一張出牌" : `已選取「${esc(hand[v.selectedCard]?.name || "卡牌")}」 · 再點一次出牌`}</p>
+          ${b.openingExchangeAvailable && b.player.drawPile.length > 0
+            ? `<div class="lc-opening-exchange"><span>回合開始：可以免費棄 1 張、抽 1 張（限一次；出牌或整理後失效）</span><button type="button" class="lc-secondary lc-exchange-button" data-act="opening-exchange" ${v.selectedCard === null ? "disabled" : ""}>換掉選中手牌 ↻</button></div>`
+            : ""}
           <div class="lc-battle-hand">${fanHandMarkup(hand, v.selectedCard, b.player.energy, b.player.mana, b.player.buff, b.boss.shield)}</div>
         </section>
         <section class="lc-battle-player" aria-label="玩家狀態">
@@ -223,8 +227,14 @@
       ${v.targetPrompt ? targetView(v.targetPrompt) : ""}`;
   }
   function targetView(prompt) {
+    const cards = prompt.type === "discard" && prompt.piles
+      ? prompt.piles.map(pile => `<section class="lc-discard-source"><h4>${esc(pile.label)} <span>${pile.cards.length} 張</span></h4><div class="lc-dialog-cards">${pile.cards.length ? pile.cards.map(c => cardMarkup(c, { action: "target" })).join("") : `<p class="lc-tree-empty">目前沒有棄牌</p>`}</div></section>`).join("")
+      : `<div class="lc-dialog-cards">${prompt.cards.map(c => cardMarkup(c, { action: "target" })).join("")}</div>`;
+    const note = prompt.type === "discard"
+      ? "可以從任一方的棄牌堆取回一張，放進自己的手牌；只影響本場戰鬥，不改變永久收藏。"
+      : "手牌交換只影響本場戰鬥，不會改變永久收藏歸屬。";
     return `<div class="lc-overlay" role="dialog" aria-modal="true" aria-label="卡牌目標"><div class="lc-dialog"><div class="lc-dialog-head"><h3>${esc(prompt.label)}</h3><button class="lc-close" type="button" data-act="close-target">✕</button></div>
-    <div class="lc-dialog-cards">${prompt.cards.map(c => cardMarkup(c, { action: "target" })).join("")}</div><p class="lc-dialog-note">手牌交換只影響本場戰鬥，不會改變永久收藏歸屬。</p></div></div>`;
+    ${cards}<p class="lc-dialog-note">${note}</p></div></div>`;
   }
   function rewardView(v) {
     const pending = v.save.pendingReward;
@@ -380,7 +390,7 @@
       deck: () => G.toggleDeck(id), "select-all": G.selectAllDeck,
       start: G.beginBattle, hand: () => playHand(Number(button.dataset.index), button),
       "close-target": G.closeTarget, target: () => confirmTarget(id),
-      "end-turn": bossTurn, discard: G.freeDiscard, concede: G.concede,
+      "end-turn": bossTurn, "opening-exchange": G.openingExchange, discard: G.freeDiscard, concede: G.concede,
       retry: G.retry, reward: () => G.chooseReward(button.dataset.mode),
       "keep-reward": () => G.acceptReward(), "reject-reward": G.rejectReward,
       replace: () => G.acceptReward(id), "claim-retro": G.claimRetroBonus
