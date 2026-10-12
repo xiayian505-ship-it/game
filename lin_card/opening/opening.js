@@ -7,6 +7,10 @@
   const entryButton = document.querySelector("#wf-enter");
   const soundButton = document.querySelector("#wf-sound");
   if (!opening || !game || !canvas || !entryButton) return;
+  // 圖床暫時不可用時，標題仍能顯示文字並點擊進入遊戲。
+  entryButton.querySelector(".wf-opening-title-art")?.addEventListener("error", () => {
+    entryButton.classList.add("is-art-missing");
+  });
   const ctx = canvas.getContext("2d");
   const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
   let drops = [], lights = [], width = 1, height = 1, running = true, frame = 0, lastTime = 0;

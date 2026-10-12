@@ -26,3 +26,16 @@
 @keyframes wf-glow{50%{opacity:.52}}
 @media(max-width:600px){.wf-opening-bg{background-position:51% center}.wf-opening-content{transform:translateY(-25px)}.wf-opening-title{font-size:clamp(40px,10.1vw,60px);letter-spacing:.08em;padding-left:.08em}.wf-opening-subtitle{font-size:11px;max-width:310px}.wf-opening-ornament{margin-bottom:6px}.wf-opening-controls{bottom:max(74px,env(safe-area-inset-bottom) + 74px)}}
 @media(prefers-reduced-motion:reduce){.wf-opening-bg,.wf-opening-mist,.wf-opening-caption{animation:none}.wf-opening,.wf-opening-title{transition:none}}
+
+/* v0.7.1｜開場專用藝術標題；圖檔由慢慢圖床提供，標題按鈕仍保留進場動作。 */
+.wf-opening-content{width:min(96%,860px);padding-inline:8px}
+.wf-opening-title{width:100%;max-width:820px;padding:0;line-height:0;letter-spacing:normal;filter:drop-shadow(0 10px 22px rgba(0,0,0,.38))}
+.wf-opening-title-art{display:block;width:100%;height:auto;object-fit:contain}
+.wf-opening-title-fallback{display:none;font-size:clamp(36px,8vw,85px);line-height:1.45;letter-spacing:.12em;color:#efdfba}
+.wf-opening-title.is-art-missing .wf-opening-title-art{display:none}
+.wf-opening-title.is-art-missing .wf-opening-title-fallback{display:block}
+.wf-opening-title:hover,.wf-opening-title:focus-visible{filter:drop-shadow(0 0 16px rgba(195,231,202,.38));transform:scale(1.025)}
+@media(max-width:600px){
+  .wf-opening-content{width:100%;padding-inline:8px;gap:12px}
+  .wf-opening-title{width:100%;max-width:none;padding:0}
+}

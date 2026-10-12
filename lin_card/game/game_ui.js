@@ -282,6 +282,7 @@
     document.getElementById("game-overview").hidden = screen === "home" || screen === "profile";
     document.getElementById("status-message").hidden = !isGame;
     document.querySelector(".lc-intro")?.classList.toggle("is-compact", screen !== "home");
+    document.querySelector(".lc-intro")?.classList.toggle("is-home-art", screen === "home");
     document.getElementById("progress").innerHTML = stageIndicator(v.save);
     document.getElementById("chapter-count").textContent = `${v.save.completed} / 10`;
     document.getElementById("boss-count").textContent = String(v.save.boss.length);
@@ -416,6 +417,10 @@
         color: "#9dc2b2", opacity: .34, size: 1.1, speed: reduced ? 0 : .28, maxDpr: 1.4, autoStart: !reduced });
     } catch (error) { console.warn("霧林之契：軍火庫背景效果不可用，使用 CSS 森林背景。", error); }
   }
+  // 主選單藝術標題讀取失敗時，恢復原本的可閱讀文字標題。
+  document.querySelector(".lc-title-art")?.addEventListener("error", () => {
+    document.querySelector(".lc-intro")?.classList.add("is-art-missing");
+  });
   // 開場頁先隱藏遊戲區；等玩家真正進場、Canvas 有尺寸時才啟動軍火庫森林與霧。
   window.addEventListener("mistforest:enter", paintForest, { once: true });
   window.LinCardUI = Object.freeze({ render });
