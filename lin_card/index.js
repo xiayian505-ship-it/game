@@ -15,7 +15,8 @@
     return {
       version: 2, bonusSystemV1: true, phase: "choose", stage: 1, completed: 0,
       player: [], starter: Data.starterAttacks(), boss: Data.bossBase(), pool: Data.initialPool(),
-      pendingReward: null, retroBonusQueue: [], selectedDeckIds: [], lastDeckIds: []
+      pendingReward: null, retroBonusQueue: [], selectedDeckIds: [], lastDeckIds: [],
+      activeDeckIndex: 0, deckPresets: [[], [], []]
     };
   }
   if (!save || !Array.isArray(save.pool) || !Array.isArray(save.selectedDeckIds)) save = fresh();
@@ -70,11 +71,22 @@
     }
     save.version = 2;
   }
+  // v0.5 → v0.6：只新增三套牌組資料，不更改版號、生命或戰鬥進度。
+  // 第一套承接舊版出戰牌；另外兩套留空，由玩家自行安排。
+  if (!Array.isArray(save.deckPresets) || save.deckPresets.length !== 3 || !save.deckPresets.every(Array.isArray)) {
+    const firstDeck = save.selectedDeckIds.length ? save.selectedDeckIds : save.player.map(c => c.id).slice(0, 30);
+    save.deckPresets = [firstDeck.slice(0, 30), [], []];
+    save.activeDeckIndex = 0;
+  }
+  if (![0, 1, 2].includes(save.activeDeckIndex)) save.activeDeckIndex = 0;
+  const ownedIds = new Set(save.player.map(c => c.id));
+  save.deckPresets = save.deckPresets.map(ids => [...new Set(ids.filter(id => ownedIds.has(id)))].slice(0, 30));
   chosenInitial = new Set(save.chosenInitialIds || []);
-  chosenDeck = new Set(save.selectedDeckIds.length ? save.selectedDeckIds : save.player.map(c => c.id).slice(0, 30));
+  chosenDeck = new Set(save.deckPresets[save.activeDeckIndex]);
   function persist() {
     save.chosenInitialIds = [...chosenInitial];
     save.selectedDeckIds = [...chosenDeck];
+    save.deckPresets[save.activeDeckIndex] = [...chosenDeck];
     if (!Storage.write(save)) notice = "存檔寫入失敗，請檢查瀏覽器儲存權限。";
   }
   function refresh(message = "") {
@@ -111,6 +123,17 @@
     if (save.phase !== "deck") return;
     chosenDeck = new Set(save.player.slice(0, 30).map(c => c.id));
     persist(); refresh();
+  }
+  function activateDeck(index) {
+    if (save.phase !== "deck") return false; // 戰鬥或領獎途中不切換牌組。
+    if (!Number.isInteger(index) || index < 0 || index >= 3) return false;
+    save.deckPresets[save.activeDeckIndex] = [...chosenDeck];
+    save.activeDeckIndex = index;
+    const owned = new Set(save.player.map(c => c.id));
+    chosenDeck = new Set(save.deckPresets[index].filter(id => owned.has(id)));
+    persist();
+    refresh(`已切換至牌組 ${index + 1}（${chosenDeck.size} / 30 張）。`);
+    return true;
   }
   function changeBranch(id, branch) {
     if (save.phase !== "deck") return;
@@ -225,6 +248,8 @@
       const [old] = save.player.splice(idx, 1);
       save.boss.push({ ...old, source: "donation" });
       chosenDeck.delete(old.id);
+      // 三套牌組共用永久收藏，失去這張實體卡時都需取消引用。
+      save.deckPresets = save.deckPresets.map(ids => ids.filter(id => id !== old.id));
     }
     save.player.push(card);
     advanceReward();
@@ -255,7 +280,9 @@
     if (save.completed >= 10) save.phase = "complete";
     else {
       save.phase = "deck";
-      chosenDeck = new Set(save.lastDeckIds.filter(id => save.player.some(c => c.id === id)));
+      // 不覆蓋玩家自己配置的三套牌組；移除已不在收藏中的牌即可。
+      const owned = new Set(save.player.map(c => c.id));
+      chosenDeck = new Set([...chosenDeck].filter(id => owned.has(id)));
     }
     persist(); refresh(save.completed >= 10 ? "十關全勝，試煉通關！" : `已通過 ${save.completed} 關。下一場玩家初始行動點為 ${5 + save.completed}。`);
   }
@@ -272,7 +299,7 @@
     selectedCard = null; targetPrompt = null; persist(); refresh("已建立新的 40 張初始候選牌池。 ");
   }
   function view() { return { save, battle: battle?.state() || null, selectedCard, targetPrompt, chosenInitial, chosenDeck, notice, hasLibrary: !!window.Deck?.create }; }
-  window.LinCardGame = Object.freeze({ view, pickInitial, confirmInitial, toggleDeck, selectAllDeck, changeBranch, beginBattle, cardClick, playTarget, closeTarget, endTurn, freeDiscard, concede, retry, chooseReward, acceptReward, rejectReward, claimRetroBonus, newGame, currentReward });
+  window.LinCardGame = Object.freeze({ view, pickInitial, confirmInitial, toggleDeck, selectAllDeck, activateDeck, changeBranch, beginBattle, cardClick, playTarget, closeTarget, endTurn, freeDiscard, concede, retry, chooseReward, acceptReward, rejectReward, claimRetroBonus, newGame, currentReward });
   persist();
   window.addEventListener("DOMContentLoaded", () => window.LinCardUI?.render());
 })();

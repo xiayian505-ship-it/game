@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/ui/responsive.css">
   <link rel="stylesheet" href="./index.css">
   <link rel="stylesheet" href="./index_style.css">
+  <script src="https://lib.stillnessbyslowly.com/state/tree_selection.js" defer></script>
   <script src="https://lib.stillnessbyslowly.com/game/card/deck.js" defer></script>
   <script src="https://lib.stillnessbyslowly.com/effects/background/pine_forest.js" defer></script>
   <script src="https://lib.stillnessbyslowly.com/effects/background/fog.js" defer></script>
@@ -34,11 +35,11 @@
         <div class="lc-line"></div>
         <p class="lc-motto">你所捨棄的一切，終將成為你的敵人。</p>
       </section>
-      <div class="lc-overview"><div><span>已通過</span><strong id="chapter-count">0 / 10</strong></div><div><span>Boss 永久牌庫</span><strong id="boss-count">105</strong></div><div><span>遊戲狀態</span><strong>試玩版 v0.5</strong></div></div>
+      <div class="lc-overview" id="game-overview"><div><span>已通過</span><strong id="chapter-count">0 / 10</strong></div><div><span>Boss 永久牌庫</span><strong id="boss-count">105</strong></div><div><span>遊戲狀態</span><strong>試玩版 v0.6.1</strong></div></div>
       <div id="progress" aria-label="關卡進度"></div>
       <p id="status-message" class="lc-message" role="status" aria-live="polite">載入遊戲中……</p>
       <section id="app" class="lc-game" aria-label="卡牌遊戲"></section>
-      <section class="lc-guide"><h2>遊戲說明</h2><div class="lc-guide-columns"><p><b>行動點＋魔法點</b><br>玩家初始行動點 5、魔法點 5；特殊牌免費補點，行動與魔法消耗分開計算。</p><p><b>牌庫不會自動循環</b><br>玩家無牌可用視為戰敗。戰鬥中棄牌不會送給 Boss。出戰最多 30 張，永久收藏上限 80 張。</p><p><b>戰後五選一獎勵</b><br>通關固定 +1 攻擊牌、下關初始行動點 +1；另五選一獎勵，本小遊戲不必打接龍。認輸或牌耗盡可重試同關。</p></div></section>
+      <section class="lc-guide" hidden><h2>遊戲說明</h2><div class="lc-guide-columns"><p><b>行動點＋魔法點</b><br>玩家初始行動點 5、魔法點 5；特殊牌免費補點，行動與魔法消耗分開計算。</p><p><b>牌庫不會自動循環</b><br>玩家無牌可用視為戰敗。戰鬥中棄牌不會送給 Boss。出戰最多 30 張，永久收藏上限 80 張。</p><p><b>戰後五選一獎勵</b><br>通關固定 +1 攻擊牌、下關初始行動點 +1；另五選一獎勵，本小遊戲不必打接龍。認輸或牌耗盡可重試同關。</p></div></section>
     </main>
     <footer class="lc-footer"><span>lin_card · Forest Strategy</span><a href="https://stillnessbyslowly.com/" target="_blank" rel="noopener noreferrer">慢慢 Stillness by Slowly ↗</a></footer>
   </div>
