@@ -1,13 +1,9 @@
-/* 慢慢遊戲大廳｜功能：唯一清單、隨機五款、輪播、搜尋分類、最近玩過與跳頁。 */
+/* 慢慢遊戲大廳｜卡牌版：唯一清單、隨機五張、輪播、分類與跳頁。 */
 (()=>{
   'use strict';
 
   const $ = id => document.getElementById(id);
-  const ALL = '全部';
-  const RECENT_KEY = 'slowly:recent'; // 沿用舊版紀錄，不讓既有玩家紀錄消失。
-  const RECENT_MAX = 8;
   const FEATURED_COUNT = 5;
-  const ROTATE_MS = 8500;
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
   const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const color = value => /^#[\da-fA-F]{6}$/.test(value) ? value : '#e8c56a';
@@ -16,268 +12,321 @@
     const result = [...input];
     for (let i = result.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [result[i],result[j]] = [result[j],result[i]];
+      [result[i], result[j]] = [result[j], result[i]];
     }
     return result;
   };
 
   let games = [], byId = new Map(), featured = [], currentIndex = 0;
-  let category = ALL, searchTerm = '', autoPlaying = !reducedMotion.matches;
-  let timer = null, navigating = false;
+  let navigating = false;
 
   function normalize(input){
     if (!Array.isArray(input)) throw new Error('games.json 的 games 必須是陣列');
     const seen = new Set();
     return input.filter(raw => raw && raw.id && raw.name && safeUrl(raw.url))
       .map(raw => ({
-        id:String(raw.id),name:String(raw.name),url:safeUrl(raw.url),
+        id:String(raw.id),
+        name:String(raw.name),
+        url:safeUrl(raw.url),
         cat:String(raw.cat || '其他'),
-        tags:Array.isArray(raw.tags)?raw.tags.map(String).slice(0,12):[],
+        tags:Array.isArray(raw.tags) ? raw.tags.map(String).slice(0, 12) : [],
         description:String(raw.description || '從慢慢遊戲收藏館，走進另一個好玩的世界。'),
-        icon:String(raw.icon || '✦').slice(0,8),accent:color(raw.accent)
-      })).filter(g => !seen.has(g.id) && seen.add(g.id));
+        icon:String(raw.icon || '✦').slice(0, 8),
+        accent:color(raw.accent)
+      }))
+      .filter(game => !seen.has(game.id) && seen.add(game.id));
   }
 
-  function readRecent(){
-    try {
-      const ids = JSON.parse(localStorage.getItem(RECENT_KEY));
-      return Array.isArray(ids) ? ids.filter(id => typeof id === 'string') : [];
-    } catch(error){ console.warn('最近玩過讀取失敗',error); return []; }
-  }
-  function recordRecent(id){
-    try {
-      const ids = [id,...readRecent().filter(x => x !== id)].slice(0,RECENT_MAX);
-      localStorage.setItem(RECENT_KEY,JSON.stringify(ids));
-    } catch(error){ console.warn('最近玩過無法儲存',error); }
+  function shortText(value, limit = 34){
+    const text = String(value || '').replace(/\s+/g, ' ').trim();
+    if (text.length <= limit) return text;
+    return `${text.slice(0, limit)}…`;
   }
 
-  function createTile(game,small=false){
-    const button = document.createElement('button');
-    button.type='button';
-    button.className=small?'recent-item':'game-tile';
-    button.dataset.selectId=game.id;
-    button.style.setProperty('--accent',game.accent);
-    button.setAttribute('aria-label',`讓《${game.name}》登上展示舞台`);
-    button.innerHTML= small
-      ? `<span class="recent-symbol" aria-hidden="true">${escapeHtml(game.icon)}</span><span class="recent-name">${escapeHtml(game.name)}</span>`
-      : `<span class="game-tile-head"><span class="tile-category">${escapeHtml(game.cat)}</span><span class="tile-arrow" aria-hidden="true">↗</span></span>`+
-        `<span class="tile-icon" aria-hidden="true">${escapeHtml(game.icon)}</span>`+
-        `<span class="game-tile-name">${escapeHtml(game.name)}</span>`+
-        `<span class="game-tile-footer"><span>${escapeHtml(game.tags.slice(0,2).join(' · ') || '慢慢遊戲')}</span><span>上舞台</span></span>`;
-    return button;
-  }
-
-  function renderRecent(){
-    const items=readRecent().map(id=>byId.get(id)).filter(Boolean);
-    $('recent').hidden=!items.length;
-    const row=$('recent-row');row.replaceChildren();
-    for(const game of items) row.append(createTile(game,true));
-  }
-
-  function renderCollection(){
-    const keyword=searchTerm.trim().toLocaleLowerCase();
-    const filtered=games.filter(g => (category===ALL || g.cat===category)
-      && (!keyword || [g.name,g.cat,g.description,...g.tags].join(' ').toLocaleLowerCase().includes(keyword)));
-    const grid=$('grid');
-    const fragment=document.createDocumentFragment();
-    for(const game of filtered) fragment.append(createTile(game));
-    grid.replaceChildren(fragment);
-    $('count').textContent=`${games.length} 款收藏`;
-    $('result-note').textContent=keyword || category!==ALL
-      ? `找到 ${filtered.length} 款遊戲 · 點選卡片送上舞台`
-      : '點選卡片送上舞台，再按「進入遊戲」';
-    $('empty').hidden=filtered.length!==0;
-    document.querySelectorAll('[data-cat]').forEach(b => {
-      const active=b.dataset.cat===category;
-      b.setAttribute('aria-pressed',String(active));
+  // 五張輪播牌背沿用固定扇形；下方遊戲牌組另以滑動位置計算弧度。
+  function applyFanLayout(elements){
+    const nodes = Array.from(elements);
+    const middle = (nodes.length - 1) / 2;
+    nodes.forEach((node, index) => {
+      const offset = index - middle;
+      node.style.setProperty('--fan-rotate', `${offset * 7}deg`);
+      node.style.setProperty('--fan-rise', `${Math.abs(offset) * 6}px`);
+      node.style.setProperty('--fan-z', String(100 - Math.round(Math.abs(offset) * 10) + index));
     });
   }
 
-  function renderCategories(){
-    const cats=[ALL,...new Set(games.map(g => g.cat))];
-    const chips=$('chips');chips.replaceChildren();
-    for(const cat of cats){
-      const button=document.createElement('button');
-      button.type='button';button.className='chip';button.dataset.cat=cat;
-      button.textContent=cat;chips.append(button);
+  const hand = $('hand-viewport');
+  const handPrev = $('hand-prev');
+  const handNext = $('hand-next');
+  let handFrame = 0;
+  let handFocus = null;
+  function updateHand(){
+    handFrame = 0;
+    const nodes = $('grid').children;
+    const center = hand.scrollLeft + hand.clientWidth / 2;
+    const halfWidth = Math.max(1, hand.clientWidth / 2);
+    let closest = null;
+    let closestDistance = Infinity;
+    // 只更新視窗附近的牌，數百張也不會每次滑動都計算全部旋轉角度。
+    if (nodes.length) {
+      const step = nodes.length > 1 ? Math.max(1, nodes[1].offsetLeft - nodes[0].offsetLeft) : nodes[0].offsetWidth;
+      const offsetStart = nodes[0].offsetLeft;
+      const first = Math.max(0, Math.floor((hand.scrollLeft - offsetStart - 200) / step));
+      const last = Math.min(nodes.length, Math.ceil((hand.scrollLeft + hand.clientWidth - offsetStart + 200) / step) + 1);
+      for (let i = first; i < last; i++) {
+        const card = nodes[i];
+        const position = card.offsetLeft + card.offsetWidth / 2;
+        const distance = Math.abs(position - center);
+        if (distance < closestDistance) { closest = card; closestDistance = distance; }
+        const offset = Math.max(-1.25, Math.min(1.25, (position - center) / halfWidth));
+        card.style.setProperty('--fan-rotate', `${offset * 14}deg`);
+        card.style.setProperty('--fan-rise', `${Math.abs(offset) * 13}px`);
+        card.style.setProperty('--fan-z', String(100 - Math.round(Math.abs(offset) * 14)));
+      }
     }
+    if (handFocus !== closest) {
+      handFocus?.classList.remove('is-hand-focus');
+      handFocus = closest;
+      handFocus?.classList.add('is-hand-focus');
+    }
+    const max = Math.max(0, hand.scrollWidth - hand.clientWidth);
+    const hasOverflow = max > 2;
+    handPrev.disabled = !hasOverflow || hand.scrollLeft <= 2;
+    handNext.disabled = !hasOverflow || hand.scrollLeft >= max - 2;
+    hand.closest('.hand-carousel').classList.toggle('can-scroll', hasOverflow);
+  }
+  function queueHandUpdate(){
+    if (!handFrame) handFrame = requestAnimationFrame(updateHand);
+  }
+  function moveHand(direction){
+    const card = $('grid').firstElementChild;
+    if (!card) return;
+    // 一次翻約兩至三張；手機滑動與箭頭使用同一條原生水平捲軸。
+    const stride = card.offsetWidth + parseFloat(getComputedStyle(card).marginLeft || 0);
+    const distance = Math.max(Math.abs(stride) * 2, Math.min(hand.clientWidth * .7, Math.abs(stride) * 3));
+    hand.scrollBy({left: distance * direction, behavior: reducedMotion.matches ? 'instant' : 'smooth'});
+  }
+
+  function createTile(game){
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'game-tile';
+    button.dataset.selectId = game.id;
+    button.style.setProperty('--accent', game.accent);
+    button.setAttribute('aria-label', `讓《${game.name}》登上展示舞台`);
+    const number = String(games.findIndex(item => item.id === game.id) + 1).padStart(2, '0');
+    button.innerHTML =
+      `<span class="game-tile-head"><span class="tile-category">${escapeHtml(game.cat)}</span><span class="tile-number">${number}</span></span>` +
+      `<span class="tile-art" aria-hidden="true"><span class="tile-icon">${escapeHtml(game.icon)}</span></span>` +
+      `<span class="game-tile-name">${escapeHtml(game.name)}</span>`;
+    return button;
+  }
+
+  function renderCollection(){
+    const grid = $('grid');
+    const fragment = document.createDocumentFragment();
+    games.forEach(game => fragment.append(createTile(game)));
+    grid.replaceChildren(fragment);
+    $('empty').hidden = games.length !== 0;
+    hand.scrollLeft = 0;
+    queueHandUpdate();
+    highlightLibrary();
   }
 
   function renderTabs(){
-    const nav=$('stage-nav');nav.replaceChildren();
-    for(let i=0;i<featured.length;i++){
-      const game=featured[i];
-      const b=document.createElement('button');
-      b.type='button';b.className='stage-tab';b.dataset.slide=String(i);
-      b.style.setProperty('--accent',game.accent);
-      b.setAttribute('aria-label',`展示第 ${i+1} 款：${game.name}`);
-      b.setAttribute('aria-pressed',String(i===currentIndex));
-      b.innerHTML=`<span class="stage-tab-number">0${i+1}</span>`+
-       `<span class="stage-tab-copy"><span class="stage-tab-caption">${escapeHtml(game.cat)}</span>`+
-       `<span class="stage-tab-name">${escapeHtml(game.name)}</span></span>`;
-      nav.append(b);
-    }
+    const nav = $('stage-nav');
+    nav.replaceChildren();
+    featured.forEach((game, index) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'stage-tab';
+      button.dataset.slide = String(index);
+      button.style.setProperty('--accent', game.accent);
+      button.setAttribute('aria-label', `展示第 ${index + 1} 張牌：《${game.name}》`);
+      button.setAttribute('aria-pressed', String(index === currentIndex));
+      button.innerHTML =
+        `<span class="stage-back-face" aria-hidden="true">` +
+          `<span class="stage-back-mark">慢 慢</span>` +
+          `<span class="stage-back-core">✦</span>` +
+          `<span class="stage-back-sub">GAME HALL</span>` +
+          `<span class="stage-back-no">0${index + 1}</span>` +
+        `</span>`;
+      nav.append(button);
+    });
+    applyFanLayout(nav.children);
   }
 
-  function showCurrent(source='auto'){
-    const game=featured[currentIndex];if(!game)return;
-    $('stage-name').textContent=game.name;
-    $('stage-description').textContent=game.description;
-    $('stage-category').textContent=game.cat;
-    $('stage-icon').textContent=game.icon;
-    $('slide-index').textContent=`${String(currentIndex+1).padStart(2,'0')} / ${String(featured.length).padStart(2,'0')}`;
-    const tags=$('stage-tags');tags.replaceChildren();
-    for(const tag of game.tags.slice(0,3)){
-      const li=document.createElement('li');li.textContent=tag;tags.append(li);
-    }
-    const play=$('play-link');play.href=game.url;
-    play.setAttribute('aria-label',`進入《${game.name}》`);
+  function highlightLibrary(){
+    const activeId = featured[currentIndex]?.id || '';
+    document.querySelectorAll('.game-tile[data-select-id]').forEach(tile => {
+      const active = tile.dataset.selectId === activeId;
+      tile.setAttribute('aria-pressed', String(active));
+      tile.classList.toggle('is-selected', active);
+    });
+    document.querySelectorAll('.stage-tab[data-slide]').forEach((tab, index) => {
+      const active = index === currentIndex;
+      tab.setAttribute('aria-pressed', String(active));
+      tab.classList.toggle('is-current', active);
+    });
+  }
+
+  function showCurrent(source = 'auto'){
+    const game = featured[currentIndex];
+    if (!game) return;
+    $('stage-name').textContent = game.name;
+    $('stage-description').textContent = shortText(game.description, 42);
+    $('stage-category').textContent = game.cat;
+    $('stage-icon').textContent = game.icon;
+    $('slide-index').textContent = String(currentIndex + 1).padStart(2, '0');
+    const play = $('play-link');
+    play.href = game.url;
+    play.setAttribute('aria-label', `進入《${game.name}》`);
     play.removeAttribute('aria-disabled');
-    $('spotlight').dataset.effectSlot=String(currentIndex+1);
-    $('spotlight').dataset.gameId=game.id;
+    $('spotlight').dataset.effectSlot = String(currentIndex + 1);
+    $('spotlight').dataset.gameId = game.id;
     renderTabs();
-    document.dispatchEvent(new CustomEvent('slowly:lobby-spotlight',{
-      detail:{game,slot:currentIndex+1,source}
+    highlightLibrary();
+    document.dispatchEvent(new CustomEvent('slowly:lobby-spotlight', {
+      detail: { game, slot: currentIndex + 1, source }
     }));
   }
 
   function newLineup(){
-    const old=featured[currentIndex]?.id;
-    const selected=shuffle(games);
-    // 每一輪五款不重複，盡量避免上輪最後一款又立刻當下一輪首張。
-    if(old && selected[0]?.id===old && selected.length>1){
-      [selected[0],selected[1]]=[selected[1],selected[0]];
+    const old = featured[currentIndex]?.id;
+    const selected = shuffle(games);
+    if (old && selected[0]?.id === old && selected.length > 1) {
+      [selected[0], selected[1]] = [selected[1], selected[0]];
     }
-    featured=selected.slice(0,Math.min(FEATURED_COUNT,selected.length));
-    currentIndex=0;
+    featured = selected.slice(0, Math.min(FEATURED_COUNT, selected.length));
+    currentIndex = 0;
     showCurrent('shuffle');
   }
 
-  function advance(amount,manual=false){
-    if(manual) setAutoplay(false);
-    const next=currentIndex+amount;
-    if(next>=featured.length){newLineup();return;}
-    currentIndex=(next+featured.length)%featured.length;
-    showCurrent(manual?'manual':'auto');
-  }
-
-  function setAutoplay(enabled){
-    autoPlaying=Boolean(enabled && !reducedMotion.matches);
-    if(timer!==null){clearInterval(timer);timer=null;}
-    if(autoPlaying && games.length>1 && !document.hidden){
-      timer=setInterval(()=>advance(1,false),ROTATE_MS);
+  function advance(amount, manual = false){
+    const next = currentIndex + amount;
+    if (next >= featured.length) {
+      newLineup();
+      return;
     }
-    const b=$('auto-toggle');
-    b.setAttribute('aria-pressed',String(autoPlaying));
-    b.textContent=autoPlaying?'Ⅱ 暫停輪播':'▶ 開啟輪播';
-    b.setAttribute('aria-label',autoPlaying?'暫停自動輪播':'開啟自動輪播');
-    b.disabled=reducedMotion.matches;
-    if(reducedMotion.matches) b.title='已依系統偏好減少動態';
+    currentIndex = (next + featured.length) % featured.length;
+    showCurrent(manual ? 'manual' : 'auto');
   }
 
   function selectFromLibrary(id){
-    const game=byId.get(id);if(!game)return;
-    setAutoplay(false);
-    const existing=featured.findIndex(g=>g.id===id);
-    if(existing>=0){currentIndex=existing;}
-    else if(featured.length){featured[currentIndex]=game;}
-    else{featured=[game];currentIndex=0;}
+    const game = byId.get(id);
+    if (!game) return;
+    const existing = featured.findIndex(item => item.id === id);
+    if (existing >= 0) {
+      currentIndex = existing;
+    } else if (featured.length) {
+      featured[currentIndex] = game;
+    } else {
+      featured = [game];
+      currentIndex = 0;
+    }
     showCurrent('catalog');
-    $('featured').scrollIntoView({behavior:reducedMotion.matches?'auto':'smooth',block:'start'});
+    $('featured').scrollIntoView({ behavior: reducedMotion.matches ? 'auto' : 'smooth', block: 'start' });
+  }
+
+  // 只在使用者親自點牌時觸發；裝置或瀏覽器不支援時安靜略過。
+  function tapCardFeedback(){
+    try {
+      if (typeof navigator.vibrate === 'function') navigator.vibrate(18);
+    } catch (_) { /* 震動不是必要功能，不能影響切牌。 */ }
   }
 
   function bindEvents(){
-    $('shuffle').addEventListener('click',()=>{
-      if(!games.length)return;
-      newLineup();
-      if(autoPlaying)setAutoplay(true);
+    $('prev').addEventListener('click', () => advance(-1, true));
+    $('next').addEventListener('click', () => advance(1, true));
+    $('stage-nav').addEventListener('click', event => {
+      const tab = event.target.closest('button[data-slide]');
+      if (!tab) return;
+      tapCardFeedback();
+      currentIndex = Number(tab.dataset.slide);
+      showCurrent('manual');
     });
-    $('prev').addEventListener('click',()=>advance(-1,true));
-    $('next').addEventListener('click',()=>advance(1,true));
-    $('auto-toggle').addEventListener('click',()=>setAutoplay(!autoPlaying));
-    $('stage-nav').addEventListener('click',e=>{
-      const tab=e.target.closest('button[data-slide]');
-      if(!tab)return;
-      setAutoplay(false);currentIndex=Number(tab.dataset.slide);showCurrent('manual');
-    });
-    $('chips').addEventListener('click',e=>{
-      const button=e.target.closest('button[data-cat]');
-      if(button){category=button.dataset.cat;renderCollection();}
-    });
-    const input=$('q');
-    const search=()=>{searchTerm=input.value;renderCollection();};
-    input.addEventListener('input',e=>{if(!e.isComposing)search();});
-    input.addEventListener('compositionend',search);
-    document.addEventListener('keydown',e=>{
-      if(e.key==='/' && !/^(INPUT|TEXTAREA)$/.test(document.activeElement?.tagName||'')){
-        e.preventDefault();input.focus();
+    $('grid').addEventListener('click', event => {
+      const button = event.target.closest('button[data-select-id]');
+      if (button) {
+        tapCardFeedback();
+        selectFromLibrary(button.dataset.selectId);
       }
     });
-    $('grid').addEventListener('click',e=>{
-      const b=e.target.closest('button[data-select-id]');if(b)selectFromLibrary(b.dataset.selectId);
+    handPrev.addEventListener('click', () => moveHand(-1));
+    handNext.addEventListener('click', () => moveHand(1));
+    hand.addEventListener('scroll', queueHandUpdate, {passive:true});
+    hand.addEventListener('keydown', event => {
+      if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+        event.preventDefault();
+        moveHand(event.key === 'ArrowLeft' ? -1 : 1);
+      }
     });
-    $('recent-row').addEventListener('click',e=>{
-      const b=e.target.closest('button[data-select-id]');if(b)selectFromLibrary(b.dataset.selectId);
-    });
-    // 手機橫向滑動舞台以切換，不搶佔一般上下捲動，也不攔截「進入遊戲」。
-    let start=null;
-    const stage=$('spotlight');
-    stage.addEventListener('pointerdown',e=>{
-      start=e.pointerType==='touch' && !e.target.closest('a,button')?{x:e.clientX,y:e.clientY}:null;
-    });
-    stage.addEventListener('pointerup',e=>{
-      if(!start)return;
-      const dx=e.clientX-start.x,dy=e.clientY-start.y;start=null;
-      if(Math.abs(dx)>65 && Math.abs(dx)>Math.abs(dy)*1.3){advance(dx<0?1:-1,true);}
-    });
-    stage.addEventListener('pointercancel',()=>{start=null;});
+    addEventListener('resize', queueHandUpdate);
 
-    document.addEventListener('visibilitychange',()=>{
-      if(autoPlaying)setAutoplay(true);
+    let start = null;
+    const stage = $('spotlight');
+    stage.addEventListener('pointerdown', event => {
+      start = event.pointerType === 'touch' && !event.target.closest('a,button') ? { x: event.clientX, y: event.clientY } : null;
     });
-    addEventListener('pageshow',()=>{
-      navigating=false;window.SlowlyPortalWipe?.reset?.();
-      if(games.length)renderRecent();
-      if(autoPlaying)setAutoplay(true);
+    stage.addEventListener('pointerup', event => {
+      if (!start) return;
+      const dx = event.clientX - start.x;
+      const dy = event.clientY - start.y;
+      start = null;
+      if (Math.abs(dx) > 65 && Math.abs(dx) > Math.abs(dy) * 1.3) advance(dx < 0 ? 1 : -1, true);
     });
-    $('play-link').addEventListener('click',async e=>{
-      const game=featured[currentIndex];
-      if(!game){e.preventDefault();return;}
-      recordRecent(game.id);renderRecent();
-      if(e.defaultPrevented || e.button!==0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || e.currentTarget.hasAttribute('download'))return;
-      if(navigating){e.preventDefault();return;}
-      const portal=window.SlowlyPortalWipe;
-      if(reducedMotion.matches || typeof portal?.play!=='function')return;
-      e.preventDefault();navigating=true;
+    stage.addEventListener('pointercancel', () => { start = null; });
+
+    addEventListener('pageshow', () => {
+      navigating = false;
+      window.SlowlyPortalWipe?.reset?.();
+    });
+    $('play-link').addEventListener('click', async event => {
+      const game = featured[currentIndex];
+      if (!game) {
+        event.preventDefault();
+        return;
+      }
+      tapCardFeedback();
+      if (event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || event.currentTarget.hasAttribute('download')) return;
+      if (navigating) {
+        event.preventDefault();
+        return;
+      }
+      const portal = window.SlowlyPortalWipe;
+      if (reducedMotion.matches || typeof portal?.play !== 'function') return;
+      event.preventDefault();
+      navigating = true;
       try {
-        const r=e.currentTarget.getBoundingClientRect();
-        await portal.play({x:r.left+r.width/2,y:r.top+r.height/2,color:game.accent,hold:true});
-      }catch(error){console.warn('傳送門無法播放，改用原生跳頁',error);}
+        const rect = event.currentTarget.getBoundingClientRect();
+        await portal.play({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2, color: game.accent, hold: true });
+      } catch(error) {
+        console.warn('傳送門無法播放，改用原生跳頁', error);
+      }
       window.location.assign(game.url);
     });
   }
 
   async function loadGames(){
-    $('load-status').hidden=true;
+    $('load-status').hidden = true;
     try {
-      const response=await fetch('./games.json',{cache:'no-cache'});
-      if(!response.ok)throw new Error(`HTTP ${response.status}`);
-      const payload=await response.json();
-      games=normalize(Array.isArray(payload)?payload:payload.games);
-      if(!games.length)throw new Error('遊戲清單沒有有效資料');
-      byId=new Map(games.map(g=>[g.id,g]));
-      renderCategories();renderCollection();renderRecent();newLineup();setAutoplay(autoPlaying);
-    }catch(error){
-      console.error('遊戲清單載入失敗',error);
-      $('load-status').hidden=false;
-      $('stage-description').textContent='遊戲清單暫時無法讀取，請檢查檔案後重新整理。';
-      $('play-link').setAttribute('aria-disabled','true');
-      $('count').textContent='讀取失敗';
-      setAutoplay(false);
+      const response = await fetch('./games.json', { cache: 'no-cache' });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const payload = await response.json();
+      games = normalize(Array.isArray(payload) ? payload : payload.games);
+      if (!games.length) throw new Error('遊戲清單沒有有效資料');
+      byId = new Map(games.map(game => [game.id, game]));
+      renderCollection();
+      newLineup();
+    } catch(error) {
+      console.error('遊戲清單載入失敗', error);
+      $('load-status').hidden = false;
+      $('stage-description').textContent = '遊戲清單暫時無法讀取。';
+      $('play-link').setAttribute('aria-disabled', 'true');
     }
   }
 
   bindEvents();
-  $('retry').addEventListener('click',loadGames);
+  $('retry').addEventListener('click', loadGames);
   loadGames();
 })();

@@ -4,9 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#0a1022">
-  <meta name="description" content="慢慢遊戲大廳。從遊戲收藏館挑一款，送上舞台，慢慢玩。">
+  <meta name="description" content="慢慢遊戲大廳。翻牌、輪播、挑一款進去玩。">
   <meta property="og:title" content="慢慢遊戲大廳｜Stillness by Slowly">
-  <meta property="og:description" content="隨機登場的遊戲舞台，與持續擴充的慢慢遊戲收藏館。">
+  <meta property="og:description" content="隨機登場的五張牌，與持續擴充的慢慢遊戲牌組。">
   <meta property="og:url" content="https://game.stillnessbyslowly.com/">
   <title>慢慢遊戲大廳｜Stillness by Slowly</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext x='50' y='72' font-size='65' font-family='serif' fill='%23bba875' text-anchor='middle'%3E慢%3C/text%3E%3C/svg%3E">
@@ -15,30 +15,28 @@
   <link rel="preconnect" href="https://lib.stillnessbyslowly.com">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@500;700;900&display=swap" rel="stylesheet">
 
-  <!-- 慢慢軍火庫：原生 HTTPS 絕對網址引用；組合和外觀由宿主控制。 -->
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/ui/responsive.css">
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/background/aurora.css">
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/background/starfield.css">
-  <!-- 五套舞台效果共用零件；無需把軍火庫複製進 game repo。 -->
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/line/enso_ring.css">
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/particle/orbit.css">
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/particle/atom_bob.css">
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/particle/float.css">
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/light/breathing_glow.css">
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/light/flowing_border.css">
-  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/light/electric_border.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/background/grid_overlay.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/celebration/star_explosion.css">
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/light/decorative_glow.css">
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/light/button_shine.css">
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/typography/shine_text.css">
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/typography/text_gradient_flow.css">
-  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/line/sweep_line.css">
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/celebration/click_burst.css">
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/stage/portal_wipe.css">
   <link rel="stylesheet" href="./index.css">
   <link rel="stylesheet" href="./index_style.css">
 
   <script src="https://lib.stillnessbyslowly.com/effects/background/starfield.js" defer></script>
-  <script src="https://lib.stillnessbyslowly.com/effects/line/sweep_line.js" defer></script>
+  <script src="https://lib.stillnessbyslowly.com/effects/celebration/star_explosion.js" defer></script>
   <script src="https://lib.stillnessbyslowly.com/effects/celebration/click_burst.js" defer></script>
   <script src="https://lib.stillnessbyslowly.com/effects/stage/portal_wipe.js" defer></script>
   <script src="./index.js" defer></script>
@@ -53,133 +51,85 @@
   <div class="page">
     <main id="main">
       <header class="hero wrap">
-        <p class="hero-eyebrow">STILLNESS BY SLOWLY · GAME HALL</p>
-        <h1>慢慢<span>遊戲大廳</span></h1>
-        <p class="hero-subtitle">遊戲會輪流登場，喜歡的也可以親手選上舞台。</p>
+        <h1 class="hero-art-title"><img src="https://img.stillnessbyslowly.com/images/2026/10/c03304c4-5ad7-4718-b2bf-74c37c9513c5_%E6%85%A2%E6%85%A2%E9%81%8A%E6%88%B2_aurora_horizontal_2x.png" alt="慢慢遊戲大廳" width="2400" height="1520" decoding="async" fetchpriority="high"></h1>
       </header>
 
       <section class="showcase wrap" id="featured" aria-labelledby="showcase-title">
-        <div class="section-heading">
-          <div>
-            <p class="section-eyebrow">THE SHOWCASE</p>
-            <h2 id="showcase-title">本次登場 <span class="heading-note">隨機五款 · 輪流展演</span></h2>
-          </div>
-          <button type="button" class="quiet-button" id="shuffle" title="重新抽選五款遊戲">
-            <span aria-hidden="true">⟳</span> 重新抽選
-          </button>
-        </div>
+        <h2 id="showcase-title" class="visually-hidden">本輪抽選</h2>
 
-        <!-- 舞台位置 1–5 各自套一組軍火庫特效；輪到的遊戲不綁定特效。 -->
         <div class="spotlight" id="spotlight" data-effect-slot="1" aria-label="遊戲展示舞台">
-          <div class="spotlight-decoration" aria-hidden="true">
-            <div class="orbit orbit--outer"></div>
-            <div class="orbit orbit--inner"></div>
-            <span class="orbit-tick orbit-tick--one"></span>
-            <span class="orbit-tick orbit-tick--two"></span>
-          </div>
-          <div class="spotlight-copy">
-            <div class="spotlight-topline">
-              <span class="stage-kicker">NOW SHOWING <span id="slide-index">01 / 05</span></span>
-              <span class="stage-category" id="stage-category">遊戲分類</span>
+          <div class="stage-fx">
+            <div class="fx fx--celestial">
+              <div class="fx-enso sbs-enso"><svg viewBox="0 0 240 240"><circle cx="120" cy="120" r="97" stroke-width="1.4" pathLength="100"/><circle cx="120" cy="120" r="110" stroke-width=".7" pathLength="100"/></svg></div>
+              <div class="fx-orbit-position"><div class="fx-orbit sbs-orbit"><span></span></div></div>
+              <i class="fx-star fx-star--a"></i><i class="fx-star fx-star--b"></i><i class="fx-star fx-star--c"></i>
             </div>
-            <h3 id="stage-name">慢慢遊戲大廳</h3>
-            <p class="stage-description" id="stage-description">正在準備本次的遊戲舞台……</p>
-            <ul class="stage-tags" id="stage-tags" aria-label="遊戲標籤"></ul>
-            <div class="spotlight-actions">
-              <a class="play-link sbs-shine" id="play-link" href="#all">進入遊戲 <span aria-hidden="true">↗</span></a>
-              <span class="stage-hint">每款遊戲都有自己的入口</span>
+            <div class="fx fx--portal">
+              <div class="fx-gate-position"><div class="fx-gate sbs-flowborder"><div class="fx-gate-inner sbs-flowborder-inner"></div></div></div>
+              <i class="fx-gate-spark fx-gate-spark--a"></i><i class="fx-gate-spark fx-gate-spark--b"></i>
+            </div>
+            <!-- 03 網格疊層放於卡面；星光爆發由軍火庫 JS 在切牌時觸發。 -->
+            <div class="fx fx--dust slowly-dual-glow">
+              <span class="fx-dust-haze"></span>
+              <span class="fx-particle slowly-particle-float" style="--px:14%;--py:22%;--i:0"></span>
+              <span class="fx-particle slowly-particle-float" style="--px:27%;--py:59%;--i:1"></span>
+              <span class="fx-particle slowly-particle-float" style="--px:36%;--py:13%;--i:2"></span>
+              <span class="fx-particle slowly-particle-float" style="--px:57%;--py:78%;--i:3"></span>
+              <span class="fx-particle slowly-particle-float" style="--px:70%;--py:18%;--i:4"></span>
+              <span class="fx-particle slowly-particle-float" style="--px:85%;--py:46%;--i:5"></span>
+              <span class="fx-particle slowly-particle-float" style="--px:20%;--py:78%;--i:6"></span>
+              <span class="fx-particle slowly-particle-float" style="--px:77%;--py:69%;--i:7"></span>
+              <span class="fx-particle slowly-particle-float" style="--px:49%;--py:27%;--i:8"></span>
+              <span class="fx-particle slowly-particle-float" style="--px:91%;--py:22%;--i:9"></span>
+            </div>
+            <div class="fx fx--sunburst">
+              <div class="fx-sun-wheel"></div>
+              <span class="fx-sun-streak fx-sun-streak--a"></span>
+              <span class="fx-sun-streak fx-sun-streak--b"></span>
             </div>
           </div>
-          <div class="spotlight-art" aria-hidden="true">
-            <div class="stage-fx">
-              <!-- 01 星環脈光：圓相 + 行星軌道 + 呼吸光 -->
-              <div class="fx fx--celestial">
-                <div class="fx-enso sbs-enso"><svg viewBox="0 0 240 240"><circle cx="120" cy="120" r="97" stroke-width="1.4" pathLength="100"/><circle cx="120" cy="120" r="110" stroke-width=".7" pathLength="100"/></svg></div>
-                <div class="fx-orbit-position"><div class="fx-orbit sbs-orbit"><span></span></div></div>
-                <i class="fx-star fx-star--a"></i><i class="fx-star fx-star--b"></i><i class="fx-star fx-star--c"></i>
-              </div>
-              <!-- 02 流光星門：流動邊框 + 流彩文字 -->
-              <div class="fx fx--portal">
-                <div class="fx-gate-position"><div class="fx-gate sbs-flowborder"><div class="fx-gate-inner sbs-flowborder-inner"></div></div></div>
-                <div class="fx-gate-inner-ring"></div><i class="fx-gate-spark fx-gate-spark--a"></i><i class="fx-gate-spark fx-gate-spark--b"></i>
-              </div>
-              <!-- 03 霓虹電場：電流邊框 + 軍火庫掃描線 -->
-              <div class="fx fx--neon">
-                <div class="fx-neon-border slowly-electric-border with-glow is-active"></div>
-                <div class="fx-neon-grid"></div><div class="fx-neon-diamond"></div>
-              </div>
-              <!-- 04 星塵漂浮：漂浮粒子 + 輕盈上下移動 + 雙色光暈 -->
-              <div class="fx fx--dust slowly-dual-glow">
-                <span class="fx-dust-haze"></span>
-                <span class="fx-particle slowly-particle-float" style="--px:14%;--py:22%;--i:0"></span>
-                <span class="fx-particle slowly-particle-float" style="--px:27%;--py:59%;--i:1"></span>
-                <span class="fx-particle slowly-particle-float" style="--px:36%;--py:13%;--i:2"></span>
-                <span class="fx-particle slowly-particle-float" style="--px:57%;--py:78%;--i:3"></span>
-                <span class="fx-particle slowly-particle-float" style="--px:70%;--py:18%;--i:4"></span>
-                <span class="fx-particle slowly-particle-float" style="--px:85%;--py:46%;--i:5"></span>
-                <span class="fx-particle slowly-particle-float" style="--px:20%;--py:78%;--i:6"></span>
-                <span class="fx-particle slowly-particle-float" style="--px:77%;--py:69%;--i:7"></span>
-                <span class="fx-particle slowly-particle-float" style="--px:49%;--py:27%;--i:8"></span>
-                <span class="fx-particle slowly-particle-float" style="--px:91%;--py:22%;--i:9"></span>
-                <span class="fx-particle slowly-particle-float" style="--px:9%;--py:49%;--i:10"></span>
-                <span class="fx-particle slowly-particle-float" style="--px:64%;--py:51%;--i:11"></span>
-              </div>
-              <!-- 05 曜光流金：流金文字 + 放射光輪 + 呼吸光 -->
-              <div class="fx fx--sunburst">
-                <div class="fx-sun-wheel"></div><div class="fx-sun-core"></div>
-                <span class="fx-sun-streak fx-sun-streak--a"></span>
-                <span class="fx-sun-streak fx-sun-streak--b"></span>
-              </div>
+
+          <article class="feature-card" id="feature-card">
+            <div class="slot-grid slowly-grid-overlay" aria-hidden="true"></div>
+            <div class="card-topline">
+              <span class="card-category" id="stage-category">遊戲分類</span>
+              <span class="card-number" id="slide-index">01</span>
             </div>
-            <div class="art-halo"></div>
-            <div class="art-icon" id="stage-icon">✦</div>
-            <span class="art-caption" id="effect-caption">星環脈光 · 01 / 05</span>
-          </div>
+            <div class="card-visual">
+              <div class="card-visual-halo" aria-hidden="true"></div>
+              <span class="art-icon" id="stage-icon" aria-hidden="true">✦</span>
+            </div>
+            <div class="card-body">
+              <h3 id="stage-name">慢慢遊戲大廳</h3>
+              <p class="stage-description" id="stage-description">正在準備本輪的遊戲牌……</p>
+            </div>
+            <a class="play-link sbs-shine" id="play-link" href="#all" aria-label="進入遊戲">▶</a>
+          </article>
         </div>
 
-        <div class="showcase-controls">
-          <div class="showcase-buttons">
-            <button type="button" class="round-button" id="prev" aria-label="上一款遊戲" title="上一款">←</button>
-            <button type="button" class="round-button" id="next" aria-label="下一款遊戲" title="下一款">→</button>
-            <button type="button" class="quiet-button auto-button" id="auto-toggle" aria-pressed="true">Ⅱ 暫停輪播</button>
-          </div>
-          <p class="showcase-tip">點選下方的遊戲，也能讓它登上舞台。</p>
+        <div class="stage-hand-controls">
+          <button class="hand-arrow hand-arrow--prev stage-hand-arrow" type="button" id="prev" aria-label="上一款遊戲" aria-controls="stage-nav">‹</button>
+          <div class="stage-nav hand-row" id="stage-nav" role="group" aria-label="本輪抽選的五張牌"></div>
+          <button class="hand-arrow hand-arrow--next stage-hand-arrow" type="button" id="next" aria-label="下一款遊戲" aria-controls="stage-nav">›</button>
         </div>
-
-        <div class="stage-nav" id="stage-nav" role="group" aria-label="本輪展示的五款遊戲"></div>
       </section>
 
-      <section class="collection wrap" id="all" aria-labelledby="collection-title">
-        <div class="section-heading collection-heading">
-          <div>
-            <p class="section-eyebrow">THE COLLECTION</p>
-            <h2 id="collection-title">遊戲收藏館 <span class="heading-note" id="count"></span></h2>
+      <section class="collection wrap" id="all" aria-label="遊戲手牌">
+        <div class="hand-carousel">
+          <button class="hand-arrow hand-arrow--prev" id="hand-prev" type="button" aria-label="查看前面的遊戲手牌" aria-controls="hand-viewport">‹</button>
+          <div class="hand-viewport" id="hand-viewport" tabindex="0" role="region" aria-label="遊戲手牌，可左右滑動或使用左右方向鍵">
+            <div class="game-hand hand-row" id="grid" aria-label="全部遊戲"></div>
           </div>
+          <button class="hand-arrow hand-arrow--next" id="hand-next" type="button" aria-label="查看後面的遊戲手牌" aria-controls="hand-viewport">›</button>
         </div>
-        <div class="collection-tools" role="search">
-          <label class="search-box" for="q">
-            <svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m15.5 15.5 5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-            <input id="q" type="search" placeholder="搜尋遊戲名稱、玩法、標籤" autocomplete="off" enterkeyhint="search" aria-label="搜尋遊戲">
-          </label>
-          <div class="chips" id="chips" role="group" aria-label="遊戲分類"></div>
-        </div>
-        <section class="recent" id="recent" aria-labelledby="recent-title" hidden>
-          <h3 id="recent-title" class="subheading">最近玩過</h3>
-          <div class="recent-row" id="recent-row"></div>
-        </section>
-        <div class="collection-summary"><span id="result-note">挑選一款，送上舞台</span><span aria-hidden="true">✦</span></div>
-        <div class="game-grid" id="grid"></div>
-        <p class="empty" id="empty" hidden>沒有找到符合的遊戲，換個關鍵字試試。</p>
+        <p class="empty" id="empty" hidden>沒有符合的牌。</p>
         <div class="load-status" id="load-status" role="status" hidden>
-          遊戲清單讀取失敗，請確認 games.json 已跟首頁一起部署。
+          遊戲清單讀取失敗。
           <button type="button" id="retry">重新讀取</button>
         </div>
       </section>
     </main>
-    <footer class="site-footer">
-      <p>慢 慢 | Stillness by Slowly</p>
-      <span class="footer-ornament" aria-hidden="true"></span>
-    </footer>
+    <footer class="site-footer"><p>慢 慢 | Stillness by Slowly</p></footer>
   </div>
 </body>
 </html>

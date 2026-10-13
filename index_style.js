@@ -5,29 +5,21 @@
   const stage=document.getElementById('spotlight');
   const icon=document.getElementById('stage-icon');
   const title=document.getElementById('stage-name');
-  const label=document.getElementById('effect-caption');
   const reduce=matchMedia('(prefers-reduced-motion: reduce)');
-  const labels=['星環脈光','流光星門','霓虹電場','星塵漂浮','曜光流金'];
   const libraryClasses=['sbs-breathe','slowly-shine-text','slowly-text-gradient-flow','sbs-atom'];
-  let sweep=null;
-  if(window.SlowlySweepLine?.create){
-    // JS 軍火庫零件只建立一次；每次換景只播放，不重複綁定。
-    sweep=window.SlowlySweepLine.create(stage,{duration:610,size:3,length:'32%'});
-  }
 
   document.addEventListener('slowly:lobby-spotlight',event=>{
     const {game,slot,source}=event.detail;
     stage.style.setProperty('--stage-accent',game.accent);
     stage.dataset.effectSlot=String(slot);
-    label.textContent=`${labels[slot-1] || '慢慢遊戲'} · ${String(slot).padStart(2,'0')} / 05`;
     icon.classList.remove(...libraryClasses);
     title.classList.remove(...libraryClasses);
     // 避免上次舞台留下的效果混進下一輪。
-    sweep?.clear();
+    window.SlowlyStarExplosion?.clear?.(stage);
     switch(slot){
       case 1: icon.classList.add('sbs-breathe');break;
       case 2: icon.classList.add('slowly-shine-text');break;
-      case 3: icon.classList.add('sbs-breathe');break;
+      case 3: break; // 第三展位僅用 Grid Overlay ＋ Star Explosion。
       case 4: icon.classList.add('sbs-atom');break;
       case 5:
         icon.classList.add('slowly-text-gradient-flow');
@@ -38,15 +30,19 @@
     if(reduce.matches)return;
     void stage.offsetWidth;
     stage.classList.add('spotlight--arriving');
-    // 電場進場時掃過舞台，不影響輪播的功能流程。
-    if(slot===3 && sweep){
-      sweep.play([{targets:[icon],direction:'horizontal',duration:680,size:3,length:'38%',color:game.accent},
-                  {targets:[title],direction:'vertical',duration:570,size:2,length:'23%',color:game.accent}])
-        .catch(error=>console.warn('掃描線無法播放，略過視覺效果。',error));
+    // 第三展位：一次性星光爆發。切換進場才觸發，不會循環轟炸畫面。
+    if(slot===3 && typeof window.SlowlyStarExplosion?.play==='function'){
+      const reach=Math.min(stage.clientWidth*.52,260);
+      window.SlowlyStarExplosion.play(stage,{
+        count:20,glyphs:['✦','✧','✶'],color:game.accent,glow:game.accent,
+        originX:50,originY:49,distanceMin:Math.min(70,reach*.3),distanceMax:reach,
+        sizeMin:10,sizeMax:20,delayMin:0,delayMax:105,
+        durationMin:760,durationMax:1060,zIndex:3,respectReducedMotion:true
+      }).catch(error=>console.warn('星光爆發無法播放，略過視覺效果。',error));
     }
     // 手動選遊戲時給少量亮點回饋；自動輪播不反覆炸粒子。
     if(source==='catalog' && typeof window.SlowlyClickBurst?.burst==='function'){
-      const art=stage.querySelector('.spotlight-art');
+      const art=stage.querySelector('.card-visual');
       if(art){
         window.SlowlyClickBurst.burst({container:art,x:art.clientWidth/2,y:art.clientHeight/2,color:game.accent,count:24});
       }
