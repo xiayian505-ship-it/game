@@ -1,0 +1,84 @@
+{
+  "games": [
+    {
+      "id": "jielong",
+      "name": "朕的接龍帝國",
+      "url": "https://game.stillnessbyslowly.com/JieLong/",
+      "cat": "卡牌",
+      "tags": ["接龍", "Spider", "FreeCell", "Klondike"],
+      "icon": "♛",
+      "accent": "#e8c56a",
+      "description": "三大領地，六個入口。從經典接龍到連環新接龍，任你巡覽。"
+    },
+    {
+      "id": "elements",
+      "name": "慢慢元素實驗室",
+      "url": "https://game.stillnessbyslowly.com/match/periodic/",
+      "cat": "益智",
+      "tags": ["元素", "分子", "合成", "圖鑑"],
+      "icon": "H₂O",
+      "accent": "#3fe0c5",
+      "description": "把元素排成配方，合成分子，收集屬於你的元素圖鑑。"
+    },
+    {
+      "id": "match3",
+      "name": "慢慢消消樂",
+      "url": "https://game.stillnessbyslowly.com/match/match3_v1/match3_v1.html",
+      "cat": "消除",
+      "tags": ["三消", "連鎖", "糖果", "特殊糖"],
+      "icon": "✦",
+      "accent": "#ff7eb6",
+      "description": "交換糖果、連鎖消除，讓條紋糖、包裝糖和彩球接連登場。"
+    },
+    {
+      "id": "huarong",
+      "name": "華容道",
+      "url": "https://game.stillnessbyslowly.com/slide/huarong/huarong_v1.html",
+      "cat": "益智",
+      "tags": ["滑塊", "經典關卡", "曹操"],
+      "icon": "華",
+      "accent": "#f2ad76",
+      "description": "移動曹操與眾將，在層層阻擋之中找出脫困的道路。"
+    },
+    {
+      "id": "forest",
+      "name": "霧林之契",
+      "url": "https://game.stillnessbyslowly.com/lin_card/",
+      "cat": "卡牌",
+      "tags": ["策略", "卡牌", "十重試煉"],
+      "icon": "契",
+      "accent": "#b5d0ad",
+      "description": "踏入霧林，走過十重試煉。昔日所棄，終將與你為敵。"
+    },
+    {
+      "id": "justiris",
+      "name": "執法之眼",
+      "url": "https://justiris.stillnessbyslowly.com/",
+      "cat": "探索",
+      "tags": ["Justiris", "刑偵", "解謎", "六集"],
+      "icon": "◈",
+      "accent": "#d5a878",
+      "description": "六集探索解謎。打開卷宗，走進封緘之眼所凝視的故事。"
+    },
+    {
+      "id": "suika",
+      "name": "霧核鍊成",
+      "url": "https://game.stillnessbyslowly.com/suika/",
+      "cat": "益智",
+      "tags": ["Suika", "合成大西瓜", "物理合成", "Boss"],
+      "icon": "◉",
+      "accent": "#96d6c5",
+      "description": "讓靈核碰撞、融合與升階，在霧色深處迎戰迷霧之影。"
+    },
+    {
+      "id": "rhythm",
+      "name": "雨律・森之迴響",
+      "url": "https://game.stillnessbyslowly.com/rhythm/",
+      "cat": "節奏",
+      "tags": ["Rhythm", "BPM", "連擊", "反應"],
+      "icon": "♫",
+      "accent": "#9dcdd0",
+      "description": "跟隨節拍點亮符文，讓每一次準確的回應留下迴響。"
+    }
+  ]
+}

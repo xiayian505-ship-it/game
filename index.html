@@ -3,48 +3,27 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#0b0d1c">
-  <meta name="description" content="慢慢遊戲大廳：朕的接龍帝國、慢慢元素實驗室、慢慢消消樂、華容道、霧林之契。挑一個入口，慢慢玩。">
+  <meta name="theme-color" content="#0a1022">
+  <meta name="description" content="慢慢遊戲大廳。從遊戲收藏館挑一款，送上舞台，慢慢玩。">
   <meta property="og:title" content="慢慢遊戲大廳｜Stillness by Slowly">
-  <meta property="og:description" content="接龍、元素合成、消消樂、華容道、霧林之契，挑一個入口，慢慢玩。">
+  <meta property="og:description" content="隨機登場的遊戲舞台，與持續擴充的慢慢遊戲收藏館。">
   <meta property="og:url" content="https://game.stillnessbyslowly.com/">
   <title>慢慢遊戲大廳｜Stillness by Slowly</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext x='50' y='72' font-size='65' font-family='serif' fill='%23bba875' text-anchor='middle'%3E慢%3C/text%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://lib.stillnessbyslowly.com">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@500;700;900&display=swap" rel="stylesheet">
 
-  <!-- 本站五檔：功能與外觀分離。軍火庫以 HTTPS 直接引用。 -->
+  <!-- 慢慢軍火庫：基礎響應式與既有背景、進場轉場；五種舞台特效留待挑選。 -->
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/ui/responsive.css">
-  <!-- 慢慢軍火庫：每個效果彼此獨立，需要哪個才引用哪個。 -->
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/background/aurora.css">
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/background/starfield.css">
-  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/background/floating_symbols.css">
-  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/particle/pointer_trail.css">
-  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/particle/floating_crown.css">
-  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/particle/orbit.css">
-  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/particle/atom_bob.css">
-  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/light/flowing_border.css">
-  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/light/breathing_glow.css">
-  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/light/button_shine.css">
-  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/line/enso_ring.css">
-  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/line/bond_pulse.css">
-  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/hover/card_fan.css">
-  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/reveal/stagger_reveal.css">
-  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/feedback/candy_pop.css">
-  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/3d/tilt_spotlight.css">
-  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/celebration/click_burst.css">
   <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/stage/portal_wipe.css">
-  <!-- 宿主樣式最後載入，確保可覆蓋軍火庫預設。 -->
   <link rel="stylesheet" href="./index.css">
   <link rel="stylesheet" href="./index_style.css">
 
   <script src="https://lib.stillnessbyslowly.com/effects/background/starfield.js" defer></script>
-  <script src="https://lib.stillnessbyslowly.com/effects/background/floating_symbols.js" defer></script>
-  <script src="https://lib.stillnessbyslowly.com/effects/particle/pointer_trail.js" defer></script>
-  <script src="https://lib.stillnessbyslowly.com/effects/3d/tilt_spotlight.js" defer></script>
-  <script src="https://lib.stillnessbyslowly.com/effects/celebration/click_burst.js" defer></script>
   <script src="https://lib.stillnessbyslowly.com/effects/stage/portal_wipe.js" defer></script>
   <script src="./index.js" defer></script>
   <script src="./index_style.js" defer></script>
@@ -52,158 +31,95 @@
 <body>
   <div class="ambient" aria-hidden="true">
     <div class="slowly-aurora"><span></span><span></span><span></span></div>
-    <div class="sbs-stars" data-count="90" data-color="#fff9e8"><canvas></canvas></div>
-    <div class="sbs-symbols" data-symbols="♠♥♦♣♛HOCNS●◆" data-colors="#e8c56a,#ff7a82,#3fe0c5,#7cc8ff,#ff7eb6,#ffb347"><canvas></canvas></div>
+    <div class="sbs-stars" data-count="55" data-color="#fff9e8"><canvas></canvas></div>
   </div>
 
-  <div class="page sbs-trail" data-colors="#e8c56a,#ff7a82,#3fe0c5,#7cc8ff,#ff7eb6">
-    <canvas aria-hidden="true"></canvas>
+  <div class="page">
     <main id="main">
-      <section class="hero sbs-reveal" aria-labelledby="lobby-heading">
-        <div class="hero-ring sbs-enso" aria-hidden="true">
-          <svg viewBox="0 0 240 240">
-            <circle cx="120" cy="120" r="100" pathLength="100" stroke-width="3"/>
-            <circle cx="120" cy="120" r="108" pathLength="100" stroke-width="1"/>
-          </svg>
+      <header class="hero wrap">
+        <p class="hero-eyebrow">STILLNESS BY SLOWLY · GAME HALL</p>
+        <h1>慢慢<span>遊戲大廳</span></h1>
+        <p class="hero-subtitle">遊戲會輪流登場，喜歡的也可以親手選上舞台。</p>
+      </header>
+
+      <section class="showcase wrap" id="featured" aria-labelledby="showcase-title">
+        <div class="section-heading">
+          <div>
+            <p class="section-eyebrow">THE SHOWCASE</p>
+            <h2 id="showcase-title">本次登場 <span class="heading-note">隨機五款 · 輪流展演</span></h2>
+          </div>
+          <button type="button" class="quiet-button" id="shuffle" title="重新抽選五款遊戲">
+            <span aria-hidden="true">⟳</span> 重新抽選
+          </button>
         </div>
-        <h1 class="sbs-breathe" id="lobby-heading">慢慢遊戲大廳</h1>
-        <p>挑一個入口，慢慢玩。</p>
+
+        <!-- 五個特效位置固定在 data-effect-slot=1–5，稍後可由 index_style.js 接軍火庫。 -->
+        <div class="spotlight" id="spotlight" data-effect-slot="1" aria-label="遊戲展示舞台">
+          <div class="spotlight-decoration" aria-hidden="true">
+            <div class="orbit orbit--outer"></div>
+            <div class="orbit orbit--inner"></div>
+            <span class="orbit-tick orbit-tick--one"></span>
+            <span class="orbit-tick orbit-tick--two"></span>
+          </div>
+          <div class="spotlight-copy">
+            <div class="spotlight-topline">
+              <span class="stage-kicker">NOW SHOWING <span id="slide-index">01 / 05</span></span>
+              <span class="stage-category" id="stage-category">遊戲分類</span>
+            </div>
+            <h3 id="stage-name">慢慢遊戲大廳</h3>
+            <p class="stage-description" id="stage-description">正在準備本次的遊戲舞台……</p>
+            <ul class="stage-tags" id="stage-tags" aria-label="遊戲標籤"></ul>
+            <div class="spotlight-actions">
+              <a class="play-link" id="play-link" href="#all">進入遊戲 <span aria-hidden="true">↗</span></a>
+              <span class="stage-hint">每款遊戲都有自己的入口</span>
+            </div>
+          </div>
+          <div class="spotlight-art" aria-hidden="true">
+            <div class="art-halo"></div>
+            <div class="art-icon" id="stage-icon">✦</div>
+            <span class="art-caption">SLOWLY / PLAY</span>
+          </div>
+        </div>
+
+        <div class="showcase-controls">
+          <div class="showcase-buttons">
+            <button type="button" class="round-button" id="prev" aria-label="上一款遊戲" title="上一款">←</button>
+            <button type="button" class="round-button" id="next" aria-label="下一款遊戲" title="下一款">→</button>
+            <button type="button" class="quiet-button auto-button" id="auto-toggle" aria-pressed="true">Ⅱ 暫停輪播</button>
+          </div>
+          <p class="showcase-tip">點選下方的遊戲，也能讓它登上舞台。</p>
+        </div>
+
+        <div class="stage-nav" id="stage-nav" role="group" aria-label="本輪展示的五款遊戲"></div>
       </section>
 
-      <ul class="game-list game-list--five" aria-label="遊戲入口">
-        <li class="game-item sbs-reveal">
-          <a class="game-card game-card--empire sbs-flowborder" data-slowly-tilt
-             href="https://game.stillnessbyslowly.com/JieLong/" aria-label="進入朕的接龍帝國">
-            <div class="game-shell sbs-flowborder-inner">
-              <div class="game-stage game-stage--empire" aria-hidden="true">
-                <span class="float-symbol sbs-atom float-symbol--one">♣</span>
-                <span class="float-symbol sbs-atom float-symbol--two">♦</span>
-                <span class="float-symbol sbs-atom float-symbol--three">♠</span>
-                <span class="empire-crown sbs-crown">♛</span>
-                <div class="empire-hand sbs-fan">
-                  <b class="playing-card sbs-fan-card"><small>A</small>♠</b>
-                  <b class="playing-card playing-card--red sbs-fan-card"><small>K</small>♥</b>
-                  <b class="playing-card playing-card--red sbs-fan-card"><small>Q</small>♦</b>
-                </div>
-              </div>
-              <div class="game-info">
-                <h2>朕的接龍帝國</h2>
-                <p>三大領地，六個入口。連環新接龍、新接龍、經典接龍，任你巡覽。</p>
-                <ul class="game-tags" aria-label="遊戲種類">
-                  <li>Spider</li><li>FreeCell</li><li>Klondike</li>
-                </ul>
-                <span class="game-go sbs-shine" aria-hidden="true">進入帝國</span>
-              </div>
-            </div>
-          </a>
-        </li>
-
-        <li class="game-item sbs-reveal">
-          <a class="game-card game-card--elements sbs-flowborder" data-slowly-tilt
-             href="https://game.stillnessbyslowly.com/match/periodic/" aria-label="進入慢慢元素實驗室">
-            <div class="game-shell sbs-flowborder-inner">
-              <div class="game-stage game-stage--elements" aria-hidden="true">
-                <div class="atom-orbit sbs-orbit"><span></span></div>
-                <div class="molecule">
-                  <b class="atom atom--hydrogen sbs-atom"><small class="atomic-number">1</small>H<small class="atom-name">氫</small></b>
-                  <span class="atom-bond sbs-bond"></span>
-                  <b class="atom atom--oxygen sbs-atom"><small class="atomic-number">8</small>O<small class="atom-name">氧</small></b>
-                  <span class="atom-bond sbs-bond"></span>
-                  <b class="atom atom--hydrogen sbs-atom"><small class="atomic-number">1</small>H<small class="atom-name">氫</small></b>
-                </div>
-                <span class="molecule-formula">H₂O</span>
-              </div>
-              <div class="game-info">
-                <h2>慢慢元素實驗室</h2>
-                <p>把元素放進格子，橫向或直向連成配方，就能合成分子。收集 16 款分子圖鑑。</p>
-                <ul class="game-tags" aria-label="遊戲特色">
-                  <li>益智</li><li>合成</li><li>圖鑑</li>
-                </ul>
-                <span class="game-go sbs-shine" aria-hidden="true">進入實驗室</span>
-              </div>
-            </div>
-          </a>
-        </li>
-
-        <li class="game-item sbs-reveal">
-          <a class="game-card game-card--match sbs-flowborder" data-slowly-tilt
-             href="https://game.stillnessbyslowly.com/match/match3_v1/match3_v1.html" aria-label="開始慢慢消消樂">
-            <div class="game-shell sbs-flowborder-inner">
-              <div class="game-stage game-stage--match" aria-hidden="true">
-                <span class="float-symbol sbs-atom float-symbol--four">✦</span>
-                <span class="float-symbol sbs-atom float-symbol--five">✦</span>
-                <div class="candy-grid">
-                  <i></i><i></i><i></i>
-                  <i class="sbs-candy-pop"></i><i class="sbs-candy-pop"></i><i class="sbs-candy-pop"></i>
-                  <i></i><i></i><i></i>
-                </div>
-              </div>
-              <div class="game-info">
-                <h2>慢慢消消樂</h2>
-                <p>交換相鄰糖果，連成 3 顆以上就能消除。做出條紋糖、包裝糖和彩球，一路連鎖。</p>
-                <ul class="game-tags" aria-label="遊戲特色">
-                  <li>消除</li><li>連鎖</li><li>特殊糖</li>
-                </ul>
-                <span class="game-go sbs-shine" aria-hidden="true">開始遊戲</span>
-              </div>
-            </div>
-          </a>
-        </li>
-
-        <li class="game-item sbs-reveal">
-          <a class="game-card game-card--huarong sbs-flowborder" data-slowly-tilt
-             href="https://game.stillnessbyslowly.com/slide/huarong/huarong_v1.html" aria-label="開始華容道">
-            <div class="game-shell sbs-flowborder-inner">
-              <div class="game-stage game-stage--huarong" aria-hidden="true">
-                <!-- 華容道經典棋盤縮影；此處為入口裝飾，不另外實作遊戲。 -->
-                <div class="huarong-board">
-                  <b class="huarong-piece huarong-piece--cao">曹操</b>
-                  <b class="huarong-piece huarong-piece--guard huarong-piece--zhang">張飛</b>
-                  <b class="huarong-piece huarong-piece--guard huarong-piece--zhao">趙雲</b>
-                  <b class="huarong-piece huarong-piece--guard huarong-piece--ma">馬超</b>
-                  <b class="huarong-piece huarong-piece--guard huarong-piece--huang">黃忠</b>
-                  <b class="huarong-piece huarong-piece--guan">關羽</b>
-                  <b class="huarong-piece huarong-piece--soldier huarong-piece--soldier-1">兵</b>
-                  <b class="huarong-piece huarong-piece--soldier huarong-piece--soldier-2">兵</b>
-                  <b class="huarong-piece huarong-piece--soldier huarong-piece--soldier-3">兵</b>
-                  <b class="huarong-piece huarong-piece--soldier huarong-piece--soldier-4">兵</b>
-                </div>
-              </div>
-              <div class="game-info">
-                <h2>華容道</h2>
-                <p>移動曹操與眾將，讓曹操從底部出口脫困。挑戰經典關卡，想想下一步該怎麼走。</p>
-                <ul class="game-tags" aria-label="遊戲特色">
-                  <li>益智</li><li>滑塊</li><li>經典關卡</li>
-                </ul>
-                <span class="game-go sbs-shine" aria-hidden="true">開始遊戲</span>
-              </div>
-            </div>
-          </a>
-        </li>
-        <li class="game-item sbs-reveal">
-          <a class="game-card game-card--forest sbs-flowborder" data-slowly-tilt
-             href="https://game.stillnessbyslowly.com/lin_card/" aria-label="進入霧林之契">
-            <div class="game-shell sbs-flowborder-inner">
-              <div class="game-stage game-stage--forest" aria-hidden="true">
-                <div class="forest-seal">
-                  <span class="forest-seal-mark">契</span>
-                  <span class="forest-seal-caption">十重試煉</span>
-                </div>
-              </div>
-              <div class="game-info">
-                <h2>霧林之契</h2>
-                <p>踏入霧林，走過十重試煉。昔日所棄，終將與你為敵。</p>
-                <ul class="game-tags" aria-label="遊戲特色">
-                  <li>卡牌</li><li>策略</li><li>試煉</li>
-                </ul>
-                <span class="game-go sbs-shine" aria-hidden="true">踏入霧林</span>
-              </div>
-            </div>
-          </a>
-        </li>
-      </ul>
+      <section class="collection wrap" id="all" aria-labelledby="collection-title">
+        <div class="section-heading collection-heading">
+          <div>
+            <p class="section-eyebrow">THE COLLECTION</p>
+            <h2 id="collection-title">遊戲收藏館 <span class="heading-note" id="count"></span></h2>
+          </div>
+        </div>
+        <div class="collection-tools" role="search">
+          <label class="search-box" for="q">
+            <svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m15.5 15.5 5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <input id="q" type="search" placeholder="搜尋遊戲名稱、玩法、標籤" autocomplete="off" enterkeyhint="search" aria-label="搜尋遊戲">
+          </label>
+          <div class="chips" id="chips" role="group" aria-label="遊戲分類"></div>
+        </div>
+        <section class="recent" id="recent" aria-labelledby="recent-title" hidden>
+          <h3 id="recent-title" class="subheading">最近玩過</h3>
+          <div class="recent-row" id="recent-row"></div>
+        </section>
+        <div class="collection-summary"><span id="result-note">挑選一款，送上舞台</span><span aria-hidden="true">✦</span></div>
+        <div class="game-grid" id="grid"></div>
+        <p class="empty" id="empty" hidden>沒有找到符合的遊戲，換個關鍵字試試。</p>
+        <div class="load-status" id="load-status" role="status" hidden>
+          遊戲清單讀取失敗，請確認 games.json 已跟首頁一起部署。
+          <button type="button" id="retry">重新讀取</button>
+        </div>
+      </section>
     </main>
-
     <footer class="site-footer">
       <p>慢 慢 | Stillness by Slowly</p>
       <span class="footer-ornament" aria-hidden="true"></span>

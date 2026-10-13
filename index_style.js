@@ -1,20 +1,18 @@
-/* 慢慢遊戲大廳｜UI 互動：向軍火庫要求特效；不在此重寫特效。 */
+/* 慢慢遊戲大廳｜UI：舞台換景與主題色。未來五種特效只需在此依 slot 接入軍火庫。 */
 (()=>{
   'use strict';
-  // 桌面滑鼠的卡片傾斜＋追光；行動裝置／減少動態由軍火庫處理。
-  if(window.SlowlyTiltSpotlight?.attach){
-    document.querySelectorAll('.game-card[data-slowly-tilt]').forEach(card=>{
-      window.SlowlyTiltSpotlight.attach(card,{angle:9,lift:8,perspective:900});
-    });
-  }
+  const stage=document.getElementById('spotlight');
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)');
 
-  // 點擊粒子只是裝飾，不與跳頁、傳送門綁死。
-  document.addEventListener('slowly:lobby-launch',event=>{
-    const burst=window.SlowlyClickBurst?.burst;
-    const container=document.querySelector('.page');
-    if(typeof burst!=='function'||!container)return;
-    const rect=container.getBoundingClientRect();
-    const {x,y,color}=event.detail;
-    burst({container,x:x-rect.left,y:y-rect.top,color,count:70});
+  document.addEventListener('slowly:lobby-spotlight',event=>{
+    const {game,slot}=event.detail;
+    stage.style.setProperty('--stage-accent',game.accent);
+    stage.setAttribute('data-effect-slot',String(slot));
+    // 基礎版只做輕量淡入；五套特殊舞台特效在定案後加入，不和遊戲 ID 綁定。
+    stage.classList.remove('spotlight--arriving');
+    if(!reduce.matches){
+      void stage.offsetWidth;
+      stage.classList.add('spotlight--arriving');
+    }
   });
 })();
