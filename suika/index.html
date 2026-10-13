@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#071719">
+  <meta name="description" content="鹿雨森 Demo：霧核鍊成。透過物理掉落與同階融合，對抗吞噬靈核的迷霧之影。">
+  <title>霧核鍊成｜鹿雨森 Suika Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;500;700&family=Cormorant+Garamond:ital,wght@0,400;1,400;1,600&display=swap" rel="stylesheet">
+  <!-- 軍火庫一律透過 HTTPS 絕對路徑引用；不複製任何軍火庫零件。 -->
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/ui/responsive.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/background/starfield.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/light/button_shine.css">
+  <link rel="stylesheet" href="../silvarain_shared/index.css">
+  <link rel="stylesheet" href="../silvarain_shared/index_style.css">
+  <link rel="stylesheet" href="../silvarain_shared/demo_style.css">
+  <link rel="stylesheet" href="./suika.css">
+  <link rel="stylesheet" href="./suika_style.css">
+  <script defer src="https://lib.stillnessbyslowly.com/data/random/random.js"></script>
+  <script defer src="https://lib.stillnessbyslowly.com/effects/background/pine_forest.js"></script>
+  <script defer src="https://lib.stillnessbyslowly.com/effects/background/fog.js"></script>
+  <script defer src="https://lib.stillnessbyslowly.com/effects/background/rain.js"></script>
+  <script defer src="https://lib.stillnessbyslowly.com/effects/background/starfield.js"></script>
+  <script defer src="./suika_style.js"></script>
+  <script defer src="./suika.js"></script>
+</head>
+<body>
+  <div class="scenery" aria-hidden="true">
+    <canvas id="forest"></canvas><canvas id="fog"></canvas>
+    <div id="fireflies" class="sbs-stars" data-count="17" data-color="#c3efd3"><canvas></canvas></div>
+    <canvas id="weather"></canvas><div class="atmosphere"></div>
+  </div>
+  <header class="site-header">
+    <div class="nav-shell">
+      <a class="brand" href="https://silvarain.stillnessbyslowly.com/" aria-label="鹿雨森官網">
+        <svg class="brand-mark" viewBox="0 0 60 72" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M30 65C22 54 18 40 10 23M30 65C38 54 42 40 50 23M17 39L5 30M43 39L55 30M12 27L12 9M48 27L48 9M23 51L9 49M37 51L51 49"></path></svg>
+        <span class="brand-name"><span class="brand-zh">鹿雨森</span><span class="brand-en">Silvarain</span></span>
+      </a>
+      <nav class="nav-links" aria-label="網站導覽"><a class="nav-cta nav-cta--demo sbs-shine" href="https://game.stillnessbyslowly.com/">遊戲大廳 ↗</a><a class="nav-cta sbs-shine" href="../rhythm/">雨律・森之迴響 ↗</a></nav>
+    </div>
+  </header>
+  <main class="demo-main sk-main">
+    <nav class="demo-breadcrumb" aria-label="所在位置"><a href="https://silvarain.stillnessbyslowly.com/">鹿雨森官網</a><span>/</span><a href="https://game.stillnessbyslowly.com/">慢慢遊戲大廳</a><span>/</span><span aria-current="page">Suika</span></nav>
+    <div class="sk-heading">
+      <div><p class="section-label">SILVARAIN / FUSION EXPERIMENT 03</p><h1>霧核<span>鍊成</span></h1><p>讓散落的靈核彼此共鳴，在霧吞沒一切之前。</p></div>
+      <button type="button" id="restart" class="sk-restart sbs-shine">↻ 重新試煉</button>
+    </div>
+    <section id="arena" class="sk-arena" aria-label="鹿雨森霧核鍊成 Boss 試煉">
+      <div class="sk-topline"><span>03 / THE FUSION</span><span>物理融合 · 測試原型</span></div>
+      <section class="sk-boss" aria-label="Boss 迷霧之影">
+        <p class="sk-boss-caption">BOSS · THE VEILED ONE</p>
+        <div id="bossFigure" class="sk-figure" aria-hidden="true">
+          <i class="sk-aura"></i><i class="sk-antler sk-antler--left"></i><i class="sk-antler sk-antler--right"></i>
+          <i class="sk-cloak"></i><i class="sk-face"></i><i class="sk-eyes"></i><i class="sk-ground"></i>
+        </div>
+        <div class="sk-boss-hud"><div class="sk-hud-line"><strong>迷霧之影</strong><span id="bossHpText">240 / 240</span></div>
+          <div class="sk-bar sk-bar--boss"><i id="bossHpFill"></i></div>
+          <div class="sk-boss-details"><span id="bossShield">霧盾 0</span><span id="bossCountdown">還有 5 次投放發動霧蝕</span></div>
+        </div>
+        <div id="bossFloat" class="sk-boss-float" aria-live="polite"></div>
+      </section>
+      <div class="sk-separator" aria-hidden="true">✦　F U S I O N　✦</div>
+      <section class="sk-game" aria-label="靈核融合容器">
+        <div class="sk-status"><span id="turnStatus">拖動或點選，放下靈核</span><span id="dropCount">已投放 0 顆</span></div>
+        <div class="sk-hud">
+          <div><small>下一顆靈核</small><strong><span id="nextCore" class="sk-next-icon" aria-hidden="true">✧</span><span id="nextName">霧塵</span></strong></div>
+          <div><small>最高鍊成</small><strong id="highestName">尚未融合</strong></div>
+          <div><small>融合次數</small><strong id="mergeCount">0</strong></div>
+        </div>
+        <div class="sk-canvas-shell" id="canvasShell">
+          <canvas id="gameCanvas" width="360" height="560" role="img" aria-label="合成容器：在容器上方移動並放下靈核，相同階級接觸後融合。也可用左右方向鍵與空白鍵操作。" tabindex="0"></canvas>
+          <div id="endOverlay" class="sk-end-overlay" role="status" aria-live="polite" hidden>
+            <span class="sk-end-mark" aria-hidden="true">✧</span>
+            <h2 id="endTitle">試煉結束</h2><p id="endText"></p>
+            <button id="againBtn" class="sk-restart" type="button">再次踏入霧中</button>
+          </div>
+        </div>
+        <p id="battleLog" class="sk-battle-log" role="status" aria-live="polite">同階靈核碰撞融合，就能傷害迷霧之影。</p>
+        <p class="sk-input-hint">移動指尖選擇落點，放開即可投放。相同靈核碰撞會升階。</p>
+      </section>
+    </section>
+    <section class="sk-guide" aria-label="試玩規則">
+      <div><span>01 / 鍊成</span><p>兩顆同階靈核接觸，就會融合成下一階，並對 Boss 造成傷害；階級越高，傷害越強。</p></div>
+      <div><span>02 / 霧蝕</span><p>每投放 5 顆，Boss 隨機吞噬場上一顆靈核，按階級回復生命；滿血時則補充霧盾。</p></div>
+      <div><span>03 / 勝負</span><p>擊敗 Boss 即獲勝。如果靈核堆在危險線上方太久，鍊成場便會失控。</p></div>
+    </section>
+    <p class="sk-disclaimer">玩法、美術與數值皆為測試版本；未接入鹿雨森正式劇情和存檔。不新增音效，保留雨霧場景。</p>
+  </main>
+  <div id="resetConfirm" class="sk-confirm" hidden>
+    <div role="dialog" aria-modal="true" aria-labelledby="resetTitle" class="sk-dialog">
+      <h2 id="resetTitle">重新開始試煉？</h2><p>現在的靈核、Boss 血量和融合進度會全部重置。</p>
+      <div><button id="cancelReset" type="button">取消</button><button id="confirmReset" type="button">確定重來</button></div>
+    </div>
+  </div>
+  <footer class="site-footer"><div class="footer-inner"><div><p class="footer-name">Silvarain · 鹿雨森</p><p class="footer-small">Suika Demo｜霧核鍊成</p></div><a class="footer-link" href="https://stillnessbyslowly.com/" target="_blank" rel="noopener noreferrer">慢 慢 | Stillness by Slowly ↗</a></div></footer>
+</body>
+</html>

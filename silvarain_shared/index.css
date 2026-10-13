@@ -1,0 +1,41 @@
+/* 鹿雨森官網｜宿主森林舞台。繪圖由軍火庫 JS 完成，樣式只由宿主決定。 */
+:root {
+  --night: #071213;
+  --mist: #dfefe9;
+  --teal: #87cfb9;
+  --line: rgba(174, 219, 205, 0.24);
+}
+
+.scenery {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(190, 226, 215, 0.18), transparent 60%),
+    linear-gradient(180deg, #071415 0%, #1a3735 55%, #071717 100%);
+}
+
+.scenery canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+#forest { z-index: 0; }
+#fog { z-index: 1; }
+#fireflies { z-index: 2; }
+#weather { z-index: 3; }
+
+.atmosphere {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  background:
+    radial-gradient(ellipse at 50% 40%, transparent 18%, rgba(3, 11, 12, 0.54) 95%),
+    linear-gradient(180deg, rgba(5, 16, 18, 0.2), rgba(5, 16, 18, 0.45));
+}

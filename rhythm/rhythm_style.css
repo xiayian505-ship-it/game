@@ -1,0 +1,44 @@
+/* 雨律・森之迴響：鹿雨森專屬外觀，與節奏判定邏輯分離。 */
+.rhythm-main{padding-top:92px}.rhythm-intro{margin-bottom:26px}.rhythm-intro h1{margin:12px 0;color:#f2fff8;font-size:clamp(31px,5.8vw,58px);font-weight:500;letter-spacing:.12em}.rhythm-intro h1 span{color:#a7dfcd;font-size:.69em}.rhythm-intro>p:last-child{color:#c1ded2;font-size:14px;line-height:2}
+.rhythm-panel{padding:20px 22px 22px;border:1px solid rgba(160,225,201,.28);background:linear-gradient(180deg,rgba(8,27,28,.92),rgba(6,20,24,.93));box-shadow:0 20px 65px #0010137d}
+.rhythm-topline{display:flex;justify-content:space-between;gap:12px;color:#82bcae;font:italic 15px "Cormorant Garamond",serif;letter-spacing:.17em;margin-bottom:17px}
+.rhythm-settings{padding:12px;margin-bottom:13px;border:1px solid #a1ddd12c;background:#071b1cc7}
+.rhythm-field{font-size:12px;color:#9ccec0;letter-spacing:.10em}
+.rhythm-field select{padding:10px 27px 10px 9px;border:1px solid #a4d8cd3d;border-radius:3px;background:#0f292b;color:#edfff7;font-size:13px;cursor:pointer}
+.rhythm-field select:focus-visible{outline:2px solid #93e3c8;outline-offset:2px}
+.rhythm-hud{border:1px solid #aadcd327;border-bottom:0;background:#082023a8}
+.rhythm-hud>div{padding:12px 13px;border-right:1px solid #b2dccc20}
+.rhythm-hud>div:last-child{border-right:0}
+.rhythm-hud span{color:#95c0b4;font-size:10px;letter-spacing:.12em}
+.rhythm-hud strong{color:#edfff8;font:500 clamp(17px,2.8vw,24px) "Cormorant Garamond","Noto Serif TC",serif;font-variant-numeric:tabular-nums}
+.rhythm-stage{border:1px solid #b5eee131;background:radial-gradient(ellipse at 50% 25%,#2b625a70,transparent 36%),linear-gradient(180deg,#0e2d33aa 0%,#092026ee 45%,#06181c 90%)}
+.rhythm-stage-sky{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 18%,#c2f8e721,transparent 33%),repeating-linear-gradient(90deg,transparent,transparent 54px,#b0f2e309 55px);opacity:.7}
+.rhythm-starfall{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 11% 29%,#bafefca5 0 1px,transparent 3px),radial-gradient(circle at 88% 34%,#d4e9efa0 0 1px,transparent 3px),radial-gradient(circle at 38% 42%,#d4e9ef99 0 1px,transparent 3px),radial-gradient(circle at 73% 12%,#aceadbaa 0 1px,transparent 3px),radial-gradient(circle at 29% 16%,#e2eacdaa 0 1px,transparent 3px)}
+.rhythm-source{color:#b7f5db;opacity:.86}.rhythm-source>span{position:absolute;top:calc(100% + 3px);color:#a5cfc2;font:italic 10px "Cormorant Garamond",serif;letter-spacing:.14em}.rhythm-core-halo{width:170px;height:170px;border-radius:50%;border:1px solid #b3f8d530;box-shadow:0 0 45px #72cdb335,inset 0 0 42px #b7ffcb20;animation:rhythm-breathe 3s ease-in-out infinite}.rhythm-core-halo:after{content:"";position:absolute;inset:18px;border:1px solid #c0f4e52a;border-radius:50%}
+.rhythm-pad{--pad-size:clamp(39px,5.6vw,58px);border:2px solid #d1fff6a0;background:radial-gradient(circle at 50% 50%,#c1f7f02b 0 18%,#76dbc52b 55%,#081e26d9 76%);box-shadow:0 0 0 5px #c7fffa13,0 0 21px #87d7bd5e,inset 0 0 14px #b8ffee45;color:#d0fef2;-webkit-tap-highlight-color:transparent}
+.rhythm-pad::before{inset:5px;border:1px solid #d9fff59c;box-shadow:0 0 14px #b5ffe177}
+.rhythm-pad::after{inset:-7px;border:1px solid #c3f5f62e}
+.rhythm-pad:focus-visible{outline:3px solid #ecffbb;outline-offset:6px}
+.rhythm-pad-symbol{font-size:clamp(17px,2.7vw,23px);filter:drop-shadow(0 0 7px #c5ffde)}
+.rhythm-pad-index{color:#a6ccb7;letter-spacing:.08em}
+.rhythm-note{--note-size:clamp(23px,3.8vw,36px);border:1px solid #e8fff9cf;background:radial-gradient(circle,#f0fff6 0%,#a9eddf 36%,#66bfaf 70%,#367e82 100%);box-shadow:0 0 14px 5px #baffd083,0 0 28px #b5f6e67e;color:#144347}
+.rhythm-note::before{border:1px solid #c4fff4a1}
+.rhythm-stage-overlay{background:linear-gradient(#05181cc2,#071d22ac);text-align:center;padding:28px}
+.rhythm-stage-overlay strong{color:#e5fff3;font-size:clamp(21px,4vw,32px);font-weight:400;letter-spacing:.2em}
+.rhythm-stage-overlay p{color:#b6d9ca;font-size:13px;line-height:2;max-width:350px}
+.rhythm-judgement{font:600 clamp(22px,5vw,37px) "Cormorant Garamond",serif;letter-spacing:.15em;color:#e8ffd3;text-shadow:0 0 14px #d6ffe9,0 0 32px #7dffd46a}
+.rhythm-judgement[data-kind="miss"]{color:#d6acbc;text-shadow:0 0 12px #c7748a66}
+.rhythm-judgement[data-kind="great"]{color:#baeaff}.rhythm-judgement[data-kind="good"]{color:#b9e4cb}
+.rhythm-controls{margin-top:15px}
+.rhythm-action{cursor:pointer;min-height:42px;padding:10px 18px;border:1px solid #acd8ca55;border-radius:3px;background:#103536be;color:#d2f3e8;font:500 13px "Noto Serif TC",serif;letter-spacing:.08em;transition:background .2s,border-color .2s,box-shadow .2s}
+.rhythm-action--primary{background:#226352a1;border-color:#b8f5c580;color:white}
+.rhythm-action:hover:not(:disabled){border-color:#c5ffdf;background:#24675395;box-shadow:0 0 18px #96f9cb28}
+.rhythm-status{min-height:26px;margin:14px 0 0;color:#a7c9bb;font-size:13px;text-align:center;line-height:1.7}
+.rhythm-rank{margin-top:15px;padding:20px;border:1px solid #b2dbcd39;background:#091e23e8}
+.rhythm-rank-head{display:flex;align-items:center;justify-content:space-between;gap:15px}.rhythm-rank h2{margin:0;color:#e0ffeb;font-size:19px;font-weight:400}.rhythm-rank h2 small{font:italic 12px "Cormorant Garamond",serif;color:#8fceb9}.rhythm-rank-close{border:1px solid #9ecbb955;background:transparent;color:#d8f7e9;padding:7px 13px;cursor:pointer}
+#rankContext{color:#a4c7b8;font-size:12px}.rhythm-rank-item{padding:10px 5px;display:flex;align-items:baseline;justify-content:space-between;gap:18px;border-top:1px solid #c5eed72b;color:#d4ebe3}.rhythm-rank-item b{font-size:14px;font-weight:400}.rhythm-rank-item small{color:#a6cbb8;font-size:12px;text-align:right}
+.rhythm-guide{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px;margin-top:23px}.rhythm-guide>div{padding:23px;border:1px solid #a4d9bb2c;background:#0a2725ba}.rhythm-guide b{color:#caefdf;font-weight:500}.rhythm-guide p{font-size:13px;color:#a5c9bc;line-height:2;margin-bottom:0}.rhythm-disclaimer{margin-top:22px;color:#93b1a7;font-size:12px;line-height:1.9}.rhythm-error{margin-top:12px;padding:12px;border:1px solid #efabab80;color:#ffe0da}
+@keyframes rhythm-breathe{50%{box-shadow:0 0 50px #83e6cc5b,inset 0 0 42px #b7ffcb36;transform:scale(1.045)}}
+@media(max-width:750px){.rhythm-guide{grid-template-columns:1fr}.rhythm-main{padding-top:64px}.rhythm-intro h1{letter-spacing:.07em}.rhythm-panel{padding:13px}.rhythm-hud>div{padding:11px 7px}.rhythm-topline{font-size:12px;letter-spacing:.08em}}
+@media(max-width:410px){.rhythm-pad{--pad-size:clamp(38px,11.8vw,48px)}.rhythm-hud span{font-size:9px}.rhythm-source>span{font-size:9px}.rhythm-rank-item{flex-wrap:wrap}}
+@media(prefers-reduced-motion:reduce){.rhythm-core-halo{animation:none}}

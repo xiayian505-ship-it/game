@@ -1,0 +1,159 @@
+/* 鹿雨森 Demo｜展示廳專用外觀。場景與基礎 UI 沿用官網。 */
+.demo-main {
+  width: min(1040px, calc(100% - 48px));
+  margin: auto;
+  padding: 95px 0 120px;
+}
+
+.demo-breadcrumb {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 0 0 54px;
+  color: #9fbbaf;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+
+.demo-breadcrumb a {
+  border-bottom: 1px solid rgba(183, 214, 202, 0.32);
+  padding-bottom: 3px;
+}
+
+.demo-breadcrumb a:hover { color: #f0fff6; }
+.demo-breadcrumb span[aria-current="page"] { color: #dceee5; }
+
+.demo-hero {
+  max-width: 830px;
+  margin-bottom: 68px;
+}
+
+.demo-hero .section-label { margin-bottom: 20px; }
+
+.demo-hero h1 {
+  margin: 0 0 26px;
+  color: #edf9f3;
+  font-size: clamp(43px, 8vw, 76px);
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  line-height: 1.35;
+}
+
+.demo-hero p:not(.section-label) {
+  max-width: 670px;
+  margin: 0;
+  color: #c1d9ce;
+  font-size: 15px;
+  line-height: 2.25;
+  letter-spacing: 0.07em;
+}
+
+.demo-hero .fine-rule { margin: 30px 0; }
+
+.demo-category-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr));
+  gap: 22px;
+}
+
+.demo-category {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 280px;
+  padding: 34px;
+  overflow: hidden;
+  border: 1px solid rgba(169, 224, 201, 0.3);
+  background:
+    radial-gradient(circle at 85% 14%, rgba(129, 193, 172, 0.11), transparent 43%),
+    linear-gradient(132deg, rgba(10, 35, 35, 0.90), rgba(12, 31, 33, 0.84));
+  transition: border-color .25s, background .25s, transform .25s;
+}
+
+.demo-category:hover {
+  border-color: rgba(194, 239, 220, 0.7);
+  transform: translateY(-3px);
+}
+
+.demo-category h2 {
+  margin: 3px 0;
+  color: #f0fff7;
+  font-size: clamp(26px, 4vw, 35px);
+  font-weight: 500;
+  letter-spacing: .16em;
+}
+
+.demo-category p {
+  margin: 0;
+  color: #bdd7ca;
+  font-size: 14px;
+  line-height: 2;
+}
+
+.demo-category-label {
+  color: #9bd5bb;
+  font: italic 16px "Cormorant Garamond", Georgia, serif;
+  letter-spacing: .12em;
+}
+
+.demo-category-link {
+  margin-top: auto;
+  color: #dceee5;
+  font-size: 13px;
+  letter-spacing: .12em;
+}
+
+.demo-empty {
+  padding: 32px 34px;
+  border: 1px solid rgba(169, 224, 201, .25);
+  background: rgba(9, 31, 31, .75);
+}
+
+.demo-empty h2 {
+  margin: 0 0 18px;
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: .14em;
+}
+
+.demo-empty p {
+  margin: 0 0 25px;
+  color: #bbd5c9;
+  line-height: 2.2;
+}
+
+.demo-empty .button { min-width: 0; }
+
+@media (max-width: 700px) {
+  .demo-main {
+    width: calc(100% - 38px);
+    padding: 58px 0 85px;
+  }
+  .demo-breadcrumb { margin-bottom: 45px; }
+  .demo-hero { margin-bottom: 48px; }
+  .demo-category { min-height: 245px; padding: 29px 25px; }
+  .demo-empty { padding: 29px 25px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .demo-category { transition: none; }
+  .demo-category:hover { transform: none; }
+}
+
+/* 第二款：三消 Demo，以更冷的雨藍點綴，仍保持鹿雨森的整體氣氛。 */
+.demo-category--match3 {background:radial-gradient(circle at 83% 15%,rgba(130,179,220,.16),transparent 42%),linear-gradient(132deg,rgba(10,33,38,.94),rgba(10,28,33,.88));}
+.demo-category--match3 .demo-category-label {color:#a9d7e0;}
+
+/* 第三款：Suika / 霧核鍊成。保持大廳分類與原先兩款共存。 */
+.demo-category--suika {
+  background:
+    radial-gradient(circle at 80% 12%, rgba(181, 161, 216, .18), transparent 42%),
+    linear-gradient(135deg, rgba(19, 33, 38, .94), rgba(13, 28, 32, .88));
+}
+.demo-category--suika .demo-category-label { color: #d5c3eb; }
+
+/* 第四款：雨律 Rhythm。 */
+.demo-category--rhythm{background:radial-gradient(circle at 80% 16%,rgba(130,225,192,.2),transparent 48%),linear-gradient(137deg,rgba(13,41,38,.96),rgba(8,29,38,.9));}
+.demo-category--rhythm .demo-category-label{color:#b9e9d0;}

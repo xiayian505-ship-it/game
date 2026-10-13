@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#071719">
+<meta name="description" content="鹿雨森的第四款獨立遊戲 Demo：沿著雨霧的節奏，點亮環繞森林的靈光符文。">
+<title>雨律・森之迴響｜鹿雨森節奏 Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;500;700&family=Cormorant+Garamond:ital,wght@0,400;1,400;1,600&display=swap" rel="stylesheet">
+<!-- 慢慢軍火庫共用零件：一律 HTTPS 絕對 URL 引用，不複製、不改寫。 -->
+<link rel="stylesheet" href="https://lib.stillnessbyslowly.com/ui/responsive.css">
+<link rel="stylesheet" href="../silvarain_shared/index.css">
+<link rel="stylesheet" href="../silvarain_shared/index_style.css">
+<link rel="stylesheet" href="../silvarain_shared/demo_style.css">
+<link rel="stylesheet" href="./rhythm.css">
+<link rel="stylesheet" href="./rhythm_style.css">
+<script defer src="https://lib.stillnessbyslowly.com/effects/background/pine_forest.js"></script>
+<script defer src="https://lib.stillnessbyslowly.com/effects/background/fog.js"></script>
+<script defer src="https://lib.stillnessbyslowly.com/effects/background/rain.js"></script>
+<script defer src="https://lib.stillnessbyslowly.com/date/timer/frame_loop.js"></script>
+<script defer src="https://lib.stillnessbyslowly.com/date/timer/elapsed_format.js"></script>
+<script defer src="https://lib.stillnessbyslowly.com/audio/tempo/beat_time.js"></script>
+<script defer src="https://lib.stillnessbyslowly.com/data/random/random.js"></script>
+<script defer src="https://lib.stillnessbyslowly.com/fiction/Fiction_storage.js"></script>
+<script defer src="https://lib.stillnessbyslowly.com/fiction/Fiction_sort.js"></script>
+<script defer src="https://lib.stillnessbyslowly.com/fiction/Fiction_paginate.js"></script>
+<script defer src="./rhythm_style.js"></script>
+<script defer src="./rhythm.js"></script>
+</head>
+<body>
+<div class="scenery" aria-hidden="true"><canvas id="forest"></canvas><canvas id="fog"></canvas><canvas id="weather"></canvas><div class="atmosphere"></div></div>
+<header class="site-header"><div class="nav-shell">
+  <a class="brand" href="https://silvarain.stillnessbyslowly.com/" aria-label="鹿雨森官網"><svg class="brand-mark" viewBox="0 0 60 72" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M30 65C22 54 18 40 10 23M30 65C38 54 42 40 50 23M17 39L5 30M43 39L55 30M12 27L12 9M48 27L48 9M23 51L9 49M37 51L51 49"></path></svg><span class="brand-name"><span class="brand-zh">鹿雨森</span><span class="brand-en">Silvarain</span></span></a>
+  <nav class="nav-links" aria-label="網站導覽"><a class="nav-cta" href="https://game.stillnessbyslowly.com/">遊戲大廳 ↗</a><a class="nav-cta" href="../suika/">霧核鍊成 ↗</a></nav>
+</div></header>
+<main class="demo-main rhythm-main">
+  <nav class="demo-breadcrumb" aria-label="所在位置"><a href="https://silvarain.stillnessbyslowly.com/">鹿雨森官網</a><span>/</span><a href="https://game.stillnessbyslowly.com/">慢慢遊戲大廳</a><span>/</span><span aria-current="page">Rhythm</span></nav>
+  <div class="rhythm-intro"><p class="section-label">SILVARAIN / RHYTHM EXPERIMENT 04</p><h1>雨律<span>・森之迴響</span></h1><p>霧林深處，微光回應每一個拍點。讓符文抵達光環的瞬間，留下你的迴響。</p></div>
+  <div class="rhythm-panel">
+    <div class="rhythm-topline"><span>04 / ECHOES IN THE RAIN</span><span>節奏試煉 · 獨立 Demo</span></div>
+    <section class="rhythm-settings" aria-label="節奏試煉設定">
+      <label class="rhythm-field">模式<select id="gameMode"><option value="fixed">定速 · 60 秒</option><option value="ramp">漸快 · 耐力</option></select></label>
+      <label class="rhythm-field" id="bpmRow">節拍<select id="bpm"><option value="90">90 BPM</option><option value="120" selected>120 BPM</option><option value="150">150 BPM</option></select></label>
+      <label class="rhythm-field">難度<select id="difficulty"><option value="easy">簡單</option><option value="normal" selected>普通</option><option value="hard">困難</option></select></label>
+    </section>
+    <section class="rhythm-hud" aria-label="遊戲進度">
+      <div><span>分數 / SCORE</span><strong id="score">0</strong></div>
+      <div><span>連擊 / COMBO</span><strong id="combo">0</strong></div>
+      <div><span>準確率 / ACC.</span><strong id="accuracy">100.0%</strong></div>
+      <div><span id="timeLabel">剩餘時間</span><strong id="time">01:00</strong></div>
+    </section>
+    <section class="rhythm-stage" id="rhythmStage" aria-label="九個發光符文判定圈，當光點抵達圈時點擊" tabindex="-1">
+      <div class="rhythm-stage-sky" aria-hidden="true"></div>
+      <div class="rhythm-starfall" aria-hidden="true"></div>
+      <div id="echoSource" class="rhythm-source" aria-hidden="true">
+        <div class="rhythm-core-halo"></div>
+        <svg class="rhythm-antler" viewBox="0 0 120 140" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M60 120C56 83 42 66 29 42M60 120C64 83 78 66 91 42M43 75L23 70M77 75L97 70M34 52L34 26M86 52L86 26M50 91L31 94M70 91L89 94"></path></svg>
+        <span>LISTEN TO THE RAIN</span>
+      </div>
+      <div id="noteLayer" class="rhythm-note-layer" aria-hidden="true"></div>
+      <div id="padLayer" class="rhythm-pad-layer" role="group" aria-label="九個符文按鈕"></div>
+      <div id="judgement" class="rhythm-judgement" role="status" aria-live="off"></div>
+      <div id="stageOverlay" class="rhythm-stage-overlay"><strong id="overlayTitle">等待雨的節拍</strong><p id="overlayText">按下「開始共鳴」，當靈光抵達外圈符文時，點擊對應光環。</p></div>
+    </section>
+    <div class="rhythm-controls"><button type="button" id="btnStart" class="rhythm-action rhythm-action--primary">開始共鳴</button><button type="button" id="btnPause" class="rhythm-action" disabled>暫停</button><button type="button" id="btnEnd" class="rhythm-action" disabled>結束</button><button type="button" id="btnRanking" class="rhythm-action">排行榜</button></div>
+    <p id="rhythmStatus" class="rhythm-status" role="status" aria-live="polite">準備好後，跟隨霧光的節奏。</p>
+    <section class="rhythm-rank" id="rankingPanel" hidden aria-label="本機排行榜"><div class="rhythm-rank-head"><h2>雨律紀錄 <small>LOCAL TOP 3</small></h2><button type="button" id="btnRankClose" class="rhythm-rank-close">關閉</button></div><p id="rankContext"></p><div id="rankList"></div></section>
+  </div>
+  <section class="rhythm-guide" aria-label="操作說明"><div><b>01 / 觸碰符文</b><p>九個圓形光環沿弧線排列。光點從中央飄出，抵達符文時直接點擊；電腦亦可按數字 1～9。</p></div><div><b>02 / 掌握雨律</b><p>Perfect ±60ms、Great ±120ms、Good ±200ms。空按與漏接會中斷連擊。</p></div><div><b>03 / 選擇試煉</b><p>定速挑戰 60 秒；漸快從 80 BPM 起，每 20 秒加快，漏 10 次或 3 分鐘結束。排行僅儲存在此瀏覽器。</p></div></section>
+  <p class="rhythm-disclaimer">本版不含歌曲譜面、配樂或新音效；以 BPM 生成節拍。玩法、美術均為實驗版本，不與正式劇情存檔連動。</p>
+  <div id="engineError" role="alert" class="rhythm-error" hidden></div>
+</main>
+<footer class="site-footer"><div class="footer-inner"><div><p class="footer-name">Silvarain · 鹿雨森</p><p class="footer-small">Rhythm Demo｜雨律・森之迴響</p></div><a class="footer-link" href="https://stillnessbyslowly.com/" target="_blank" rel="noopener noreferrer">慢 慢 | Stillness by Slowly ↗</a></div></footer>
+</body></html>

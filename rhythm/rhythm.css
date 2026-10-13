@@ -1,0 +1,37 @@
+/* 雨律・森之迴響：遊戲容器、操作與判定圈的必要樣式。 */
+.rhythm-main{max-width:1060px}.rhythm-main .demo-breadcrumb{margin-bottom:35px}
+.rhythm-panel{position:relative;z-index:1;overflow:hidden}
+.rhythm-stage{position:relative;isolation:isolate;overflow:hidden;width:100%;height:clamp(420px,58svh,590px);touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.rhythm-source{position:absolute;left:50%;top:25%;transform:translate(-50%,-50%);display:grid;place-items:center;pointer-events:none;z-index:1}
+.rhythm-source>span{white-space:nowrap}
+.rhythm-core-halo{position:absolute;pointer-events:none}
+.rhythm-antler{width:clamp(60px,14vw,112px);height:auto}
+.rhythm-note-layer,.rhythm-pad-layer{position:absolute;inset:0;pointer-events:none;z-index:3}
+.rhythm-pad{position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%);display:grid;place-items:center;padding:0;width:var(--pad-size);height:var(--pad-size);border-radius:50%;pointer-events:auto;cursor:pointer;touch-action:manipulation}
+.rhythm-pad::before,.rhythm-pad::after{content:"";position:absolute;border-radius:inherit;pointer-events:none}
+.rhythm-pad-symbol{display:block;line-height:1;pointer-events:none}
+.rhythm-pad-index{position:absolute;bottom:-18px;font-size:10px;pointer-events:none}
+.rhythm-note{position:absolute;top:0;left:0;width:var(--note-size);height:var(--note-size);border-radius:50%;display:grid;place-items:center;pointer-events:none;will-change:transform;z-index:4}
+.rhythm-note::before{content:"";position:absolute;inset:-4px;border-radius:50%}
+.rhythm-note::after{content:"✧";position:relative;font-size:15px}
+.rhythm-pad.is-hit{animation:rhythm-pad-hit .32s ease-out}
+.rhythm-pad.is-miss{animation:rhythm-pad-miss .32s ease-out}
+.rhythm-judgement{position:absolute;top:44%;left:50%;transform:translate(-50%,-50%);z-index:6;pointer-events:none;opacity:0;white-space:nowrap}
+.rhythm-judgement.is-on{animation:rhythm-judge .42s ease-out forwards}
+.rhythm-stage-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:7;pointer-events:none}
+.rhythm-stage-overlay[hidden]{display:none!important}
+.rhythm-rank[hidden],.rhythm-error[hidden],#bpmRow[hidden]{display:none!important}
+.rhythm-action:disabled{opacity:.37;cursor:not-allowed}
+.rhythm-controls{display:flex;flex-wrap:wrap;gap:9px}
+.rhythm-settings{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.rhythm-field{display:flex;align-items:center;gap:10px;min-width:0}
+.rhythm-field select{max-width:100%;min-width:0;flex:1}
+.rhythm-hud{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0}
+.rhythm-hud>div{min-width:0;display:flex;flex-direction:column;gap:4px}
+.rhythm-hud strong{white-space:nowrap}
+@keyframes rhythm-pad-hit{0%{filter:brightness(2.8);transform:translate(-50%,-50%) scale(1.12)}100%{filter:brightness(1);transform:translate(-50%,-50%) scale(1)}}
+@keyframes rhythm-pad-miss{50%{filter:brightness(.4)}100%{filter:brightness(1)}}
+@keyframes rhythm-judge{0%{opacity:0;transform:translate(-50%,-40%) scale(.8)}28%{opacity:1;transform:translate(-50%,-50%) scale(1.1)}85%{opacity:1}100%{opacity:0;transform:translate(-50%,-68%) scale(1)}}
+@media(max-width:650px){.rhythm-settings{grid-template-columns:1fr 1fr}.rhythm-field{flex-direction:column;align-items:stretch;gap:5px}.rhythm-field select{width:100%}.rhythm-hud strong{font-size:clamp(13px,3.6vw,19px)}.rhythm-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.rhythm-stage{height:clamp(440px,64svh,570px)}}
+@media(max-width:360px){.rhythm-stage{height:430px}}
+@media(prefers-reduced-motion:reduce){.rhythm-pad.is-hit,.rhythm-pad.is-miss,.rhythm-judgement.is-on{animation-duration:.01s}}

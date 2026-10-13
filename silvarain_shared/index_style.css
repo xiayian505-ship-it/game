@@ -1,0 +1,760 @@
+/* ==========================================================
+ * 鹿雨森｜官網 UI／排版
+ *
+ * 網站導覽、主視覺、內容、按鈕、頁尾與響應式統一在這裡。
+ * ========================================================== */
+
+/* ---------- 全站基礎 ---------- */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 92px;
+}
+
+body {
+  min-width: 300px;
+  margin: 0;
+  overflow-x: hidden;
+  background: var(--night);
+  color: var(--mist);
+  font-family: "Noto Serif TC", "Songti TC", "PMingLiU", serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+a:focus-visible {
+  outline: 2px solid #b8f0d9;
+  outline-offset: 5px;
+}
+
+::selection {
+  background: rgba(135, 207, 185, 0.35);
+  color: white;
+}
+
+main,
+.site-footer {
+  position: relative;
+  z-index: 10;
+}
+
+/* ---------- 頂端導覽 ---------- */
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  border-bottom: 1px solid rgba(190, 225, 215, 0.14);
+  background: rgba(6, 19, 20, 0.76);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+}
+
+.nav-shell {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 30px;
+  width: min(1160px, calc(100% - 48px));
+  min-height: 78px;
+  margin: auto;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-width: 0;
+}
+
+.brand-mark {
+  flex: none;
+  width: 36px;
+  height: 40px;
+  color: #b5e8d5;
+  filter: drop-shadow(0 0 7px rgba(135, 207, 185, 0.3));
+}
+
+.brand-name {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.brand-zh {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  white-space: nowrap;
+}
+
+.brand-en {
+  color: #a8cbbf;
+  font: italic 16px "Cormorant Garamond", Georgia, serif;
+  letter-spacing: 0.11em;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 34px;
+}
+
+.nav-text {
+  color: #b8d0c8;
+  font-size: 13px;
+  letter-spacing: 0.16em;
+  transition: color 0.2s;
+}
+
+.nav-text:hover {
+  color: white;
+}
+
+.nav-cta,
+.button {
+  border: 1px solid rgba(148, 221, 195, 0.57);
+  border-radius: 2px;
+  background: rgba(13, 40, 38, 0.6);
+  transition:
+    background 0.3s,
+    border-color 0.3s,
+    box-shadow 0.3s,
+    transform 0.3s;
+}
+
+.nav-cta {
+  padding: 11px 19px;
+  font-size: 13px;
+  letter-spacing: 0.14em;
+}
+
+.nav-cta--demo {
+  border-color: rgba(192, 226, 214, 0.3);
+  background: rgba(6, 22, 22, 0.36);
+}
+
+.nav-cta:hover,
+.button:hover {
+  border-color: #aff2d6;
+  background: rgba(54, 116, 102, 0.3);
+  box-shadow: 0 0 24px rgba(135, 207, 185, 0.16);
+}
+
+/* ---------- 首頁主視覺 ---------- */
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: min(1120px, calc(100% - 40px));
+  min-height: min(790px, calc(100svh - 78px));
+  margin: 0 auto;
+  padding: 78px 20px 82px;
+  text-align: center;
+}
+
+.eyebrow {
+  margin: 0;
+  color: #a4d0c2;
+  font: 400 12px "Cormorant Garamond", Georgia, serif;
+  letter-spacing: 0.43em;
+  text-transform: uppercase;
+}
+
+.hero-antler {
+  width: min(235px, 52vw);
+  height: auto;
+  margin: 8px auto -4px;
+  overflow: visible;
+  filter:
+    drop-shadow(0 0 10px rgba(146, 228, 203, 0.5))
+    drop-shadow(0 0 29px rgba(126, 201, 181, 0.3));
+}
+
+.hero-antler path {
+  fill: none;
+  stroke: #c1ecdd;
+  stroke-width: 1.25;
+  stroke-linecap: round;
+  stroke-dasharray: 350;
+  stroke-dashoffset: 350;
+  animation: antler-appear 3s ease forwards;
+}
+
+@keyframes antler-appear {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.hero h1 {
+  margin: 2px 0 4px;
+  color: #eef9f3;
+  font-size: clamp(66px, 14vw, 145px);
+  font-weight: 700;
+  line-height: 1.22;
+  letter-spacing: 0.15em;
+  text-indent: 0.15em;
+  text-shadow:
+    0 0 27px rgba(135, 207, 185, 0.27),
+    0 10px 36px rgba(0, 0, 0, 0.65);
+}
+
+.subtitle {
+  margin: 0;
+  color: #d3e8df;
+  font: italic clamp(17px, 3vw, 25px) "Cormorant Garamond", Georgia, serif;
+  letter-spacing: 0.11em;
+}
+
+.hero-rule,
+.fine-rule {
+  --sl-divider-color: rgba(146, 225, 197, 0.7);
+}
+
+.hero-rule {
+  width: min(265px, 60vw);
+  margin: 26px auto 23px;
+}
+
+.hero-quote {
+  margin: 0;
+  color: #c4ddd4;
+  font-size: clamp(14px, 2.3vw, 17px);
+  font-weight: 300;
+  line-height: 2.1;
+  letter-spacing: 0.23em;
+}
+
+.hero-note {
+  margin: 14px 0 0;
+  color: #93b6ab;
+  font-size: 13px;
+  line-height: 2;
+  letter-spacing: 0.13em;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 36px;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-width: 188px;
+  min-height: 50px;
+  padding: 13px 22px;
+  font: 500 15px "Noto Serif TC", serif;
+  letter-spacing: 0.23em;
+}
+
+.button--secondary {
+  border-color: rgba(192, 226, 214, 0.3);
+  background: rgba(6, 22, 22, 0.36);
+  color: #d0e0da;
+}
+
+.button:active {
+  transform: scale(0.98);
+}
+
+.scroll-cue {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 64px;
+  color: rgba(204, 234, 223, 0.58);
+  font: italic 16px "Cormorant Garamond", Georgia, serif;
+  letter-spacing: 0.19em;
+}
+
+.scroll-cue::after {
+  display: block;
+  width: 1px;
+  height: 44px;
+  background: linear-gradient(#9adcc6, transparent);
+  content: "";
+}
+
+/* ---------- 官網內容共通 ---------- */
+
+.content {
+  width: min(1040px, calc(100% - 48px));
+  margin: auto;
+  padding: 18px 0 110px;
+}
+
+.section {
+  padding: 98px 0;
+  border-top: 1px solid var(--line);
+}
+
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 17px;
+  margin: 0;
+  color: #9dd3bf;
+  font: italic 16px "Cormorant Garamond", Georgia, serif;
+  letter-spacing: 0.17em;
+}
+
+.section-label::after {
+  width: 70px;
+  height: 1px;
+  background: var(--line);
+  content: "";
+}
+
+.section h2 {
+  margin: 25px 0 28px;
+  color: #e9f8f0;
+  font-size: clamp(30px, 5vw, 49px);
+  font-weight: 500;
+  letter-spacing: 0.19em;
+}
+
+.section p:not(.section-label, .game-notice) {
+  color: #c5d9d1;
+  font-size: 15px;
+  font-weight: 300;
+  line-height: 2.25;
+  letter-spacing: 0.07em;
+}
+
+/* ---------- 關於鹿雨森 ---------- */
+
+.intro-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(200px, 0.72fr);
+  align-items: center;
+  gap: 70px;
+}
+
+.intro-copy {
+  max-width: 600px;
+}
+
+.intro-aside {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 265px;
+  overflow: hidden;
+  border: 1px solid rgba(177, 220, 207, 0.18);
+  background: linear-gradient(
+    140deg,
+    rgba(37, 83, 77, 0.14),
+    rgba(7, 23, 24, 0.5)
+  );
+}
+
+.intro-aside::before {
+  position: absolute;
+  inset: 17px;
+  border: 1px solid rgba(176, 225, 208, 0.11);
+  content: "";
+}
+
+.intro-aside::after {
+  position: absolute;
+  width: 175px;
+  height: 175px;
+  border: 1px solid rgba(178, 231, 211, 0.24);
+  border-radius: 50%;
+  box-shadow: 0 0 75px rgba(159, 226, 203, 0.06);
+  content: "";
+}
+
+.aside-words {
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  text-align: center;
+}
+
+.aside-words strong {
+  color: #bdded1;
+  font: italic 39px "Cormorant Garamond", Georgia, serif;
+}
+
+.aside-words small {
+  color: #a7c8be;
+  font-size: 12px;
+  letter-spacing: 0.34em;
+}
+
+/* ---------- 正式遊戲與 Demo 雙入口 ---------- */
+
+.game-entry-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.game-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 380px;
+  padding: 45px 39px;
+  overflow: hidden;
+  border: 1px solid rgba(169, 224, 201, 0.3);
+  background:
+    radial-gradient(
+      ellipse at 72% 35%,
+      rgba(99, 162, 141, 0.18),
+      transparent 42%
+    ),
+    linear-gradient(
+      125deg,
+      rgba(7, 25, 27, 0.88),
+      rgba(20, 57, 54, 0.78)
+    );
+}
+
+.game-panel--demo {
+  background:
+    radial-gradient(ellipse at 72% 35%, rgba(152, 187, 205, 0.13), transparent 42%),
+    linear-gradient(125deg, rgba(7, 24, 27, 0.88), rgba(29, 51, 55, 0.78));
+}
+
+.game-panel--demo .panel-spark {
+  background: #dfedf5;
+  box-shadow: 0 0 17px 7px rgba(164, 204, 226, 0.22);
+}
+
+.game-panel::before,
+.game-panel::after {
+  position: absolute;
+  top: 10px;
+  right: -15px;
+  width: 260px;
+  height: 260px;
+  border: 1px solid rgba(180, 232, 211, 0.13);
+  border-radius: 50%;
+  pointer-events: none;
+  content: "";
+}
+
+.game-panel::after {
+  top: 49px;
+  right: 25px;
+  width: 185px;
+  height: 185px;
+  border-color: rgba(180, 232, 211, 0.2);
+}
+
+.panel-spark {
+  position: absolute;
+  top: 140px;
+  right: 116px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #dcf6e8;
+  box-shadow: 0 0 17px 7px rgba(150, 217, 189, 0.25);
+}
+
+.game-panel > :not(.panel-spark) {
+  z-index: 1;
+}
+
+.game-panel h2 {
+  margin: 14px 0;
+  font-size: clamp(28px, 5vw, 48px);
+}
+
+.game-panel p:not(.section-label) {
+  max-width: 540px;
+  margin: 0 0 26px;
+}
+
+.game-notice {
+  margin-top: 15px;
+  color: #9cbdb1;
+  font-size: 12px;
+  line-height: 1.9;
+}
+
+/* ---------- 森林近況 ---------- */
+
+.status-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: start;
+  gap: 55px;
+}
+
+.status-detail {
+  margin-top: 42px;
+  padding: 25px 30px;
+  border-left: 1px solid rgba(147, 222, 196, 0.65);
+  background: linear-gradient(
+    90deg,
+    rgba(124, 199, 174, 0.08),
+    transparent
+  );
+}
+
+.status-detail h3 {
+  display: block;
+  margin: 0 0 8px;
+  color: #d5ede3;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+}
+
+.status-detail p {
+  margin: 0;
+  font-size: 13px !important;
+}
+
+.fine-rule {
+  max-width: 320px;
+  margin: 24px 0;
+}
+
+/* ---------- 頁尾 ---------- */
+
+.site-footer {
+  border-top: 1px solid rgba(185, 219, 207, 0.18);
+  background: rgba(4, 15, 16, 0.78);
+}
+
+.footer-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  width: min(1040px, calc(100% - 48px));
+  min-height: 115px;
+  margin: auto;
+  padding: 28px 0;
+}
+
+.footer-name {
+  margin: 0;
+  font: italic 23px "Cormorant Garamond", Georgia, serif;
+  letter-spacing: 0.08em;
+}
+
+.footer-small {
+  margin: 0;
+  color: #8eada3;
+  font-size: 11px;
+  line-height: 2;
+  letter-spacing: 0.1em;
+}
+
+.footer-link {
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(183, 214, 202, 0.3);
+  color: #b7d6ca;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+
+.footer-link:hover {
+  color: white;
+}
+
+/* 入場動畫由軍火庫 fade_up.css 執行，宿主只設定速度。 */
+.slowly-fade-up {
+  --slowly-reveal-y: 16px;
+  --slowly-reveal-speed: 0.9s;
+}
+
+/* 按鈕掃光的外觀參數仍屬宿主。 */
+.sbs-shine { --sbs-shine-color: rgba(200, 240, 228, 0.19); }
+
+/* ---------- 手機與窄螢幕 ---------- */
+
+@media (max-width: 700px) {
+  html {
+    scroll-padding-top: 76px;
+  }
+
+  .nav-shell {
+    width: calc(100% - 32px);
+    min-height: 67px;
+    gap: 8px;
+  }
+
+  .brand {
+    gap: 9px;
+  }
+
+  .brand-mark {
+    width: 27px;
+    height: 33px;
+  }
+
+  .brand-zh {
+    font-size: 16px;
+    letter-spacing: 0.16em;
+  }
+
+  .brand-en {
+    font-size: 14px;
+  }
+
+  .nav-links {
+    gap: 12px;
+  }
+
+  .nav-text {
+    display: none;
+  }
+
+  .nav-cta {
+    padding: 10px 9px;
+    font-size: 11px;
+    letter-spacing: 0.035em;
+    white-space: nowrap;
+  }
+
+  .nav-links {
+    gap: 8px;
+  }
+
+  .hero {
+    min-height: calc(100svh - 67px);
+    padding: 72px 6px 58px;
+  }
+
+  .hero h1 {
+    font-size: clamp(62px, 18vw, 96px);
+  }
+
+  .hero-antler {
+    width: min(205px, 57vw);
+  }
+
+  .hero-quote {
+    letter-spacing: 0.1em;
+  }
+
+  .hero-actions {
+    gap: 12px;
+  }
+
+  .button {
+    min-width: 145px;
+    padding: 12px 16px;
+    font-size: 13px;
+    letter-spacing: 0.12em;
+  }
+
+  .scroll-cue {
+    margin-top: 48px;
+  }
+
+  .content {
+    width: calc(100% - 38px);
+    padding-bottom: 65px;
+  }
+
+  .section {
+    padding: 70px 0;
+  }
+
+  .section h2 {
+    letter-spacing: 0.13em;
+  }
+
+  .intro-layout,
+  .status-layout {
+    grid-template-columns: 1fr;
+    gap: 27px;
+  }
+
+  .intro-aside {
+    min-height: 180px;
+  }
+
+  .game-entry-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .game-panel {
+    min-height: 310px;
+    padding: 38px 27px;
+  }
+
+  .game-panel::before {
+    right: -146px;
+  }
+
+  .game-panel::after {
+    right: -99px;
+  }
+
+  .panel-spark {
+    right: 12px;
+  }
+
+  .footer-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+}
+
+/* ---------- 尊重使用者的減少動態偏好 ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .hero-antler path {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+
+
+  .nav-cta,
+  .button {
+    transition: none;
+  }
+}
+
+/* 雙入口在較窄的平板也改為上下排列，避免文字擠壓。 */
+@media (min-width: 701px) and (max-width: 870px) {
+  .game-entry-grid { grid-template-columns: 1fr; }
+  .game-panel { min-height: 310px; }
+}
+
+@media (max-width: 380px) {
+  .nav-shell { width: calc(100% - 22px); }
+  .brand-mark { width: 22px; }
+  .brand-zh { font-size: 14px; }
+  .brand-en { font-size: 12px; }
+  .nav-cta { padding: 9px 6px; font-size: 10px; }
+  .nav-links { gap: 5px; }
+}
