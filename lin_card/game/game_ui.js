@@ -34,6 +34,65 @@
     </div>`;
   }
 
+  // 對戰前與個人牌組編輯共用：依同名、同類合併「顯示」，選取仍逐張使用實體卡 ID。
+  // 初始 25 張挑選仍保持原本 Tree 操作，避免改動尚未討論的開局流程。
+  function groupedDeckCards(cards) {
+    const groups = new Map();
+    for (const card of cards) {
+      const key = `${card.type}:${card.name}`;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(card);
+    }
+    return [...groups.values()];
+  }
+  function deckGroupMarkup(cards, chosen) {
+    const sample = cards[0];
+    const count = cards.filter(card => chosen.has(card.id)).length;
+    const full = count === cards.length || chosen.size >= 30;
+    const key = `${sample.type}:${sample.name}`;
+    const expanded = openDetails.deck === key;
+    const displayCard = cards.find(card => chosen.has(card.id)) || sample;
+    return `<div class="lc-deck-stack ${count ? "has-picks" : ""}" data-stack="${esc(key)}">
+      <div class="lc-deck-stack-face">
+        ${cardMarkup(displayCard, { action: "deck-plus", selected: count > 0, disabled: full })}
+        <span class="lc-deck-stack-count" aria-hidden="true">×${count}</span>
+      </div>
+      <div class="lc-deck-stack-controls">
+        <button type="button" class="lc-deck-minus" data-act="deck-minus" data-id="${esc(sample.id)}" aria-label="減少一張${esc(sample.name)}" ${count ? "" : "disabled"}>−</button>
+        <span aria-label="已選 ${count} 張，持有 ${cards.length} 張">${count} / ${cards.length}</span>
+      </div>
+      ${cards.length > 1 ? `<button type="button" class="lc-deck-variants-toggle" data-act="deck-variants" data-key="${esc(key)}" aria-controls="lc-deck-variants-${esc(sample.id)}" aria-expanded="${expanded}">${expanded ? "收起各張 ↑" : "查看各張 ↓"}</button>` : ""}
+    </div>`;
+  }
+  // 查看各張展開整組的每張實體卡；直接選取 ID，等級與分支只顯示既有牌面內容。
+  // 展開區跨越分類的兩欄，避免各張卡再被擠進單一半欄。
+  function deckVariantsMarkup(cards, chosen) {
+    const sample = cards[0];
+    return `<div class="lc-deck-variants" id="lc-deck-variants-${esc(sample.id)}">
+      <div class="lc-deck-variants-heading">${esc(sample.name)} · ${cards.length} 張</div>
+      <div class="lc-deck-variant-list">${cards.map((card, i) => {
+        const selected = chosen.has(card.id);
+        const canPick = selected || chosen.size < 30;
+        const level = Data.LEVEL_TYPES.includes(card.type) ? `Lv.${card.level}` : "固定效果";
+        const action = selected ? "點擊移出" : "點擊加入";
+        return `<div class="lc-deck-variant-card ${selected ? "is-picked" : ""}">
+          ${cardMarkup(card, { action: "deck", selected, disabled: !canPick, ariaLabel: `${card.name} 第 ${i + 1} 張 ${level}，${selected ? "已選，點擊移出" : canPick ? "未選，點擊加入" : "未選，出戰牌組已滿"}` })}
+          <span class="lc-deck-variant-caption">第 ${i + 1} 張 · ${selected ? "已選" : canPick ? action : "牌組已滿"}</span>
+        </div>`;
+      }).join("")}</div>
+    </div>`;
+  }
+  function deckCategoryCards(members, chosen) {
+    const groups = groupedDeckCards(members);
+    const html = [];
+    for (let i = 0; i < groups.length; i += 2) {
+      const pair = groups.slice(i, i + 2);
+      html.push(...pair.map(cards => deckGroupMarkup(cards, chosen)));
+      const expanded = pair.find(cards => openDetails.deck === `${cards[0].type}:${cards[0].name}` && cards.length > 1);
+      if (expanded) html.push(deckVariantsMarkup(expanded, chosen));
+    }
+    return html.join("");
+  }
   function selectionTree(cards, mode, chosen) {
     const tree = treeStates[mode];
     if (!tree) return `<p class="lc-error">軍火庫 Tree Selection 尚未載入。請確認網路連線後重新整理，避免無法展開卡牌分類。</p>`;
@@ -48,7 +107,7 @@
           <span class="lc-tree-heading-label"><span class="lc-tree-symbol" aria-hidden="true">${esc(Data.SYMBOLS[type])}</span>${esc(Data.LABELS[type])}牌</span>
           <span class="lc-tree-heading-count">已選 ${selectedCount} / ${members.length}</span><span class="lc-tree-chevron" aria-hidden="true">${expanded ? "⌄" : "›"}</span>
         </button>
-        ${expanded ? `<div class="lc-tree-items" id="${groupId}">${members.length ? members.map(card => {
+        ${expanded ? `<div class="lc-tree-items ${mode === "deck" ? "lc-deck-two-columns" : ""}" id="${groupId}">${members.length ? (mode === "deck" ? deckCategoryCards(members, chosen) : members.map(card => {
           const detailOpen = openDetails[mode] === card.id;
           const selected = chosen.has(card.id);
           return `<div class="lc-tree-item ${selected ? "is-picked" : ""}">
@@ -57,7 +116,7 @@
             </button>
             ${detailOpen ? treeCardDetail(card, mode, chosen) : ""}
           </div>`;
-        }).join("") : `<p class="lc-tree-empty">目前沒有此類卡牌。</p>`}</div>` : ""}
+        }).join("")) : `<p class="lc-tree-empty">目前沒有此類卡牌。</p>`}</div>` : ""}
       </section>`;
     }).join("")}</div>`;
   }
@@ -90,7 +149,7 @@
       <span class="lc-card-description">${esc(Data.describe(card, opts.buff || 0))}</span>
       <span class="lc-card-foot"><span>${level}</span><span>${card.branch && card.branch !== "標準" ? esc(card.branch) : "✦"}</span></span>`;
     const style = Number.isFinite(opts.angle) ? ` style="--fan-tilt:${opts.angle.toFixed(2)}deg;--fan-rise:${opts.rise || 0}px"` : "";
-    const attr = action ? ` type="button" data-act="${esc(action)}" data-id="${esc(card.id)}" ${Number.isInteger(opts.index) ? `data-index="${opts.index}"` : ""}${style}` : "";
+    const attr = action ? ` type="button" data-act="${esc(action)}" data-id="${esc(card.id)}" ${opts.disabled ? "disabled" : ""}${Number.isInteger(opts.index) ? `data-index="${opts.index}"` : ""}${opts.ariaLabel ? ` aria-label="${esc(opts.ariaLabel)}"` : ""}${style}` : "";
     const cls = `lc-card ${selected ? "is-selected" : ""} ${unpayable ? "is-unpayable" : ""}`;
     return action ? `<button class="${cls}" data-type="${card.type}"${attr} aria-pressed="${selected}">${inner}</button>`
       : `<div class="${cls}" data-type="${card.type}">${inner}</div>`;
@@ -107,21 +166,11 @@
       <div class="lc-sticky-actions"><p>注意：選剩的卡牌會加入 Boss 原有 105 張牌庫。</p><button class="lc-primary" data-act="confirm-initial" ${v.chosenInitial.size !== 25 ? "disabled" : ""}>領取 5 張攻擊＋25 張自選，開始遊戲 →</button></div>`;
   }
   function deckView(v) {
-    const save = v.save;
-    const stage = save.stage;
-    const deckName = ["一", "二", "三"][save.activeDeckIndex] || "一";
-    return `${headline(save, `02 / CHAPTER ${String(stage).padStart(2, "0")}`, `第 ${stage} 關｜${Data.CHAPTERS[stage - 1]}`, `目前編輯牌組${deckName}。從永久收藏自由配置最多 30 張出戰卡牌。`)}
-      <div class="lc-status-grid">
-        <div><span>你的生命</span><strong>${Data.HEALTH[stage - 1]}</strong></div>
-        <div><span>Boss 生命</span><strong>${Data.HEALTH[stage - 1] / 2}</strong></div>
-        <div><span>永久收藏</span><strong>${save.player.length} / 80</strong></div>
-        <div><span>Boss 牌庫</span><strong>${save.boss.length} 張</strong></div>
-      </div>
-      <div class="lc-starter-note">✧ 本關玩家初始行動點 ${5 + save.completed}（已通關 ${save.completed} 次）；Boss 仍是 5 點；雙方開場魔法點皆為 5。</div>
-      <div class="lc-count-line"><strong>牌組${deckName}：${v.chosenDeck.size} / 30 張</strong><button class="lc-quiet" data-act="select-all">快速選前 30 張</button></div>
-      <p class="lc-tree-guide">七大類預設收合，分類互斥；點卡名的「詳細」，才會顯示效果、消耗及加入／移出操作。</p>
-      ${selectionTree(save.player, "deck", v.chosenDeck)}
-      <div class="lc-sticky-actions"><p>每場生命、行動點與魔法點重新補滿；牌的等級和 Boss 收到的棄牌則永久保留。</p><button class="lc-primary" data-act="start" ${v.chosenDeck.size === 0 || !v.hasLibrary ? "disabled" : ""}>帶 ${v.chosenDeck.size} 張牌出戰 →</button></div>
+    // 關卡名已在上方可返回的主標題顯示；準備頁只留選牌、精簡張數與出戰。
+    // Tree Selection 操作與存檔規則維持原樣，待選牌新方案確認後再調整。
+    return `<div class="lc-deck-prep-count">已選 ${v.chosenDeck.size} / 30 張</div>
+      ${selectionTree(v.save.player, "deck", v.chosenDeck)}
+      <div class="lc-deck-prep-actions"><button class="lc-primary" type="button" data-act="start" ${v.chosenDeck.size === 0 || !v.hasLibrary ? "disabled" : ""}>出戰</button></div>
       ${v.hasLibrary ? "" : `<p class="lc-error">軍火庫 Deck 尚未載入。必須連上網路才能開戰；請確認 HTTPS 引用可用。</p>`}`;
   }
   // 首頁三道霧林路徑互斥聚焦：第一次點選，第二次確認進入。
@@ -215,6 +264,8 @@
     if (area === "profile") {
       if (profileSection === "editor") profileSection = "decks";
       else profileSection = null;
+    } else if (area === "prologue") {
+      trialSection = "challenge";
     } else if (area === "levels") {
       if (trialSection) trialSection = null;
       else levelsSection = null;
@@ -313,18 +364,27 @@
     const save = v.save;
     const finished = save.completed >= 10;
     return `${sectionBack("開始試煉", "levels")}${sectionTitle(sectionPaths.levels[0])}
-      <div class="lc-marks-summary"><div><small>已通過</small><strong>${save.completed}<span> / 10</span></strong></div><div><small>${finished ? "旅程" : "目前試煉"}</small><strong>${finished ? "完成" : String(save.stage).padStart(2, "0")}</strong></div></div>
       <div class="lc-marks-list" aria-label="十關通關刻痕">${Data.CHAPTERS.map((name, i) => {
         const cleared = i < save.completed;
         const current = !finished && i + 1 === save.stage;
         return `<div class="lc-mark-row ${cleared ? "is-cleared" : current ? "is-current" : "is-locked"}"><span class="lc-mark-num">${String(i + 1).padStart(2, "0")}</span><span class="lc-mark-name">${esc(name)}</span><span class="lc-mark-state">${cleared ? "✓ 已通過" : current ? "目前關卡" : "未解鎖"}</span></div>`;
       }).join("")}</div>`;
   }
+  function prologueView() {
+    // 劇情第 0 章尚未啟用；目前僅作為完整清除本作遊戲紀錄的明確入口。
+    return `${sectionBack("試煉挑戰", "prologue")}
+      <header class="lc-sub-heading lc-prologue-heading"><span class="lc-sub-heading-symbol" aria-hidden="true">☾</span><h2>契約之前</h2></header>
+      <div class="lc-prologue-restart"><p>昔日所行之路，將重新隱沒於霧中。</p>
+        <p>重新啟程會清除全部遊戲紀錄，包括永久收藏、Boss 牌庫、個人牌組、十關進度及故事紀錄，無法復原。</p>
+        <div class="lc-prologue-actions"><button type="button" data-act="restart-journey">重新啟程</button><button type="button" data-act="back-prologue">留在此處</button></div>
+      </div>`;
+  }
   function challengeView(v) {
     const save = v.save;
     const finished = save.completed >= 10;
     return `${sectionBack("十重試煉", "levels")}${sectionTitle(sectionPaths.trials[0])}
-      <div class="lc-chapter-choices">${Data.CHAPTERS.map((name, i) => {
+      <div class="lc-chapter-choices"><button type="button" class="lc-chapter-choice lc-chapter-prologue" data-act="open-prologue">
+        <span>CHAPTER 00</span><strong>契約之前</strong><small>重新啟程</small></button>${Data.CHAPTERS.map((name, i) => {
         const number = i + 1;
         const cleared = number <= save.completed;
         const current = !finished && number === save.stage;
@@ -343,6 +403,7 @@
     if (levelsSection === "marks") return marksView(v);
     if (levelsSection === "trials") {
       if (trialSection === "challenge") return challengeView(v);
+      if (trialSection === "prologue") return prologueView();
       if (trialSection === "boss") return bossArchiveView();
       return `${sectionBack("開始試煉", "levels")}${sectionTitle(sectionPaths.levels[1])}${sectionMenu("trials")}`;
     }
@@ -458,7 +519,10 @@
     const view = screen === "home" ? homeView : screen === "levels" ? levelsView : screen === "profile" ? profileView : phaseView;
     const isGame = screen === "game";
     const isRewardAllocation = isGame && v.save.phase === "reward" && !!v.save.pendingReward?.mode;
-    document.getElementById("status-message").hidden = !isGame || isRewardAllocation;
+    const isDeckPrep = isGame && v.save.phase === "deck";
+    // 準備頁不顯示一般流程通知；真正的開戰／存檔錯誤仍應讓玩家看見。
+    const deckError = /^(開戰失敗|存檔寫入失敗|軍火庫 Deck 尚未載入)/.test(v.notice || "");
+    document.getElementById("status-message").hidden = !isGame || isRewardAllocation || (isDeckPrep && !deckError);
     const intro = document.querySelector(".lc-intro");
     intro?.classList.toggle("is-compact", screen !== "home");
     intro?.classList.toggle("is-home-art", screen === "home");
@@ -483,6 +547,7 @@
     root.classList.toggle("is-journey-panel", screen === "levels" || screen === "profile");
     root.classList.toggle("is-stage-panel", isGame);
     root.classList.toggle("is-reward-allocation", isRewardAllocation);
+    root.classList.toggle("is-deck-prep", isDeckPrep);
     root.innerHTML = view(v);
   }
   function flightGeometry(source, card) {
@@ -632,6 +697,9 @@
       "focus-section": () => focusSection(button.dataset.area, button.dataset.dest),
       "back-section": () => backSection(button.dataset.area),
       "enter-stage": () => open("game"),
+      "open-prologue": () => { trialSection = "prologue"; render(); scrollToTop(); },
+      "back-prologue": () => { trialSection = "challenge"; render(); scrollToTop(); },
+      "restart-journey": () => { if (G.newGame()) { openDetails.choose = null; openDetails.deck = null; open("game"); } },
       "activate-preset": () => G.activateDeck(slot),
       "edit-preset": () => { if (G.view().save.phase !== "deck") return; profileSection = "editor"; if (!G.activateDeck(slot)) profileSection = "decks"; scrollToTop(); },
       "tree-category": () => {
@@ -648,7 +716,9 @@
         render();
       },
       choose: () => G.pickInitial(id), "confirm-initial": G.confirmInitial,
-      deck: () => G.toggleDeck(id), "select-all": G.selectAllDeck,
+      deck: () => G.toggleDeck(id), "deck-plus": () => G.addDeckCopy(id), "deck-minus": () => G.removeDeckCopy(id),
+      "deck-variants": () => { openDetails.deck = openDetails.deck === button.dataset.key ? null : button.dataset.key; render(); },
+      "select-all": G.selectAllDeck,
       start: G.beginBattle, hand: () => playHand(Number(button.dataset.index), button),
       "close-target": G.closeTarget, target: () => confirmTarget(id),
       "end-turn": bossTurn, "toggle-battle-sound": () => { window.MistBattleFX?.setEnabled(!window.MistBattleFX.enabled); render(); }, "toggle-battle-vibration": () => { window.MistBattleHaptics?.setEnabled(!window.MistBattleHaptics.enabled); render(); }, "opening-exchange": G.openingExchange, discard: G.freeDiscard, concede: G.concede,

@@ -20,6 +20,9 @@
     const section = `chapter_${String(save.completed).padStart(2, "0")}`;
     return enabled() && save.completed >= 1 && save.completed <= 10 && !seen(section) ? enter(section) : false;
   }
-  function reset() { try { localStorage.removeItem(SAVE_KEY); } catch (err) { console.warn("故事進度清除失敗", err); } }
+  function reset() {
+    try { localStorage.removeItem(SAVE_KEY); return true; }
+    catch (err) { console.warn("故事進度清除失敗", err); return false; }
+  }
   window.MistStoryBridge = Object.freeze({ beforeBattle, afterReward, reset, SAVE_KEY });
 })();

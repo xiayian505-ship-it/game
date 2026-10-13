@@ -514,11 +514,6 @@ button:disabled {opacity:.45;cursor:not-allowed!important;transform:none!importa
 .lc-archive-part {margin:25px auto 42px;max-width:930px}
 .lc-archive-part h3 {display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:0 0 8px;font-size:18px;font-weight:400;color:var(--lc-cream)}
 .lc-archive-part h3 span {font-size:12px;color:var(--lc-muted)}
-.lc-marks-summary {display:flex;align-items:center;justify-content:center;gap:clamp(40px,11vw,130px);margin:0 auto 26px;text-align:center}
-.lc-marks-summary>div {display:flex;flex-direction:column;gap:2px}
-.lc-marks-summary small {color:var(--lc-muted);font-size:12px}
-.lc-marks-summary strong {font:normal clamp(28px,6vw,44px) Georgia,"Noto Serif TC",serif;color:var(--lc-gold)}
-.lc-marks-summary strong span {font-size:16px;color:var(--lc-muted)}
 .lc-marks-list {width:min(100%,670px);margin:0 auto}
 .lc-mark-row {display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:12px;align-items:center;min-height:49px;padding:8px 4px;border-bottom:1px solid rgba(174,218,192,.12)}
 .lc-mark-num {font:16px Georgia,serif;color:#90a99b}
@@ -554,7 +549,6 @@ button:disabled {opacity:.45;cursor:not-allowed!important;transform:none!importa
   .lc-archive-gallery {grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
   .lc-archive-gallery .lc-card {min-height:212px}
   .lc-archive-part {margin-bottom:30px}
-  .lc-marks-summary {gap:40px}
   .lc-mark-row {grid-template-columns:27px minmax(0,1fr) auto;gap:8px}
   .lc-mark-name {font-size:12px}
   .lc-mark-state {font-size:10px}
@@ -613,3 +607,138 @@ button:disabled {opacity:.45;cursor:not-allowed!important;transform:none!importa
 }
 #app.is-reward-allocation .lc-replace-button:hover {color:var(--lc-gold)}
 #app.is-reward-allocation .lc-replace-button:focus-visible {outline:1px solid var(--lc-gold);outline-offset:2px}
+
+/* v1.0.0｜對戰準備：只去除資訊面板與裝飾外框，不改選牌結構、互動和規則。 */
+#app.lc-game.is-deck-prep {
+  min-height:0;
+  padding:5px 0 30px;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+}
+#app.is-deck-prep .lc-deck-prep-count {
+  margin:0 auto 17px;
+  color:var(--lc-gold);
+  font-size:13px;
+  letter-spacing:.08em;
+  text-align:center;
+}
+#app.is-deck-prep .lc-selection-tree {
+  max-width:850px;
+  margin:0 auto;
+  gap:0;
+}
+#app.is-deck-prep .lc-tree-group {
+  border:0;
+  border-radius:0;
+  background:transparent;
+  overflow:visible;
+}
+#app.is-deck-prep .lc-tree-group + .lc-tree-group {
+  border-top:1px solid rgba(193,225,202,.14);
+}
+#app.is-deck-prep .lc-tree-group.is-expanded {border-color:rgba(193,225,202,.14)}
+#app.is-deck-prep .lc-tree-heading {
+  padding:13px 9px;
+  border:0;
+  background:transparent;
+}
+#app.is-deck-prep .lc-tree-heading:hover,
+#app.is-deck-prep .lc-tree-heading:focus-visible {background:rgba(57,91,68,.20)}
+#app.is-deck-prep .lc-tree-symbol {border:0;background:transparent}
+#app.is-deck-prep .lc-tree-items {padding:0 10px 15px}
+#app.is-deck-prep .lc-tree-detail {
+  margin:0 0 13px;
+  padding:13px 9px 19px;
+  border:0;
+  border-radius:0;
+  background:transparent;
+}
+#app.is-deck-prep .lc-tree-detail-cost {padding:0;border:0;border-radius:0}
+#app.is-deck-prep .lc-tree-pick {
+  min-height:48px;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  color:var(--lc-gold);
+  font-size:13px;
+  font-weight:400;
+  letter-spacing:.08em;
+}
+#app.is-deck-prep .lc-tree-pick:hover:not(:disabled),
+#app.is-deck-prep .lc-tree-pick:focus-visible {color:#f4e4b6;background:rgba(57,91,68,.18);transform:none}
+#app.is-deck-prep .lc-deck-prep-actions {display:flex;justify-content:center;margin:27px 0 0}
+#app.is-deck-prep .lc-deck-prep-actions .lc-primary {
+  min-width:165px;
+  min-height:52px;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  color:var(--lc-cream);
+  font-size:17px;
+  font-weight:400;
+  letter-spacing:.15em;
+}
+#app.is-deck-prep .lc-deck-prep-actions .lc-primary:hover:not(:disabled),
+#app.is-deck-prep .lc-deck-prep-actions .lc-primary:focus-visible {
+  color:#f4e4b6;
+  background:rgba(57,91,68,.18);
+  transform:none;
+}
+@media(max-width:580px) {
+  #app.lc-game.is-deck-prep {padding:0 0 22px}
+  #app.is-deck-prep .lc-tree-heading {padding:12px 3px}
+  #app.is-deck-prep .lc-tree-items {padding:0 2px 12px}
+  #app.is-deck-prep .lc-tree-detail {padding:12px 5px 16px}
+}
+
+
+/* 試煉第 0 章：永遠可進入的重新啟程入口，不假裝成可戰鬥關卡。 */
+.is-journey-panel .lc-chapter-prologue {border-bottom-color:rgba(212,188,128,.36)}
+.is-journey-panel .lc-chapter-prologue>span,
+.is-journey-panel .lc-chapter-prologue small {color:var(--lc-gold)}
+.lc-prologue-heading {margin-bottom:24px}
+.lc-prologue-restart {max-width:570px;margin:6px auto 0;text-align:center;color:var(--lc-cream)}
+.lc-prologue-restart p {margin:0 0 19px;line-height:2;letter-spacing:.04em}
+.lc-prologue-restart p + p {color:var(--lc-muted);font-size:12px;line-height:2}
+.lc-prologue-actions {display:flex;justify-content:center;align-items:center;gap:21px;flex-wrap:wrap;margin-top:22px}
+.lc-prologue-actions button {min-height:47px;padding:8px 15px;border:0;border-bottom:1px solid rgba(213,191,134,.35);background:transparent;color:var(--lc-cream);cursor:pointer;letter-spacing:.12em}
+.lc-prologue-actions button:first-child {color:var(--lc-gold);border-bottom-color:var(--lc-gold)}
+.lc-prologue-actions button:hover,.lc-prologue-actions button:focus-visible {background:rgba(57,91,68,.18)}
+
+/* 同名實體卡合併顯示；兩欄、每張卡點擊 +1，下方小減號 -1。 */
+.lc-selection-tree .lc-tree-items.lc-deck-two-columns {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;gap:22px 15px;padding:9px 10px 21px}
+.lc-deck-stack {min-width:0;text-align:center}
+.lc-deck-stack-face {position:relative;min-width:0}
+.lc-deck-stack-face .lc-card {width:100%;min-height:215px}
+.lc-deck-stack-face .lc-card.is-selected {transform:none}
+.lc-deck-stack-face .lc-card.is-selected::after {display:none}
+.lc-deck-stack-face .lc-card:disabled {opacity:1;cursor:default!important}
+.lc-deck-stack-count {position:absolute;z-index:1;right:8px;bottom:8px;min-width:40px;min-height:27px;display:grid;place-items:center;padding:2px 8px;border-radius:100px;color:var(--lc-gold);background:rgba(4,21,19,.94);border:1px solid rgba(206,187,133,.3);font:15px Georgia,serif;pointer-events:none}
+.lc-deck-stack-controls {display:flex;align-items:center;justify-content:center;gap:13px;margin-top:6px;color:var(--lc-muted);font:12px Georgia,serif}
+.lc-deck-minus {width:42px;height:42px;padding:0;border:0;border-radius:50%;background:transparent;color:var(--lc-gold);font-size:25px;line-height:1;cursor:pointer}
+.lc-deck-minus:hover:not(:disabled),.lc-deck-minus:focus-visible {background:rgba(78,114,88,.22)}
+.lc-deck-variants-toggle {padding:7px 3px;border:0;background:transparent;color:var(--lc-muted);font-size:11px;cursor:pointer}
+.lc-deck-variants-toggle:hover,.lc-deck-variants-toggle:focus-visible {color:var(--lc-gold)}
+/* 查看各張以整行顯示完整實體卡，可分別點選不同等級；不放戰術分支按鈕。 */
+.lc-selection-tree .lc-deck-variants {grid-column:1/-1;min-width:0;padding:12px 0 4px;border-top:1px solid rgba(193,225,202,.15)}
+.lc-deck-variants-heading {margin:0 0 12px;color:var(--lc-cream);font-size:12px;letter-spacing:.08em;text-align:center}
+.lc-deck-variant-list {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 15px}
+.lc-deck-variant-card {min-width:0;text-align:center}
+.lc-deck-variant-card .lc-card {width:100%;min-height:215px}
+.lc-deck-variant-card .lc-card:disabled {opacity:.52}
+.lc-deck-variant-card .lc-card.is-selected {transform:none}
+.lc-deck-variant-caption {display:block;margin:7px 0 1px;font-size:11px;color:var(--lc-muted)}
+.lc-deck-variant-card.is-picked .lc-deck-variant-caption {color:var(--lc-gold)}
+/* 個人牌組編輯不改頁面其他結構，也套用同一套兩欄的牌面。 */
+@media(max-width:580px) {
+  .lc-selection-tree .lc-tree-items.lc-deck-two-columns {gap:15px 9px;padding:6px 2px 14px}
+  .lc-deck-stack-face .lc-card {min-height:203px}
+  .lc-deck-variant-card .lc-card {min-height:203px}
+  .lc-deck-variant-list {gap:15px 9px}
+  .lc-deck-stack-face .lc-card-symbol {font-size:38px;min-height:30px}
+  .lc-deck-stack-face .lc-card-name {font-size:12px}
+  .lc-deck-stack-count {right:5px;bottom:5px}
+  .lc-deck-stack-controls {gap:8px}
+}

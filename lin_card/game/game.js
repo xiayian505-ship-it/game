@@ -76,6 +76,27 @@
     else return refresh("每場最多帶 30 張卡牌。 ");
     persist(); refresh();
   }
+  // 同名卡只合併在選牌畫面；收藏及牌組仍按每張卡的唯一 ID 儲存。
+  function addDeckCopy(groupId) {
+    if (save.phase !== "deck") return;
+    const groupCard = save.player.find(card => card.id === groupId);
+    if (!groupCard) return;
+    const next = save.player.find(card => card.type === groupCard.type && card.name === groupCard.name && !chosenDeck.has(card.id));
+    if (!next) return;
+    if (chosenDeck.size >= 30) return refresh("每場最多帶 30 張卡牌。 ");
+    chosenDeck.add(next.id);
+    persist(); refresh();
+  }
+  function removeDeckCopy(groupId) {
+    if (save.phase !== "deck") return;
+    const groupCard = save.player.find(card => card.id === groupId);
+    if (!groupCard) return;
+    const group = save.player.filter(card => card.type === groupCard.type && card.name === groupCard.name && chosenDeck.has(card.id));
+    const last = group.at(-1);
+    if (!last) return;
+    chosenDeck.delete(last.id);
+    persist(); refresh();
+  }
   function selectAllDeck() {
     if (save.phase !== "deck") return;
     chosenDeck = new Set(save.player.slice(0, 30).map(c => c.id));
@@ -270,12 +291,21 @@
     refresh(save.completed >= 10 ? "十關全勝，試煉通關！" : `已通過 ${save.completed} 關。下一場玩家初始行動點為 ${5 + save.completed}。`);
   }
   function newGame() {
-    if (!window.confirm("確定重新開始？目前十關進度與雙方永久牌庫將被清除。")) return;
-    Storage.remove(); window.MistStoryBridge?.reset?.(); save = fresh(); chosenInitial = new Set(); chosenDeck = new Set(); battle = null;
-    selectedCard = null; targetPrompt = null; persist(); refresh("已建立新的 40 張初始候選牌池。 ");
+    if (!window.confirm("確定重新啟程？旅人的永久收藏、Boss 牌庫、三套個人牌組、十關進度與故事紀錄都將清除，無法復原。")) return false;
+    if (!Storage.remove()) { refresh("無法清除遊戲存檔；請檢查瀏覽器儲存權限。 "); return false; }
+    if (window.MistStoryBridge?.reset?.() === false) {
+      // 若故事存檔無法清除，先還原遊戲存檔，避免只清除了一半紀錄。
+      const restored = Storage.write(save);
+      refresh(restored ? "故事紀錄清除失敗，已還原遊戲存檔；請檢查瀏覽器儲存權限。 " : "重置中斷且舊存檔還原失敗，請先檢查瀏覽器儲存權限。 ");
+      return false;
+    }
+    save = fresh(); chosenInitial = new Set(); chosenDeck = new Set(); battle = null;
+    selectedCard = null; targetPrompt = null; notice = "";
+    persist(); refresh("已重新啟程，請從初始卡池挑選 25 張卡牌。 ");
+    return true;
   }
   function view() { return { save, battle: battle?.state() || null, selectedCard, targetPrompt, chosenInitial, chosenDeck, notice, hasLibrary: !!window.Deck?.create }; }
-  window.LinCardGame = Object.freeze({ view, pickInitial, confirmInitial, toggleDeck, selectAllDeck, activateDeck, changeBranch, beginBattle, cardClick, playTarget, closeTarget, endTurn, startBossTurn, nextBossCard, finishBossTurn, openingExchange, freeDiscard, concede, retry, chooseReward, acceptReward, rejectReward, newGame, currentReward });
+  window.LinCardGame = Object.freeze({ view, pickInitial, confirmInitial, toggleDeck, addDeckCopy, removeDeckCopy, selectAllDeck, activateDeck, changeBranch, beginBattle, cardClick, playTarget, closeTarget, endTurn, startBossTurn, nextBossCard, finishBossTurn, openingExchange, freeDiscard, concede, retry, chooseReward, acceptReward, rejectReward, newGame, currentReward });
   persist();
   window.addEventListener("DOMContentLoaded", () => window.LinCardUI?.render());
 })();
