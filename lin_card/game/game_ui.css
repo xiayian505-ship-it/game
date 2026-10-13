@@ -750,3 +750,45 @@ button:disabled {opacity:.45;cursor:not-allowed!important;transform:none!importa
 @media(max-width:680px) {
   #app.lc-game.is-battle {padding:0 0 22px}
 }
+
+/* 十重試煉通關：舞台無外框；霧影與兩句結語是唯一內容。 */
+.lc-intro.is-complete-title {display:none}
+#app.lc-game.is-complete {
+  min-height:0;
+  padding:clamp(36px,6vh,64px) 0 30px;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+}
+.lc-finale {display:flex;flex-direction:column;align-items:center;text-align:center;gap:0}
+.lc-finale .lc-foe {margin:0 auto 8px}
+.lc-finale-message {max-width:min(560px,100%);padding:0 12px;color:var(--lc-cream);letter-spacing:.11em;line-height:2}
+.lc-finale-message p {margin:0}
+.lc-finale-message p:first-child {font-size:clamp(19px,3.3vw,26px);color:#f0e3bf}
+.lc-finale-message p + p {margin-top:12px;font-size:clamp(12px,2vw,15px);color:var(--lc-muted)}
+.lc-finale-actions {display:flex;align-items:center;justify-content:center;gap:clamp(12px,4vw,35px);margin:clamp(30px,6vh,52px) auto 0}
+.lc-finale-actions button {
+  min-width:150px;
+  min-height:52px;
+  padding:11px 14px;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  color:var(--lc-cream);
+  font-size:17px;
+  font-weight:400;
+  letter-spacing:.15em;
+  cursor:pointer;
+}
+.lc-finale-actions button:hover,.lc-finale-actions button:focus-visible {
+  color:#f4e4b6;
+  background:rgba(57,91,68,.18);
+  outline-offset:3px;
+}
+@media(max-width:580px) {
+  #app.lc-game.is-complete {padding:27px 0 24px}
+  .lc-finale .lc-foe {margin-bottom:13px}
+  .lc-finale-actions {width:100%;gap:8px;margin-top:31px}
+  .lc-finale-actions button {min-width:0;flex:1;max-width:170px;padding-inline:7px;font-size:15px}
+}

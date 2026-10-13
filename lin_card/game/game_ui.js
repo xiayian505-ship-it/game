@@ -475,9 +475,20 @@
       <div class="lc-finish-icon">☾</div><p class="lc-finish-text">你可以從當前關卡重新挑戰，不必重打之前的關卡。</p>
       <div class="lc-actions-center"><button class="lc-primary" data-act="retry">重試第 ${v.save.stage} 關 →</button><button disabled class="lc-secondary" title="尚未開放">復活｜尚未開放</button></div>`;
   }
-  function completeView(v) {
-    return `${headline(v.save, "THE END / TEN CHAPTERS", "十關試煉通關", "你擊敗了同一位對手的十個稱號。那些被捨棄的牌，都成了這場旅程的一部分。")}
-      <div class="lc-finish-icon">✧</div><div class="lc-status-grid"><div><span>完成關卡</span><strong>10 / 10</strong></div><div><span>最後玩家收藏</span><strong>${v.save.player.length} 張</strong></div><div><span>Boss 最終牌庫</span><strong>${v.save.boss.length} 張</strong></div></div><p class="lc-finish-text">十關已完成，旅程暫告一段落。</p>`;
+  // 通過十重試煉後保留霧影本體與結語，不再顯示關卡名、統計或資訊外框。
+  // 「契約之後」是故事入口，不會重啟已結束的 Boss 戰。
+  function completeView() {
+    return `<section class="lc-finale" aria-label="十重試煉通關">
+      ${bossFigure()}
+      <div class="lc-finale-message" role="status">
+        <p>十重霧障，至此盡散。</p>
+        <p>契約尚有餘音，待你親自揭曉。</p>
+      </div>
+      <div class="lc-finale-actions">
+        <button type="button" data-act="retreat">息兵</button>
+        <button type="button" data-act="open-epilogue">契約之後</button>
+      </div>
+    </section>`;
   }
   function render() {
     if (!root || !window.LinCardGame) return;
@@ -491,16 +502,18 @@
     const isRewardAllocation = isGame && v.save.phase === "reward" && !!v.save.pendingReward?.mode;
     const isDeckPrep = isGame && (v.save.phase === "choose" || v.save.phase === "deck");
     const isBattle = isGame && v.save.phase === "battle";
+    const isComplete = isGame && v.save.phase === "complete";
     // 準備頁不顯示一般流程通知；真正的開戰／存檔錯誤仍應讓玩家看見。
     const deckError = /^(開戰失敗|存檔寫入失敗|軍火庫 Deck 尚未載入)/.test(v.notice || "");
     const battleError = /^(存檔寫入失敗|開戰失敗|行動點|選擇已失效|只有回合|本回合)/.test(v.notice || "");
-    document.getElementById("status-message").hidden = !isGame || isRewardAllocation || (isDeckPrep && !deckError) || (isBattle && !battleError);
+    document.getElementById("status-message").hidden = !isGame || isComplete || isRewardAllocation || (isDeckPrep && !deckError) || (isBattle && !battleError);
     const intro = document.querySelector(".lc-intro");
     intro?.classList.toggle("is-compact", screen !== "home");
     intro?.classList.toggle("is-home-art", screen === "home");
     intro?.classList.toggle("is-page-title", screen === "levels" || screen === "profile");
     intro?.classList.toggle("is-trial-heading", screen === "levels");
-    intro?.classList.toggle("is-stage-title", isGame);
+    intro?.classList.toggle("is-stage-title", isGame && !isComplete);
+    intro?.classList.toggle("is-complete-title", isComplete);
     const stageTitle = document.getElementById("lc-stage-title");
     if (stageTitle) stageTitle.textContent = Data.CHAPTERS[v.save.stage - 1] || "十重試煉";
     // 兩個內頁沿用首頁三路徑的圖示、四字標題和副文，不再顯示英文標語。
@@ -521,6 +534,7 @@
     root.classList.toggle("is-reward-allocation", isRewardAllocation);
     root.classList.toggle("is-deck-prep", isDeckPrep);
     root.classList.toggle("is-battle", isBattle);
+    root.classList.toggle("is-complete", isComplete);
     root.innerHTML = view(v);
   }
   function flightGeometry(source, card) {
