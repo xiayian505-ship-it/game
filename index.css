@@ -27,15 +27,9 @@ button,a {
   min-height:100svh
 }
 
-.site-header,main,.site-footer {
+main,.site-footer {
   position:relative;
   z-index:1
-}
-
-.brand {
-  display:inline-flex;
-  align-items:center;
-  text-decoration:none
 }
 
 .hero {
@@ -118,7 +112,7 @@ button,a {
   z-index:4
 }
 
-.game-card:focus-visible,.brand:focus-visible {
+.game-card:focus-visible {
   outline:3px solid currentColor;
   outline-offset:5px
 }
