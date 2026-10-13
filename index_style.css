@@ -158,8 +158,8 @@ button{color:inherit}
   position:absolute;bottom:40px;right:36px;
   color:#e4ddd48c;font:500 10px/1.4 var(--sans);letter-spacing:.26em;
 }
-.spotlight--arriving .spotlight-copy>*{animation:stage-rise .46s both}
-.spotlight--arriving .spotlight-art .art-icon{animation:icon-arrive .54s both}
+.spotlight--arriving .spotlight-copy>*:not(.slowly-shine-text){animation:stage-rise .46s both}
+/* 圖案動態由軍火庫依展位決定，進場只處理底景。 */
 @keyframes stage-rise{from{opacity:.3;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
 @keyframes icon-arrive{from{opacity:.3;transform:scale(.91)}to{opacity:1;transform:scale(1)}}
 
@@ -341,4 +341,128 @@ button:focus-visible,a:focus-visible{outline:2px solid #f5d890;outline-offset:4p
 }
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;scroll-behavior:auto!important;transition:none!important}
+}
+
+/* ================================================================
+   五座遊戲舞台｜特效組合試演版
+   零件運動機制來自慢慢軍火庫 HTTPS；宿主只決定位置、外觀、節奏。
+   data-effect-slot=1..5 是「展位」，不綁任何遊戲 ID。
+================================================================ */
+/* 舊基礎版圓環已由五組正式舞台裝置接手，避免在手機壓到文字。 */
+.spotlight-decoration{display:none}
+.spotlight-art{isolation:isolate}
+.stage-fx{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden;isolation:isolate}
+.stage-fx .fx{display:none;position:absolute;inset:0;pointer-events:none}
+.spotlight[data-effect-slot="1"] .fx--celestial,
+.spotlight[data-effect-slot="2"] .fx--portal,
+.spotlight[data-effect-slot="3"] .fx--neon,
+.spotlight[data-effect-slot="4"] .fx--dust,
+.spotlight[data-effect-slot="5"] .fx--sunburst{display:block}
+.spotlight-art .art-halo{z-index:0}
+.spotlight-art .art-icon{z-index:3;max-width:85%;overflow:visible}
+.spotlight-art .art-caption{z-index:4;letter-spacing:.13em;font-size:10px;color:#f7ede4b9}
+.play-link{--sbs-shine-color:#ffffffcf}
+.art-icon.sbs-breathe{--sbs-breathe-base:18px;--sbs-breathe-near:38px;--sbs-breathe-far:80px;--sbs-breathe-color:var(--stage-accent)}
+
+/* 換景：整個舞台也換氛圍，而不只是換角落的幾個小圖案。 */
+.spotlight[data-effect-slot="1"]{
+  background:radial-gradient(circle at 80% 42%,color-mix(in srgb,var(--stage-accent) 23%,transparent),transparent 37%),
+    radial-gradient(circle at 76% 55%,#415a922d,transparent 58%),linear-gradient(126deg,#121c36,#0b142a 66%,#091123);
+}
+.spotlight[data-effect-slot="2"]{
+  background:radial-gradient(circle at 82% 40%,color-mix(in srgb,var(--stage-accent) 26%,transparent),transparent 44%),
+    radial-gradient(circle at 65% 15%,#9a65d72e,transparent 55%),linear-gradient(120deg,#261b3b,#17152d 58%,#101529);
+}
+.spotlight[data-effect-slot="3"]{
+  background:radial-gradient(ellipse at 78% 52%,color-mix(in srgb,var(--stage-accent) 17%,transparent),transparent 47%),
+    repeating-linear-gradient(90deg,transparent 0 59px,#98d2ef0b 60px 61px),
+    linear-gradient(125deg,#10232e,#101b31 66%,#0a1725);
+}
+.spotlight[data-effect-slot="4"]{
+  background:radial-gradient(circle at 78% 48%,color-mix(in srgb,var(--stage-accent) 20%,transparent),transparent 50%),
+    radial-gradient(circle at 55% 4%,#4b947b38,transparent 65%),linear-gradient(125deg,#15282f,#10222a 57%,#102332);
+}
+.spotlight[data-effect-slot="5"]{
+  background:radial-gradient(circle at 78% 53%,color-mix(in srgb,var(--stage-accent) 21%,transparent),transparent 43%),
+    radial-gradient(circle at 90% 14%,#ffc3771d,transparent 48%),linear-gradient(126deg,#2e2035,#201829 65%,#211722);
+}
+/* 改變標題和圖形，不奪走各款遊戲自己的主題色。 */
+.spotlight[data-effect-slot="2"] .art-icon.slowly-shine-text{
+  color:transparent;
+  --sl-shine-gradient:linear-gradient(100deg,var(--stage-accent) 3%,#fffaf3 38%,#d7bbff 57%,var(--stage-accent) 90%);
+  --sl-shine-duration:5s;
+  filter:drop-shadow(0 0 18px color-mix(in srgb,var(--stage-accent) 47%,transparent));
+}
+.spotlight[data-effect-slot="5"] .art-icon.slowly-text-gradient-flow{
+  color:transparent;-webkit-text-fill-color:transparent;
+  --slowly-text-gradient:linear-gradient(100deg,#ac7898,var(--stage-accent),#fff9dc 48%,#f6c68f 62%,var(--stage-accent),#ac7898);
+  --slowly-text-flow-duration:7s;
+  --slowly-text-flow-size:245% 100%;
+  filter:drop-shadow(0 0 18px color-mix(in srgb,var(--stage-accent) 42%,transparent));
+}
+.spotlight[data-effect-slot="5"] h3.slowly-shine-text{
+  color:transparent;
+  --sl-shine-gradient:linear-gradient(100deg,#f5e6cb,var(--stage-accent) 28%,#fff8e6 50%,#e2b2a3 67%,#f5e6cb);
+  --sl-shine-duration:8s;
+}
+/* 進場只動畫底景；圖案本身持續用軍火庫的動畫。 */
+/* 效果由軍火庫持續動畫，入場則由底景的短暫 scale 提醒換景。 */
+.spotlight--arriving .art-halo{animation:fx-halo-arrive .72s ease-out both}
+@keyframes fx-halo-arrive{from{opacity:.2;transform:scale(.83)}to{opacity:1;transform:scale(1)}}
+
+/* 01 - 星環脈光｜enso_ring + orbit + breathing_glow */
+.fx-enso,.fx-orbit-position,.fx-gate-position,.fx-gate-inner-ring,.fx-neon-diamond,
+.fx-sun-wheel,.fx-sun-core{position:absolute;top:50%;left:50%;translate:-50% -50%}
+.fx-enso{width:min(79%,355px);aspect-ratio:1;color:color-mix(in srgb,var(--stage-accent) 76%,#fff);opacity:.73;--sbs-enso-speed:55s}
+.fx-orbit-position{width:min(68%,300px);aspect-ratio:1}
+.fx-orbit{width:100%;height:100%;color:var(--stage-accent);opacity:.75;--sbs-orbit-border:1px dashed color-mix(in srgb,var(--stage-accent) 55%,transparent);--sbs-orbit-speed:22s;--sbs-orbit-dot-size:7px;--sbs-orbit-glow:25px}
+.fx-star{position:absolute;width:4px;aspect-ratio:1;border-radius:50%;background:var(--stage-accent);box-shadow:0 0 15px 2px var(--stage-accent);animation:fx-twinkle 3s ease-in-out infinite alternate}
+.fx-star--a{left:24%;top:24%}.fx-star--b{right:16%;top:60%;animation-delay:-1.2s}.fx-star--c{left:40%;bottom:13%;animation-delay:-2s}
+@keyframes fx-twinkle{to{opacity:.22;transform:scale(.55)}}
+.spotlight[data-effect-slot="1"] .art-icon{font-size:clamp(80px,11vw,140px)}
+
+/* 02 - 流光星門｜flowing_border + shine_text */
+.fx-gate-position{width:min(76%,340px);aspect-ratio:1}
+.fx-gate.sbs-flowborder{width:100%;height:100%;border-radius:50%;--sbs-flow-color:var(--stage-accent);--sbs-flow-thickness:3px;--sbs-flow-speed:5.2s;box-shadow:0 0 44px color-mix(in srgb,var(--stage-accent) 24%,transparent)}
+.fx-gate-inner{width:100%;height:100%;border-radius:50%;background:radial-gradient(circle,#191a35cc 0%,#12172ccc 60%,#11152fe8)}
+.fx-gate-inner-ring{width:min(65%,287px);aspect-ratio:1;border:1px solid #ffffff2e;border-radius:50%;box-shadow:inset 0 0 36px #b38fff19,0 0 30px color-mix(in srgb,var(--stage-accent) 12%,transparent)}
+.fx-gate-inner-ring::before,.fx-gate-inner-ring::after{content:"";position:absolute;inset:14px;border:1px solid color-mix(in srgb,var(--stage-accent) 21%,transparent);border-radius:50%}
+.fx-gate-inner-ring::after{inset:29px;border-style:dotted;opacity:.6}
+.fx-gate-spark{position:absolute;width:68px;height:1px;background:linear-gradient(90deg,transparent,var(--stage-accent),transparent);box-shadow:0 0 13px var(--stage-accent);transform:rotate(-42deg)}
+.fx-gate-spark--a{left:11%;top:30%}.fx-gate-spark--b{right:8%;bottom:27%;transform:rotate(44deg)}
+
+/* 03 - 霓虹電場｜electric_border + sweep_line (JS) + breathing_glow */
+.fx-neon-border.slowly-electric-border{position:absolute;inset:23px 30px;border-radius:23px;--slowly-electric-width:2px;--slowly-electric-speed:3.1s;--slowly-electric-color-1:var(--stage-accent);--slowly-electric-color-2:#f3dbff;--slowly-electric-color-3:#7cdeff;--slowly-electric-color-4:var(--stage-accent);--slowly-electric-glow-opacity:.56}
+.fx-neon-grid{position:absolute;inset:20px;opacity:.5;background:repeating-linear-gradient(0deg,transparent 0 39px,#a1e8ff19 40px 41px),repeating-linear-gradient(90deg,transparent 0 39px,#a1e8ff16 40px 41px);mask-image:radial-gradient(ellipse at center,#000 15%,transparent 76%)}
+.fx-neon-diamond{width:min(67%,270px);aspect-ratio:1;border:2px solid color-mix(in srgb,var(--stage-accent) 44%,transparent);transform:rotate(45deg);box-shadow:0 0 32px color-mix(in srgb,var(--stage-accent) 24%,transparent),inset 0 0 45px color-mix(in srgb,var(--stage-accent) 12%,transparent);border-radius:14px}
+.spotlight[data-effect-slot="3"] .art-icon{--sbs-breathe-speed:3.4s}
+
+/* 04 - 星塵漂浮｜particle/float + atom_bob + decorative_glow */
+.fx--dust.slowly-dual-glow{--sl-glow-a:color-mix(in srgb,var(--stage-accent) 32%,transparent);--sl-glow-b:#6ab5ff2e;--sl-glow-a-size:300px;--sl-glow-b-size:250px;--sl-glow-a-x:1%;--sl-glow-a-y:3%;--sl-glow-b-x:5%;--sl-glow-b-y:5%;isolation:auto}
+.fx-dust-haze{position:absolute;width:min(62%,250px);aspect-ratio:1;left:50%;top:50%;translate:-50% -50%;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--stage-accent) 19%,transparent),transparent 72%);border:1px solid color-mix(in srgb,var(--stage-accent) 20%,transparent)}
+.fx-particle.slowly-particle-float{position:absolute;top:var(--py);left:var(--px);--slowly-particle-color:color-mix(in srgb,var(--stage-accent) 80%,white);--slowly-particle-size:calc(4px + (var(--i) * 0.26px));--slowly-particle-distance:-34px;--slowly-particle-duration:calc(3.1s + var(--i) * .17s);--slowly-particle-delay:calc(var(--i) * -.38s);box-shadow:0 0 15px 2px var(--stage-accent)}
+.spotlight[data-effect-slot="4"] .art-icon{--sbs-atom-speed:4.2s;--sbs-atom-rise:-12px}
+
+/* 05 - 曜光流金｜文字流金 + 放射曜輪 + shine_text */
+.fx-sun-wheel{width:min(82%,355px);aspect-ratio:1;border-radius:50%;opacity:.62;background:repeating-conic-gradient(from 0deg,color-mix(in srgb,var(--stage-accent) 44%,transparent) 0deg 1.6deg,transparent 2deg 21deg);mask-image:radial-gradient(circle,transparent 0 43%,#000 47% 60%,transparent 74%);animation:fx-wheel 44s linear infinite}
+.fx-sun-core{width:min(67%,280px);aspect-ratio:1;border:1px solid color-mix(in srgb,var(--stage-accent) 52%,transparent);border-radius:50%;box-shadow:0 0 70px color-mix(in srgb,var(--stage-accent) 22%,transparent),inset 0 0 55px #f2a56a0a}
+.fx-sun-core::before{content:"";position:absolute;inset:17px;border:1px solid color-mix(in srgb,var(--stage-accent) 30%,transparent);border-radius:50%}
+.fx-sun-streak{position:absolute;width:115px;height:1px;background:linear-gradient(90deg,transparent,#fff2c6,transparent);box-shadow:0 0 17px #ffd2a2}
+.fx-sun-streak--a{right:4%;top:25%;transform:rotate(-35deg)}.fx-sun-streak--b{left:10%;bottom:21%;transform:rotate(40deg)}
+@keyframes fx-wheel{to{transform:rotate(360deg)}}
+
+/* 手機上仍保留五種視覺差異，但少一點背景粒子，畫面焦點在遊戲圖案。 */
+@media(max-width:720px){
+  .spotlight-art .art-caption{right:19px;bottom:14px;font-size:9px}
+  .fx-enso{width:240px}.fx-orbit-position{width:200px}
+  .fx-gate-position{width:235px}.fx-gate-inner-ring{width:201px}
+  .fx-neon-border.slowly-electric-border{inset:16px 25px}
+  .fx-neon-diamond{width:183px}
+  .fx-sun-wheel{width:245px}.fx-sun-core{width:205px}
+  .fx-particle:nth-of-type(n+10){display:none}
+  .spotlight[data-effect-slot="1"] .art-icon{font-size:93px}
+}
+@media(prefers-reduced-motion:reduce){
+  .fx-sun-wheel,.fx-star{animation:none!important}
+  .spotlight--arriving .art-halo{animation:none!important}
 }
