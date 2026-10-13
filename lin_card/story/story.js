@@ -1,8 +1,8 @@
 /** 霧林之契 v0.8｜故事資料、進度及跳轉核心。採 JSON 事件格式，僅戰鬥通關才解鎖故事，不因閱讀而解鎖關卡。 */
 (() => {
   "use strict";
-  const SAVE_KEY = "mistforest_pact_story_progress_v2";
-  const GAME_SAVE_KEY = "mistforest_pact_save_v2";
+  const SAVE_KEY = "mistforest_pact_story_progress_v3";
+  const GAME_SAVE_KEY = "mistforest_pact_save_v3";
   const DATA_BASE = new URL("./data/", window.location.href);
   const listeners = new Set();
   const fresh = () => ({ completedSections: [], seenSections: [], bookmark: null });
@@ -32,7 +32,7 @@
   function completedStages() {
     try {
       const saved = JSON.parse(localStorage.getItem(GAME_SAVE_KEY) || "null");
-      if (saved?.version === 3 && Number.isInteger(saved.completed)) return Math.min(10, Math.max(0, saved.completed));
+      if (saved?.version === 5 && Number.isInteger(saved.completed)) return Math.min(10, Math.max(0, saved.completed));
     } catch (err) { console.warn("無法讀取遊戲通關紀錄", err); }
     return 0;
   }
@@ -47,13 +47,19 @@
     if (!result.ok) throw new Error(`故事讀取失敗（HTTP ${result.status}）`);
     return result.json();
   }
+  // 故事章節使用固定的 chapter ID 及 Boss 資料表；未自訂故事標題時直接用最新 Boss 名稱。
+  function chapterTitle(index, reader = false) {
+    if (index === 0) return "序章｜契約之前";
+    const boss = window.LinCardData?.bossByStage(index);
+    return boss ? `第${index}關${reader ? "" : "通關故事"}｜${boss.name}` : `第${index}關`;
+  }
   // 對使用者而言，只需填 JSON 的 events；內容還沒寫的章節自動標成「尚未寫入」。
   function catalog() {
     if (!manifest) return [];
     return manifest.main.map((ch, index) => {
       const section = ch.sections[0];
       const data = prepared.get(ch.id);
-      return { id: ch.id, title: ch.title, sectionId: section.id,
+      return { id: ch.id, title: chapterTitle(index), sectionId: section.id,
         published: Array.isArray(data?.events) && data.events.length > 0,
         unlocked: unlocked(index),
         read: progress.completedSections.includes(ch.id),
@@ -105,7 +111,7 @@
     const bk = progress.bookmark;
     const pos = resume && bk?.chapterId === chapterId && Number.isInteger(bk.index)
       ? Math.max(0, Math.min(bk.index, data.events.length - 1)) : 0;
-    screen = { page: "reader", entry: { chapterId, chapterIndex: index, title: data.title || ch.title, events: data.events }, eventIndex: pos, error: "" };
+    screen = { page: "reader", entry: { chapterId, chapterIndex: index, title: data.title || chapterTitle(index, true), events: data.events }, eventIndex: pos, error: "" };
     bookmark();emit();return true;
   }
   function bookmark() {

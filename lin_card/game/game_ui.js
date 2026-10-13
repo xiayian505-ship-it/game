@@ -19,13 +19,13 @@
     const maximum = mode === "choose" ? 25 : 30;
     const canAdd = isChosen || chosen.size < maximum;
     const resource = Data.resource(card);
-    const costText = card.name === "同命之契" ? "耗盡當下雙資源" : resource === "none" ? "免費" : `${resource === "mana" ? "魔法點" : "行動點"} ${Data.cost(card)}`;
+    const costText = Data.effectOf(card) === "sacrifice" ? "耗盡當下雙資源" : resource === "none" ? "免費" : `${resource === "mana" ? "魔法點" : "行動點"} ${Data.cost(card)}`;
     const levelText = Data.LEVEL_TYPES.includes(card.type) ? `Lv.${card.level}` : "固定效果";
     const branches = mode === "deck" && card.level > 0 && Data.BRANCHES[card.type]
       ? `<label class="lc-tree-branch">戰術分支 <select data-branch-id="${esc(card.id)}">${Data.BRANCHES[card.type].map(branch => `<option value="${esc(branch)}" ${card.branch === branch ? "selected" : ""}>${esc(branch)}</option>`).join("")}</select></label>`
       : "";
     return `<div id="lc-tree-detail-${esc(mode)}-${esc(card.id)}" class="lc-tree-detail">
-      <div class="lc-tree-detail-heading"><strong>${esc(card.name)}</strong><span>${esc(Data.LABELS[card.type])}牌 · ${levelText}</span></div>
+      <div class="lc-tree-detail-heading"><strong>${esc(Data.cardName(card))}</strong><span>${esc(Data.LABELS[card.type])}牌 · ${levelText}</span></div>
       <p class="lc-tree-detail-cost">${esc(costText)}</p>
       <p class="lc-tree-detail-effect">${esc(Data.describe(card))}</p>
       ${branches}
@@ -34,12 +34,12 @@
     </div>`;
   }
 
-  // 對戰前與個人牌組編輯共用：依同名、同類合併「顯示」，選取仍逐張使用實體卡 ID。
+  // 對戰前與個人牌組編輯共用：依固定 cardId 合併「顯示」，選取仍逐張使用實體卡 ID。
   // 初始 25 張挑選仍保持原本 Tree 操作，避免改動尚未討論的開局流程。
   function groupedDeckCards(cards) {
     const groups = new Map();
     for (const card of cards) {
-      const key = `${card.type}:${card.name}`;
+      const key = `${card.cardId}`;
       if (!groups.has(key)) groups.set(key, []);
       groups.get(key).push(card);
     }
@@ -49,7 +49,7 @@
     const sample = cards[0];
     const count = cards.filter(card => chosen.has(card.id)).length;
     const full = count === cards.length || chosen.size >= 30;
-    const key = `${sample.type}:${sample.name}`;
+    const key = `${sample.cardId}`;
     const expanded = openDetails.deck === key;
     const displayCard = cards.find(card => chosen.has(card.id)) || sample;
     return `<div class="lc-deck-stack ${count ? "has-picks" : ""}" data-stack="${esc(key)}">
@@ -58,7 +58,7 @@
         <span class="lc-deck-stack-count" aria-hidden="true">×${count}</span>
       </div>
       <div class="lc-deck-stack-controls">
-        <button type="button" class="lc-deck-minus" data-act="deck-minus" data-id="${esc(sample.id)}" aria-label="減少一張${esc(sample.name)}" ${count ? "" : "disabled"}>−</button>
+        <button type="button" class="lc-deck-minus" data-act="deck-minus" data-id="${esc(sample.id)}" aria-label="減少一張${esc(Data.cardName(sample))}" ${count ? "" : "disabled"}>−</button>
         <span aria-label="已選 ${count} 張，持有 ${cards.length} 張">${count} / ${cards.length}</span>
       </div>
       ${cards.length > 1 ? `<button type="button" class="lc-deck-variants-toggle" data-act="deck-variants" data-key="${esc(key)}" aria-controls="lc-deck-variants-${esc(sample.id)}" aria-expanded="${expanded}">${expanded ? "收起各張 ↑" : "查看各張 ↓"}</button>` : ""}
@@ -69,14 +69,14 @@
   function deckVariantsMarkup(cards, chosen) {
     const sample = cards[0];
     return `<div class="lc-deck-variants" id="lc-deck-variants-${esc(sample.id)}">
-      <div class="lc-deck-variants-heading">${esc(sample.name)} · ${cards.length} 張</div>
+      <div class="lc-deck-variants-heading">${esc(Data.cardName(sample))} · ${cards.length} 張</div>
       <div class="lc-deck-variant-list">${cards.map((card, i) => {
         const selected = chosen.has(card.id);
         const canPick = selected || chosen.size < 30;
         const level = Data.LEVEL_TYPES.includes(card.type) ? `Lv.${card.level}` : "固定效果";
         const action = selected ? "點擊移出" : "點擊加入";
         return `<div class="lc-deck-variant-card ${selected ? "is-picked" : ""}">
-          ${cardMarkup(card, { action: "deck", selected, disabled: !canPick, ariaLabel: `${card.name} 第 ${i + 1} 張 ${level}，${selected ? "已選，點擊移出" : canPick ? "未選，點擊加入" : "未選，出戰牌組已滿"}` })}
+          ${cardMarkup(card, { action: "deck", selected, disabled: !canPick, ariaLabel: `${Data.cardName(card)} 第 ${i + 1} 張 ${level}，${selected ? "已選，點擊移出" : canPick ? "未選，點擊加入" : "未選，出戰牌組已滿"}` })}
           <span class="lc-deck-variant-caption">第 ${i + 1} 張 · ${selected ? "已選" : canPick ? action : "牌組已滿"}</span>
         </div>`;
       }).join("")}</div>
@@ -88,7 +88,7 @@
     for (let i = 0; i < groups.length; i += 2) {
       const pair = groups.slice(i, i + 2);
       html.push(...pair.map(cards => deckGroupMarkup(cards, chosen)));
-      const expanded = pair.find(cards => openDetails.deck === `${cards[0].type}:${cards[0].name}` && cards.length > 1);
+      const expanded = pair.find(cards => openDetails.deck === `${cards[0].cardId}` && cards.length > 1);
       if (expanded) html.push(deckVariantsMarkup(expanded, chosen));
     }
     return html.join("");
@@ -112,7 +112,7 @@
           const selected = chosen.has(card.id);
           return `<div class="lc-tree-item ${selected ? "is-picked" : ""}">
             <button type="button" class="lc-tree-card-name" data-act="tree-detail" data-mode="${mode}" data-id="${esc(card.id)}" aria-expanded="${detailOpen}" aria-controls="lc-tree-detail-${mode}-${esc(card.id)}">
-              <span>${esc(card.name)}${selected ? `<span class="lc-tree-selected" title="已選取" aria-label="已選取"> ✓</span>` : ""}</span><span class="lc-tree-more">${detailOpen ? "收起 ↑" : "詳細 ↓"}</span>
+              <span>${esc(Data.cardName(card))}${selected ? `<span class="lc-tree-selected" title="已選取" aria-label="已選取"> ✓</span>` : ""}</span><span class="lc-tree-more">${detailOpen ? "收起 ↑" : "詳細 ↓"}</span>
             </button>
             ${detailOpen ? treeCardDetail(card, mode, chosen) : ""}
           </div>`;
@@ -129,7 +129,7 @@
       const angle = (i - mid) * (cards.length <= 4 ? 4.6 : 15 / (cards.length - 1));
       const rise = Math.round(Math.abs(i - mid) * 5);
       return cardMarkup(c, { action: "hand", index: i, selected: i === selectedIndex,
-        unpayable: (Data.resource(c) === "mana" ? Data.cost(c) > mana : Data.cost(c) > energy) || (c.type === "special" && Data.SPECIALS[c.name]?.key === "sacrifice" && energy + mana === 0) || (c.name === "裂盾" && foeShield === 0), buff, angle, rise });
+        unpayable: (Data.resource(c) === "mana" ? Data.cost(c) > mana : Data.cost(c) > energy) || (c.type === "special" && Data.effectOf(c) === "sacrifice" && energy + mana === 0) || (Data.effectOf(c) === "shatter" && foeShield === 0), buff, angle, rise });
     }).join("");
   }
 
@@ -141,11 +141,11 @@
     const selected = !!opts.selected;
     const unpayable = !!opts.unpayable;
     const resource = Data.resource(card);
-    const costLabel = card.name === "同命之契" ? "雙歸零" : resource === "none" ? "免費" : `${resource === "mana" ? "✺" : "✧"} ${cost}`;
+    const costLabel = Data.effectOf(card) === "sacrifice" ? "雙歸零" : resource === "none" ? "免費" : `${resource === "mana" ? "✺" : "✧"} ${cost}`;
     const costTitle = resource === "mana" ? "魔法點費用" : resource === "energy" ? "行動點費用" : "不需預付點數";
     const inner = `<span class="lc-card-head"><span class="lc-family">${esc(Data.LABELS[card.type])}</span><span class="lc-cost" title="${costTitle}">${costLabel}</span></span>
       <span class="lc-card-symbol" aria-hidden="true">${esc(Data.SYMBOLS[card.type])}</span>
-      <span class="lc-card-name">${esc(card.name)}</span>
+      <span class="lc-card-name">${esc(Data.cardName(card))}</span>
       <span class="lc-card-description">${esc(Data.describe(card, opts.buff || 0))}</span>
       <span class="lc-card-foot"><span>${level}</span><span>${card.branch && card.branch !== "標準" ? esc(card.branch) : "✦"}</span></span>`;
     const style = Number.isFinite(opts.angle) ? ` style="--fan-tilt:${opts.angle.toFixed(2)}deg;--fan-rise:${opts.rise || 0}px"` : "";
@@ -160,7 +160,7 @@
   function chooseView(v) {
     const cards = v.save.pool;
     return `${headline(v.save, "01 / THE FIRST DIVISION", "初始選牌", "攻擊牌 5 張直接配發；其餘六類共 40 張候選牌，請自選 25 張。沒選的 15 張歸 Boss。")}
-      <div class="lc-starter-note">✦ 已保留你的 5 張專屬攻擊牌：${v.save.starter.map(c => esc(c.name)).join("、")}</div>
+      <div class="lc-starter-note">✦ 已保留你的 5 張專屬攻擊牌：${v.save.starter.map(c => esc(Data.cardName(c))).join("、")}</div>
       <div class="lc-count-line"><strong>${v.chosenInitial.size} / 25</strong><span>點分類展開 → 點卡名詳細 → 選擇卡牌</span></div>
       ${selectionTree(cards, "choose", v.chosenInitial)}
       <div class="lc-sticky-actions"><p>注意：選剩的卡牌會加入 Boss 原有 105 張牌庫。</p><button class="lc-primary" data-act="confirm-initial" ${v.chosenInitial.size !== 25 ? "disabled" : ""}>領取 5 張攻擊＋25 張自選，開始遊戲 →</button></div>`;
@@ -293,8 +293,8 @@
   }
 
   // 圖鑑只看資料定義，不呼叫 battle／reward，也不讀寫牌組存檔。
-  const allCardSamples = Data.TYPES.flatMap(type => Data.NAMES[type].map((name, i) =>
-    ({ id: `archive-${type}-${i}`, type, name, level: 0, branch: "標準" })));
+  const allCardSamples = Data.TYPES.flatMap(type => Data.CARD_CATALOG[type].map((def, i) =>
+    ({ id: `archive-${type}-${i}`, cardId: def.cardId, type, level: 0, branch: "標準" })));
   // 使用現有卡池建立一次只讀的初始牌鑑；105 張基礎牌＋40 張初選候選牌。
   // 禁止與會成長的 save.boss 混用，否則會把旅人後續棄牌誤列在初始牌鑑。
   const bossOpeningCards = Data.bossBase();
@@ -302,7 +302,7 @@
   function groupedCards(cards) {
     const grouped = new Map();
     for (const card of cards) {
-      const key = `${card.type}:${card.name}:${card.level || 0}:${card.branch || "標準"}`;
+      const key = `${card.cardId}:${card.level || 0}:${card.branch || "標準"}`;
       if (grouped.has(key)) grouped.get(key).count++;
       else grouped.set(key, { card, count: 1 });
     }
@@ -338,7 +338,7 @@
       <div class="lc-profile-decks">${save.deckPresets.map((ids, index) => {
         const cards = ids.map(id => own.get(id)).filter(Boolean);
         const active = index === save.activeDeckIndex;
-        const summary = cards.length ? cards.slice(0, 6).map(card => esc(card.name)).join("、") + (cards.length > 6 ? `……等 ${cards.length} 張` : "") : "尚未放入卡牌";
+        const summary = cards.length ? cards.slice(0, 6).map(card => esc(Data.cardName(card))).join("、") + (cards.length > 6 ? `……等 ${cards.length} 張` : "") : "尚未放入卡牌";
         return `<section class="lc-profile-deck ${active ? "is-active" : ""}"><div class="lc-profile-deck-head"><div><small>0${index + 1}</small><h3>牌組${["一", "二", "三"][index]}</h3></div><span>${cards.length} / 30 張</span></div>
           <p class="lc-profile-deck-preview">${summary}</p>
           <div class="lc-profile-actions"><button class="lc-secondary" type="button" data-act="activate-preset" data-slot="${index}" ${busy || active ? "disabled" : ""}>${active ? "目前使用" : "設為出戰牌組"}</button><button class="lc-primary" type="button" data-act="edit-preset" data-slot="${index}" ${busy ? "disabled" : ""}>編輯牌組 →</button></div></section>`;
@@ -438,7 +438,7 @@
         </section>
         <section class="lc-battle-hand-zone" aria-label="玩家手牌">
           <div class="lc-hand-title">YOUR HAND <span>·</span> 手中之牌</div>
-          <p class="lc-selection-hint">${v.selectedCard === null ? "點一下選牌，再點同一張出牌" : `已選取「${esc(hand[v.selectedCard]?.name || "卡牌")}」 · 再點一次出牌`}</p>
+          <p class="lc-selection-hint">${v.selectedCard === null ? "點一下選牌，再點同一張出牌" : `已選取「${esc(Data.cardName(hand[v.selectedCard]))}」 · 再點一次出牌`}</p>
           ${b.openingExchangeAvailable && b.player.drawPile.length > 0
             ? `<div class="lc-opening-exchange"><span>回合開始：可以免費棄 1 張、抽 1 張（限一次；出牌或整理後失效）</span><button type="button" class="lc-secondary lc-exchange-button" data-act="opening-exchange" ${v.selectedCard === null ? "disabled" : ""}>換掉選中手牌 ↻</button></div>`
             : ""}
@@ -453,7 +453,7 @@
         <div class="lc-battle-resources">
           <div class="lc-resource-energy"><span>✧ 行動點</span><strong>${b.player.energy}</strong></div>
           <div class="lc-resource-energy"><span>✺ 魔法點</span><strong>${b.player.mana}</strong></div>
-          ${b.player.buff ? `<span>✦ 萬木共鳴 +${b.player.buff}（效果 Lv.5 封頂）</span>` : ""}
+          ${b.player.buff ? `<span>✦ ${esc(Data.cardName({ cardId: "magic_07" }))} +${b.player.buff}（效果 Lv.5 封頂）</span>` : ""}
           ${b.player.pierceNext ? `<span>⌁ 下次攻擊穿盾</span>` : ""}
           <span>♧ 防禦 ${b.player.guard}</span><span>❖ 護盾 ${b.player.shield}</span>
           <span>抽牌 ${b.player.drawPile.length} · 棄牌 ${b.player.discardPile.length}</span>
@@ -551,7 +551,7 @@
     root.innerHTML = view(v);
   }
   function flightGeometry(source, card) {
-    const destination = document.querySelector((card?.type === "attack" || ["裂盾", "行動封印"].includes(card?.name)) ? ".lc-battle-boss .lc-foe" : ".lc-battle-player");
+    const destination = document.querySelector((card?.type === "attack" || ["shatter", "energy_seal"].includes(Data.effectOf(card))) ? ".lc-battle-boss .lc-foe" : ".lc-battle-player");
     return source && destination ? { from: source.getBoundingClientRect(), to: destination.getBoundingClientRect() } : null;
   }
   function cardFlight(source, card, geometry) {
@@ -584,7 +584,7 @@
     animation.finished.catch(() => {}).finally(() => {
       clone.remove();
       void window.MistBattleFX?.play(card, "player");
-      const target = document.querySelector((card.type === "attack" || ["裂盾", "行動封印"].includes(card.name)) ? ".lc-battle-boss" : ".lc-battle-player");
+      const target = document.querySelector((card.type === "attack" || ["shatter", "energy_seal"].includes(Data.effectOf(card))) ? ".lc-battle-boss" : ".lc-battle-player");
       if (target?.animate) target.animate([
         { filter: "brightness(1)" }, { filter: "brightness(1.75)", offset: .4 }, { filter: "brightness(1)" }
       ], { duration: 420, easing: "ease-out" });

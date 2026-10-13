@@ -167,3 +167,13 @@ mistforest_pact/
 ### 驗證註記
 - 已通過全部 JavaScript `node --check`、11 篇 JSON 格式檢查、程式層級模擬：Boss 實際出牌、120 張 Boss 起始牌、四類獎勵及下一關、80 張替換與 Boss 捐牌、故事打贏才解鎖／分支／跳過。
 - 執行環境的 Chromium 對本地網頁禁止導航，**未能完成本機手機畫面實測**；上傳 GitHub Pages 後請用手機確認卡片動畫與故事頁顯示。
+
+
+## 卡牌與 Boss 固定識別碼（測試版規則）
+
+- `game/cards.js` 的 `CARD_CATALOG` 是卡牌**唯一正式名稱表**，每個 `cardId` 永久固定。改名只改 `name`，不要改 ID。
+- 每張收藏中的實體牌會有不同 `id`，但同一牌種具有相同 `cardId`；等級與分支存在實體牌中。
+- 行動／特殊／魔法牌效果由 `ACTIONS`、`SPECIALS`、`MAGICS` 用 `cardId` 關聯；不可再用顯示名稱比對。
+- 同名選牌使用 `cardId` 合併，與文字是否一樣無關；呈現名稱統一使用 `LinCardData.cardName(card)`。
+- `BOSSES` 用固定 `bossId` 與 `name`，關卡順序仍由 `stage` 決定。故事播放器也會由 `BOSSES` 自動產生預設章節標題；未來若自行填寫故事 JSON 的 `title`，則以該章獨立標題優先。
+- 此次採全新 `mistforest_pact_save_v3`／故事進度 v3，舊測試存檔直接不讀取、不遷移。

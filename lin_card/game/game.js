@@ -20,13 +20,13 @@
 
   function fresh() {
     return {
-      version: 4, phase: "choose", stage: 1, completed: 0,
+      version: 5, phase: "choose", stage: 1, completed: 0,
       player: [], starter: Data.starterAttacks(), boss: Data.bossBase(), pool: Data.initialPool(),
       pendingReward: null, selectedDeckIds: [], lastDeckIds: [],
       activeDeckIndex: 0, deckPresets: [[], [], []]
     };
   }
-  // v0.8.1 測試期採用全新 v2 key，自第 1 關重新開始；不執行舊版存檔遷移。
+  // 測試期直接啟用 cardId 格式（v3 key）；舊測試紀錄不遷移。
   if (!save || !Array.isArray(save.pool) || !Array.isArray(save.player) ||
       !Array.isArray(save.deckPresets) || save.deckPresets.length !== 3 ||
       !save.deckPresets.every(Array.isArray) || !Array.isArray(save.selectedDeckIds)) {
@@ -76,12 +76,12 @@
     else return refresh("每場最多帶 30 張卡牌。 ");
     persist(); refresh();
   }
-  // 同名卡只合併在選牌畫面；收藏及牌組仍按每張卡的唯一 ID 儲存。
+  // 同卡種只合併在選牌畫面；收藏及牌組仍按每張卡的唯一 ID 儲存。
   function addDeckCopy(groupId) {
     if (save.phase !== "deck") return;
     const groupCard = save.player.find(card => card.id === groupId);
     if (!groupCard) return;
-    const next = save.player.find(card => card.type === groupCard.type && card.name === groupCard.name && !chosenDeck.has(card.id));
+    const next = save.player.find(card => card.cardId === groupCard.cardId && !chosenDeck.has(card.id));
     if (!next) return;
     if (chosenDeck.size >= 30) return refresh("每場最多帶 30 張卡牌。 ");
     chosenDeck.add(next.id);
@@ -91,7 +91,7 @@
     if (save.phase !== "deck") return;
     const groupCard = save.player.find(card => card.id === groupId);
     if (!groupCard) return;
-    const group = save.player.filter(card => card.type === groupCard.type && card.name === groupCard.name && chosenDeck.has(card.id));
+    const group = save.player.filter(card => card.cardId === groupCard.cardId && chosenDeck.has(card.id));
     const last = group.at(-1);
     if (!last) return;
     chosenDeck.delete(last.id);
@@ -118,7 +118,7 @@
     const card = save.player.find(c => c.id === id);
     if (!card || card.level === 0 || !Data.BRANCHES[card.type]?.includes(branch)) return;
     card.branch = branch;
-    persist(); refresh(`「${card.name}」戰術調整為「${branch}」。`);
+    persist(); refresh(`「${Data.cardName(card)}」戰術調整為「${branch}」。`);
   }
   function beginBattle() {
     if (save.phase !== "deck" || chosenDeck.size === 0 || chosenDeck.size > 30) return refresh("請至少帶一張卡牌出戰。 ");
@@ -159,7 +159,7 @@
     if (save.phase !== "battle" || !battle || battle.outcome) return;
     const b = battle.state();
     if (index < 0 || index >= b.player.hand.length) return;
-    if (selectedCard !== index) { selectedCard = index; return refresh(`已選取「${b.player.hand[index].name}」，再點一次出牌。`); }
+    if (selectedCard !== index) { selectedCard = index; return refresh(`已選取「${Data.cardName(b.player.hand[index])}」，再點一次出牌。`); }
     const target = battle.targets(index);
     if (target) {
       targetPrompt = { index, ...target };

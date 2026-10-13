@@ -3,7 +3,7 @@
   "use strict";
   const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
   function towardPlayer(card) {
-    return card.type === "attack" || ["裂盾", "斷枝奪葉", "借影易形", "移花接木", "行動封印", "同命之契"].includes(card.name);
+    return window.LinCardData.isHostile(card);
   }
   async function play(card, markup, options = {}) {
     const boss = document.querySelector(".lc-battle-boss .lc-foe");
@@ -14,11 +14,11 @@
     }
     const scene = document.createElement("div");
     scene.className = "lc-boss-card-scene";
-    scene.setAttribute("aria-label", `Boss 使用「${card.name}」`);
+    scene.setAttribute("aria-label", `Boss 使用「${window.LinCardData.cardName(card)}」`);
     scene.setAttribute("role", "status");
     const label = document.createElement("p");
     label.className = "lc-boss-card-label";
-    label.textContent = `BOSS ${options.countLabel ? `${options.countLabel} · ` : ""}使出 · ${card.name}`;
+    label.textContent = `BOSS ${options.countLabel ? `${options.countLabel} · ` : ""}使出 · ${window.LinCardData.cardName(card)}`;
     const holder = document.createElement("div");
     holder.className = "lc-boss-card-holder";
     holder.innerHTML = markup; // 由既有 cardMarkup() 產生，沿用玩家卡牌的七大類樣式。

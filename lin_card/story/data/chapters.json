@@ -14,110 +14,110 @@
     },
     {
       "id": "chapter_01",
-      "title": "第1關通關故事｜霧中行者",
+      "title": "第1關通關故事",
       "sections": [
         {
           "id": "01_01",
-          "title": "第1關｜霧中行者",
+          "title": "第1關",
           "file": "chapter_01/01_01.json"
         }
       ]
     },
     {
       "id": "chapter_02",
-      "title": "第2關通關故事｜松間觀客",
+      "title": "第2關通關故事",
       "sections": [
         {
           "id": "02_01",
-          "title": "第2關｜松間觀客",
+          "title": "第2關",
           "file": "chapter_02/02_01.json"
         }
       ]
     },
     {
       "id": "chapter_03",
-      "title": "第3關通關故事｜雨幕旅人",
+      "title": "第3關通關故事",
       "sections": [
         {
           "id": "03_01",
-          "title": "第3關｜雨幕旅人",
+          "title": "第3關",
           "file": "chapter_03/03_01.json"
         }
       ]
     },
     {
       "id": "chapter_04",
-      "title": "第4關通關故事｜林下守夜者",
+      "title": "第4關通關故事",
       "sections": [
         {
           "id": "04_01",
-          "title": "第4關｜林下守夜者",
+          "title": "第4關",
           "file": "chapter_04/04_01.json"
         }
       ]
     },
     {
       "id": "chapter_05",
-      "title": "第5關通關故事｜折枝者",
+      "title": "第5關通關故事",
       "sections": [
         {
           "id": "05_01",
-          "title": "第5關｜折枝者",
+          "title": "第5關",
           "file": "chapter_05/05_01.json"
         }
       ]
     },
     {
       "id": "chapter_06",
-      "title": "第6關通關故事｜未眠樵夫",
+      "title": "第6關通關故事",
       "sections": [
         {
           "id": "06_01",
-          "title": "第6關｜未眠樵夫",
+          "title": "第6關",
           "file": "chapter_06/06_01.json"
         }
       ]
     },
     {
       "id": "chapter_07",
-      "title": "第7關通關故事｜鹿角見證人",
+      "title": "第7關通關故事",
       "sections": [
         {
           "id": "07_01",
-          "title": "第7關｜鹿角見證人",
+          "title": "第7關",
           "file": "chapter_07/07_01.json"
         }
       ]
     },
     {
       "id": "chapter_08",
-      "title": "第8關通關故事｜暮林幽客",
+      "title": "第8關通關故事",
       "sections": [
         {
           "id": "08_01",
-          "title": "第8關｜暮林幽客",
+          "title": "第8關",
           "file": "chapter_08/08_01.json"
         }
       ]
     },
     {
       "id": "chapter_09",
-      "title": "第9關通關故事｜循聲而來者",
+      "title": "第9關通關故事",
       "sections": [
         {
           "id": "09_01",
-          "title": "第9關｜循聲而來者",
+          "title": "第9關",
           "file": "chapter_09/09_01.json"
         }
       ]
     },
     {
       "id": "chapter_10",
-      "title": "第10關通關故事｜無名守林人",
+      "title": "第10關通關故事",
       "sections": [
         {
           "id": "10_01",
-          "title": "第10關｜無名守林人",
+          "title": "第10關",
           "file": "chapter_10/10_01.json"
         }
       ]

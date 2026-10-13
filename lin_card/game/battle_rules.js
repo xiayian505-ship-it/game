@@ -58,13 +58,13 @@
       const fee = D().cost(card);
       if (D().resource(card) === "mana" ? who.mana < fee : who.energy < fee) return false;
       const foe = this.enemy(who.key);
-      if (card.type === "action" && D().ACTIONS[card.name]?.key === "shatter") return foe.shield > 0;
+      if (card.type === "action" && D().effectOf(card) === "shatter") return foe.shield > 0;
       if (card.type === "special") {
-        return D().SPECIALS[card.name]?.key !== "sacrifice" || who.energy + who.mana > 0;
+        return D().effectOf(card) !== "sacrifice" || who.energy + who.mana > 0;
       }
       if (card.type !== "magic") return true;
       const own = cardList(who), theirs = cardList(foe);
-      const kind = D().MAGICS[card.name]?.key;
+      const kind = D().effectOf(card);
       if (["self_one", "self_all"].includes(kind)) return own.hand.length >= 2;
       if (kind === "swap_one") return own.hand.length >= 2 && theirs.hand.length >= 1;
       if (kind === "swap_all") return own.hand.length >= 2 || theirs.hand.length >= 1;
@@ -78,7 +78,7 @@
     targets(index) {
       const card = cardList(this.player).hand[index];
       if (!card || card.type !== "magic") return null;
-      const kind = D().MAGICS[card.name]?.key;
+      const kind = D().effectOf(card);
       if (kind === "self_one" || kind === "swap_one") {
         return { type: "hand", cards: cardList(this.player).hand.filter((_, i) => i !== index),
           label: kind === "swap_one" ? "選擇自己要交換的手牌（對方隨機）" : "選擇自己要棄掉的手牌" };
@@ -151,13 +151,13 @@
           break;
         }
         case "action": {
-          const kind = D().ACTIONS[card.name]?.key;
+          const kind = D().effectOf(card);
           if (kind === "shatter") { const n = foe.shield; foe.shield = 0; detail = `擊碎敵方全部 ${n} 點護盾`; }
           else if (kind === "pierce") { who.pierceNext = true; detail = "下一次自己的攻擊無視護盾"; }
           break;
         }
         case "special": {
-          const kind = D().SPECIALS[card.name]?.key;
+          const kind = D().effectOf(card);
           if (kind === "energy") { const n = D().resourceGain(card) + (card.branch === "聚息" ? 1 : 0); who.energy += n; if (card.branch === "癒息") who.hp = Math.min(who.maxHP, who.hp + 1); detail = `免費補充 ${n} 點行動點${card.branch === "癒息" ? "，恢復 1 點生命" : ""}`; }
           else if (kind === "mana") { const n = D().resourceGain(card); who.mana += n; detail = `免費補充 ${n} 點魔法點`; }
           else if (kind === "sacrifice") {
@@ -170,25 +170,25 @@
         case "magic": detail = this.cast(card, who, foe, choiceId); break;
       }
       discard(who, card);
-      this.note(`${action}使用「${card.name}」：${detail}。`);
+      this.note(`${action}使用「${D().cardName(card)}」：${detail}。`);
       this.checkHP();
       if (!this.outcome && side === "player") this.checkExhaustion();
       return true;
     }
     cast(card, who, foe, choiceId) {
-      const type = D().MAGICS[card.name]?.key;
+      const type = D().effectOf(card);
       const hand = cardList(who).hand;
       if (type === "self_one") {
         const i = hand.findIndex(c => c.id === (choiceId || pick(hand).id));
         if (i < 0) return "無牌可棄";
         const gone = takeHand(who, i); discard(who, gone);
-        return `棄掉自己「${gone.name}」`;
+        return `棄掉自己「${D().cardName(gone)}」`;
       }
       if (type === "self_all") { const dropped = who.deck.discardAll(); return `棄掉自己其餘 ${dropped.length} 張手牌`; }
       if (type === "foe_one") {
         const gone = takeHand(foe, Math.floor(Math.random() * cardList(foe).hand.length));
         discard(foe, gone);
-        return `對方被迫棄掉「${gone.name}」`;
+        return `對方被迫棄掉「${D().cardName(gone)}」`;
       }
       if (type === "swap_one") {
         const mine = cardList(who).hand;
@@ -196,7 +196,7 @@
         const theirIndex = Math.floor(Math.random() * cardList(foe).hand.length);
         const mineCard = takeHand(who, ownIndex), theirCard = takeHand(foe, theirIndex);
         appendHand(who, theirCard); appendHand(foe, mineCard);
-        return `交換「${mineCard.name}」與「${theirCard.name}」`;
+        return `交換「${D().cardName(mineCard)}」與「${D().cardName(theirCard)}」`;
       }
       if (type === "swap_all") {
         const my = cardList(who).hand, their = cardList(foe).hand;
@@ -217,7 +217,7 @@
         own.hand.push(revived);
         who.deck.restore(own);
         if (fromEnemy) foe.deck.restore(enemy);
-        return `從${fromEnemy ? "對方" : "自己"}的棄牌堆取回「${revived.name}」（僅限本場）`;
+        return `從${fromEnemy ? "對方" : "自己"}的棄牌堆取回「${D().cardName(revived)}」（僅限本場）`;
       }
       if (type === "resonance") { who.buff += 1; return `本場自己的可升級卡牌效果等級 +1（累積加成 ${who.buff}，最高 Lv.5；費用不變）`; }
       if (type === "energy_seal") {
@@ -256,7 +256,7 @@
       const discarded = this.player.deck.discardAt(index);
       const [drawn] = this.player.deck.draw(1);
       this.openingExchangeAvailable = false;
-      this.note(`回合開始換牌：你棄掉「${discarded.name}」，從抽牌堆抽到「${drawn.name}」（不消耗點數）。`);
+      this.note(`回合開始換牌：你棄掉「${D().cardName(discarded)}」，從抽牌堆抽到「${D().cardName(drawn)}」（不消耗點數）。`);
       this.checkExhaustion();
       return true;
     }
@@ -266,7 +266,7 @@
       const card = this.player.deck.discardAt(index);
       this.openingExchangeAvailable = false;
       this.freeDiscardUsed = true;
-      this.note(`整理手牌：你放下「${card.name}」（僅進本場棄牌堆）。`);
+      this.note(`整理手牌：你放下「${D().cardName(card)}」（僅進本場棄牌堆）。`);
       this.checkExhaustion();
       return true;
     }
@@ -295,7 +295,7 @@
         if (this.bossPlaysThisTurn === 0) {
           if (beforeHand.length) {
             const gone = this.boss.deck.discardAt(Math.floor(Math.random() * beforeHand.length));
-            this.note(`Boss 暫無可用牌，整理手牌「${gone.name}」。`);
+            this.note(`Boss 暫無可用牌，整理手牌「${D().cardName(gone)}」。`);
           } else if (cardList(this.boss).drawPile.length === 0) this.win("Boss 牌庫已耗盡");
         }
         return null;

@@ -94,8 +94,8 @@
   }
 
   function typeOf(card) {
-    if (card.name === "同命之契") return "sacrifice";
-    if (card.name === "裂盾") return "shatter";
+    if (window.LinCardData.effectOf(card) === "sacrifice") return "sacrifice";
+    if (window.LinCardData.effectOf(card) === "shatter") return "shatter";
     if (card.type === "attack") return "attack";
     if (card.type === "shield") return "shield";
     if (card.type === "defense") return "defense";
@@ -106,8 +106,7 @@
   }
 
   function targetSelector(card, owner) {
-    const hostile = card.type === "attack" ||
-      ["裂盾", "斷枝奪葉", "借影易形", "移花接木", "行動封印", "同命之契"].includes(card.name);
+    const hostile = window.LinCardData.isHostile(card);
     return owner === "boss"
       ? (hostile ? ".lc-battle-player" : ".lc-battle-boss")
       : (hostile ? ".lc-battle-boss" : ".lc-battle-player");
