@@ -562,3 +562,54 @@ button:disabled {opacity:.45;cursor:not-allowed!important;transform:none!importa
   .is-journey-panel .lc-profile-deck {gap:10px}
 }
 @media(prefers-reduced-motion:reduce) {.lc-archive-chevron {transition:none}}
+
+/* 關卡畫面不再顯示英文字式章節標籤；進度只在「試煉刻痕」中查看。 */
+#app.lc-game.is-stage-panel .lc-section-heading .lc-eyebrow {display:none}
+
+/* 戰後逐張領卡：僅卡牌與兩句選擇文字，卡面本身的邊框仍保留。 */
+#app.lc-game.is-reward-allocation {
+  min-height:0;
+  padding:8px 0 30px;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+}
+#app.is-reward-allocation .lc-reward-card {margin:12px auto 22px}
+#app.is-reward-allocation .lc-reward-actions {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:clamp(16px,6vw,64px);
+  margin:0 auto;
+  padding:0;
+}
+.lc-reward-link {
+  min-height:48px;
+  padding:10px 7px;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  color:var(--lc-cream);
+  font-size:clamp(14px,2.2vw,17px);
+  font-weight:400;
+  letter-spacing:.1em;
+  cursor:pointer;
+  transition:color .2s,text-shadow .2s;
+}
+.lc-reward-link:hover {color:#f4e4b6;text-shadow:0 0 13px rgba(227,204,138,.3)}
+.lc-reward-link:focus-visible {outline:1px solid var(--lc-gold);outline-offset:3px}
+/* 達收藏上限才展開替換區，避免平常出現額外說明或 80 張舊卡。 */
+#app.is-reward-allocation .lc-replace-options {max-width:880px;margin:27px auto 0}
+#app.is-reward-allocation .lc-replace-heading {color:var(--lc-muted);text-align:center;font-size:13px;letter-spacing:.07em}
+#app.is-reward-allocation .lc-replace-button {
+  border:0;
+  border-radius:0;
+  background:transparent;
+  color:var(--lc-cream);
+  min-height:42px;
+  padding:8px 4px;
+  font-size:12px;
+}
+#app.is-reward-allocation .lc-replace-button:hover {color:var(--lc-gold)}
+#app.is-reward-allocation .lc-replace-button:focus-visible {outline:1px solid var(--lc-gold);outline-offset:2px}

@@ -7,7 +7,7 @@
 .lc-intro .lc-en {display:block;margin:11px 0 0;font-size:clamp(12px,2.5vw,18px);letter-spacing:.07em}
 .lc-intro.is-compact {padding:24px 2px 21px}
 .lc-intro.is-compact h1 {font-size:clamp(28px,5vw,46px)}
-/* 主標下方原有英文副標，在各畫面都保留。 */
+/* 非試煉頁仍使用既有英文副標。 */
 .lc-intro.is-compact .lc-en {display:block}
 .lc-footer {display:block;width:100%;text-align:center;padding:35px 10px 45px;font:11px/1.7 'Noto Serif TC','Microsoft JhengHei',serif;color:#b9c8b4;letter-spacing:.09em}
 @media(max-width:680px){.lc-shell{padding-top:8px}.lc-intro{padding:32px 1px 25px}.lc-intro.is-compact{padding:19px 1px}.lc-intro .lc-en{font-size:12px}.lc-footer{padding:29px 9px 35px;font-size:10px}}
@@ -207,3 +207,12 @@
   .wf-game.is-journey-screen .lc-footer {padding:20px 4px max(25px,env(safe-area-inset-bottom) + 17px)}
   .wf-game.is-journey-screen .lc-footer-line {margin-bottom:13px}
 }
+
+/* 試煉關卡｜中文關卡名本身可點擊，返回「試煉挑戰」；無圖示、無箭頭。 */
+.lc-stage-home-link {display:none;margin:0 auto;padding:0 14px;border:0;background:transparent;color:inherit;cursor:pointer;max-width:100%;text-align:center}
+.lc-intro.is-stage-title .lc-stage-home-link {display:block}
+.lc-intro.is-stage-title .lc-default-title,
+.lc-intro.is-stage-title .lc-en {display:none}
+.lc-intro.is-stage-title .lc-stage-home-link h1 {margin:0;color:#f0e3bf;font-size:clamp(30px,5vw,48px);font-weight:400;letter-spacing:.13em;padding-left:.13em;line-height:1.5}
+.lc-intro.is-stage-title .lc-stage-home-link:hover h1 {color:#fff0c5}
+.lc-intro.is-stage-title .lc-stage-home-link:focus-visible {outline:1px solid var(--lc-gold);outline-offset:5px;border-radius:5px}

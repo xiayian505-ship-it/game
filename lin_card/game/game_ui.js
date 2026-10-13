@@ -5,14 +5,6 @@
   const root = document.getElementById("app");
   const esc = value => String(value ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
   const pct = (a, b) => Math.max(0, Math.min(100, (100 * a) / (b || 1)));
-  const names = {
-    card1: "額外獲得 1 張新卡", deck_up: "出戰牌組升 1 級",
-    card4: "額外獲得 4 張新卡", collection_up: "永久收藏升 1 級",
-    // 兼容 v0.7.2 已選完、尚未領取的舊式存檔，不重新發獎。
-    classic1: "舊版獎勵｜新卡 1 張", classic3: "舊版獎勵｜出戰牌升級",
-    spider1: "舊版獎勵｜新卡 2 張", freecell: "舊版獎勵｜新卡 3 張", spider2: "舊版獎勵｜新卡 4 張"
-  };
-
 
   // 軍火庫 Tree Selection 專管展開狀態；卡牌資料、畫面樣式與點擊行為由宿主處理。
   // 選牌與初始選牌分開紀錄畫面狀態，不修改 localStorage 或既有選牌演算。
@@ -102,9 +94,6 @@
     const cls = `lc-card ${selected ? "is-selected" : ""} ${unpayable ? "is-unpayable" : ""}`;
     return action ? `<button class="${cls}" data-type="${card.type}"${attr} aria-pressed="${selected}">${inner}</button>`
       : `<div class="${cls}" data-type="${card.type}">${inner}</div>`;
-  }
-  function stageIndicator(save) {
-    return `<div class="lc-stages" aria-label="十關進度">${Array.from({ length: 10 }, (_, i) => `<span class="lc-stage ${i < save.completed ? "is-cleared" : i === save.stage - 1 && save.phase !== "complete" ? "is-current" : ""}" title="第 ${i + 1} 關">${i < save.completed ? "✓" : i + 1}</span>`).join("")}</div>`;
   }
   function headline(save, preamble, title, detail) {
     return `<div class="lc-section-heading"><p class="lc-eyebrow">${esc(preamble)}</p><h2>${esc(title)}</h2><p>${esc(detail)}</p></div>`;
@@ -239,7 +228,18 @@
   function sectionTitle(path) {
     return `<header class="lc-sub-heading"><span class="lc-sub-heading-symbol" aria-hidden="true">${esc(path.symbol)}</span><h2>${esc(path.title)}</h2><p>${esc(path.subtitle)}</p></header>`;
   }
-  function backHome() { return `<div class="lc-screen-bar"><button class="lc-quiet" type="button" data-act="open-home">← 回到主畫面</button></div>`; }
+  // 點擊關卡名稱只切換導覽層級；不改變戰鬥、永久收藏或通關存檔。
+  function backToChallenge() {
+    if (screen !== "game" || bossAnimating) return;
+    screen = "levels";
+    homeFocus = null;
+    profileSection = null;
+    levelsSection = "trials";
+    trialSection = "challenge";
+    for (const area of Object.keys(sectionFocus)) sectionFocus[area] = null;
+    render();
+    scrollToTop();
+  }
 
   // 圖鑑只看資料定義，不呼叫 battle／reward，也不讀寫牌組存檔。
   const allCardSamples = Data.TYPES.flatMap(type => Data.NAMES[type].map((name, i) =>
@@ -413,6 +413,9 @@
     return `<div class="lc-overlay" role="dialog" aria-modal="true" aria-label="卡牌目標"><div class="lc-dialog"><div class="lc-dialog-head"><h3>${esc(prompt.label)}</h3><button class="lc-close" type="button" data-act="close-target">✕</button></div>
     ${cards}<p class="lc-dialog-note">${note}</p></div></div>`;
   }
+  // 收藏達 80 張時，點「留於掌心」才展開舊卡替換清單。
+  // 僅保存 UI 展開狀態，不影響任何永久資料。
+  let replacingRewardCardId = null;
   function rewardView(v) {
     const pending = v.save.pendingReward;
     if (!pending) return `<p class="lc-error">獎勵狀態有誤，請重新整理。</p>`;
@@ -424,17 +427,17 @@
         ["card4", "額外獲得 4 張新卡", "一次領取四張隨機卡牌"],
         ["collection_up", "永久收藏升 1 級", "所有可升等收藏卡牌全部 +1 級"]
       ];
-      return `${headline(v.save, "04 / VICTORY · REWARD", "戰後試煉", `本關固定獲得攻擊牌 1 張，下一場玩家初始行動點 +1（${5 + v.save.completed} → ${6 + v.save.completed}）。另選一種獎勵；測試期四種皆可直接領取。`)}
+      return `${headline(v.save, "04 / VICTORY · REWARD", "戰後試煉", `本關固定獲得攻擊牌 1 張，下一場玩家初始行動點 +1（${5 + v.save.completed} → ${6 + v.save.completed}）。另選一種獎勵。`)}
         <div class="lc-reward-grid">${info.map(([key, title, value]) => `<button class="lc-reward-choice" data-act="reward" data-mode="${key}"><span>選擇獎勵</span><strong>${esc(title)}</strong><small>${esc(value)}</small><b>領取獎勵 →</b></button>`).join("")}</div>`;
     }
     const full = v.save.player.length >= 80;
-    const rewardLabel = names[pending.mode] || "戰後獎勵";
-    return `${headline(v.save, "04 / REWARD ALLOCATION", `${esc(rewardLabel)}｜獎勵 ${pending.cursor + 1} / ${pending.queue.length}`, "每次過關固定多一張攻擊牌。保留、替換或放棄都遵循原本的收藏規則；永久棄牌歸 Boss。")}
-      ${current?.source === "victory-guarantee" ? `<div class="lc-starter-note">✦ ${"本關固定補給：攻擊牌 +1"}（不佔四選一的額度）</div>` : ""}
-      <div class="lc-reward-card">${current ? cardMarkup(current) : ""}</div>
-      <div class="lc-status-grid"><div><span>玩家收藏</span><strong>${v.save.player.length} / 80</strong></div><div><span>Boss 收藏</span><strong>${v.save.boss.length} 張</strong></div></div>
-      <div class="lc-reward-actions">${!full ? `<button class="lc-primary" data-act="keep-reward">保留新卡 ✓</button>` : ""}<button class="lc-secondary" data-act="reject-reward">放棄新卡 → 交給 Boss</button></div>
-      ${full ? `<h3 class="lc-replace-heading">收藏已滿：請選一張舊卡替換</h3><div class="lc-card-grid">${v.save.player.map(c => `<div class="lc-deck-item">${cardMarkup(c)}<button class="lc-replace-button" data-act="replace" data-id="${esc(c.id)}">換掉此牌 → Boss</button></div>`).join("")}</div>` : ""}`;
+    const showReplacement = full && current && replacingRewardCardId === current.id;
+    return `<div class="lc-reward-card">${current ? cardMarkup(current) : ""}</div>
+      <div class="lc-reward-actions" aria-label="新卡歸屬">
+        <button type="button" class="lc-reward-link" data-act="${full ? "choose-replace" : "keep-reward"}" ${showReplacement ? 'aria-expanded="true"' : ""}>留於掌心</button>
+        <button type="button" class="lc-reward-link" data-act="reject-reward">歸於霧影</button>
+      </div>
+      ${showReplacement ? `<section class="lc-replace-options" aria-label="選擇替換的舊卡"><h3 class="lc-replace-heading">收藏已滿，選一張舊卡交給霧影</h3><div class="lc-card-grid">${v.save.player.map(c => `<div class="lc-deck-item">${cardMarkup(c)}<button class="lc-replace-button" data-act="replace" data-id="${esc(c.id)}">交出這張牌</button></div>`).join("")}</div></section>` : ""}`;
   }
   function defeatView(v) {
     return `${headline(v.save, "DEFEAT / THE FOREST REMEMBERS", `第 ${v.save.stage} 關・戰敗`, "已獲得的卡牌、等級、關卡進度與 Boss 永久收藏全部保留。")}
@@ -454,14 +457,16 @@
     }[v.save.phase] || deckView;
     const view = screen === "home" ? homeView : screen === "levels" ? levelsView : screen === "profile" ? profileView : phaseView;
     const isGame = screen === "game";
-    document.getElementById("progress").hidden = !isGame;
-    document.getElementById("game-overview").hidden = !isGame;
-    document.getElementById("status-message").hidden = !isGame;
+    const isRewardAllocation = isGame && v.save.phase === "reward" && !!v.save.pendingReward?.mode;
+    document.getElementById("status-message").hidden = !isGame || isRewardAllocation;
     const intro = document.querySelector(".lc-intro");
     intro?.classList.toggle("is-compact", screen !== "home");
     intro?.classList.toggle("is-home-art", screen === "home");
     intro?.classList.toggle("is-page-title", screen === "levels" || screen === "profile");
     intro?.classList.toggle("is-trial-heading", screen === "levels");
+    intro?.classList.toggle("is-stage-title", isGame);
+    const stageTitle = document.getElementById("lc-stage-title");
+    if (stageTitle) stageTitle.textContent = Data.CHAPTERS[v.save.stage - 1] || "十重試煉";
     // 兩個內頁沿用首頁三路徑的圖示、四字標題和副文，不再顯示英文標語。
     const pagePath = homePaths.find(path => path.key === screen);
     const pageTitle = intro?.querySelector(".lc-page-home-link h1");
@@ -472,14 +477,13 @@
     if (pageSubtitle) pageSubtitle.textContent = pagePath?.subtitle || "";
     document.getElementById("wf-game")?.classList.toggle("is-home-screen", screen === "home");
     document.getElementById("wf-game")?.classList.toggle("is-journey-screen", screen === "profile" || screen === "levels");
-    document.getElementById("progress").innerHTML = stageIndicator(v.save);
-    document.getElementById("chapter-count").textContent = `${v.save.completed} / 10`;
-    document.getElementById("boss-count").textContent = String(v.save.boss.length);
     document.getElementById("status-message").textContent = v.notice || "卡牌牌庫不會自動洗回；行動與魔法點每場重置，但回合不重置。";
     root.classList.toggle("is-home-panel", screen === "home");
     root.classList.toggle("is-page-heading", screen === "levels" || screen === "profile");
     root.classList.toggle("is-journey-panel", screen === "levels" || screen === "profile");
-    root.innerHTML = (isGame ? backHome() : "") + view(v);
+    root.classList.toggle("is-stage-panel", isGame);
+    root.classList.toggle("is-reward-allocation", isRewardAllocation);
+    root.innerHTML = view(v);
   }
   function flightGeometry(source, card) {
     const destination = document.querySelector((card?.type === "attack" || ["裂盾", "行動封印"].includes(card?.name)) ? ".lc-battle-boss .lc-foe" : ".lc-battle-player");
@@ -649,14 +653,17 @@
       "close-target": G.closeTarget, target: () => confirmTarget(id),
       "end-turn": bossTurn, "toggle-battle-sound": () => { window.MistBattleFX?.setEnabled(!window.MistBattleFX.enabled); render(); }, "toggle-battle-vibration": () => { window.MistBattleHaptics?.setEnabled(!window.MistBattleHaptics.enabled); render(); }, "opening-exchange": G.openingExchange, discard: G.freeDiscard, concede: G.concede,
       retry: G.retry, reward: () => G.chooseReward(button.dataset.mode),
-      "keep-reward": () => G.acceptReward(), "reject-reward": G.rejectReward,
-      replace: () => G.acceptReward(id)
+      "choose-replace": () => { replacingRewardCardId = G.currentReward()?.id || null; render(); },
+      "keep-reward": () => { replacingRewardCardId = null; G.acceptReward(); },
+      "reject-reward": () => { replacingRewardCardId = null; G.rejectReward(); },
+      replace: () => { replacingRewardCardId = null; G.acceptReward(id); }
     };
     map[act]?.();
   });
   document.querySelector(".lc-page-home-link")?.addEventListener("click", () => {
     if (screen === "profile" || screen === "levels") openScreen("home");
   });
+  document.querySelector(".lc-stage-home-link")?.addEventListener("click", backToChallenge);
   root?.addEventListener("change", event => {
     const select = event.target.closest("select[data-branch-id]");
     if (select) window.LinCardGame.changeBranch(select.dataset.branchId, select.value);

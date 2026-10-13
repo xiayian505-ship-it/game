@@ -10,14 +10,12 @@
   let selectedCard = null;
   let targetPrompt = null;
   let notice = "";
-  // 預留獎勵式廣告驗證；v0.8 測試期間全部直接領取。
-  // 正式開通時必須在廣告平台核發獎勵後才解除檢查，不能單純把此開關改為 false。
-  const REWARD_TEST_MODE = true;
+  // 戰後四種獎勵直接依既有規則領取，不需要額外驗證。
   const REWARD_MODES = Object.freeze({
-    card1: { requiresAd: false, cards: 1 },
-    deck_up: { requiresAd: false, upgrade: "lastDeck" },
-    card4: { requiresAd: true, cards: 4 },
-    collection_up: { requiresAd: true, upgrade: "collection" }
+    card1: { cards: 1 },
+    deck_up: { upgrade: "lastDeck" },
+    card4: { cards: 4 },
+    collection_up: { upgrade: "collection" }
   });
 
   function fresh() {
@@ -204,8 +202,6 @@
     if (save.phase !== "reward" || save.pendingReward?.mode) return;
     const policy = REWARD_MODES[mode];
     if (!policy) return;
-    // 測試期四種全可直接領；正式廣告尚未接入，一旦關閉測試模式就先禁止廣告獎勵。
-    if (policy.requiresAd && !REWARD_TEST_MODE) return refresh("此獎勵需要完成廣告驗證，目前尚未開放。 ");
     const pending = save.pendingReward;
     pending.mode = mode;
     // 每關固定的攻擊牌維持一張，此外才處理四選一獎勵。
