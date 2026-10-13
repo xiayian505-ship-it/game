@@ -1,17 +1,11 @@
 /* Boss 翻牌僅是本專案 UI：沿用同一張 .lc-card 卡面、七類顏色與字體。 */
 .lc-boss-card-scene {position:fixed;inset:0;z-index:9998;pointer-events:none;perspective:800px}
 .lc-boss-card-holder {position:fixed;width:172px;min-height:223px;display:flex;transform-origin:center center;filter:drop-shadow(0 0 13px rgba(151,234,196,.45));will-change:transform,opacity;backface-visibility:hidden}
-.lc-boss-card-holder>.lc-card {width:100%;min-height:223px;box-shadow:0 15px 38px rgba(0,0,0,.7),0 0 0 2px rgba(166,225,198,.36);pointer-events:none}
+.lc-boss-card-holder>.lc-card {width:100%;min-height:223px;box-shadow:var(--lc-card-inner-frame),0 15px 38px rgba(0,0,0,.7),0 0 0 2px rgba(166,225,198,.36);pointer-events:none}
 .lc-boss-card-label {position:fixed;width:180px;margin:0;padding:4px 7px;border-radius:20px;background:rgba(7,27,24,.91);border:1px solid rgba(202,226,198,.35);color:#e9dfb8;font-size:11px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:opacity .15s}
 .lc-boss-card-label.is-flying {opacity:0}
 @media(max-width:680px) {
   .lc-boss-card-holder {width:clamp(109px,31vw,138px);min-height:172px}
-  .lc-boss-card-holder>.lc-card {min-height:172px;padding:8px;gap:5px}
-  .lc-boss-card-holder .lc-card-symbol {min-height:38px;font-size:30px;margin:0}
-  .lc-boss-card-holder .lc-card-name {font-size:12px}
-  .lc-boss-card-holder .lc-card-description {font-size:9px;line-height:1.35}
-  .lc-boss-card-holder .lc-card-family,.lc-boss-card-holder .lc-family {font-size:9px}
-  .lc-boss-card-holder .lc-cost {min-width:25px;font-size:10px}
-  .lc-boss-card-holder .lc-card-foot {font-size:8px}
+  .lc-boss-card-holder>.lc-card {min-height:172px}
   .lc-boss-card-label {font-size:10px}
 }

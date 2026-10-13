@@ -1,17 +1,20 @@
 /* 霧林之契｜卡牌與戰鬥功能本體樣式：顏色尺寸由宿主變數決定。 */
 .lc-card {
-  --card-glow: var(--lc-green); display:flex; flex-direction:column; align-items:stretch;
-  position:relative; isolation:isolate; gap:10px; width:100%; min-height:205px;
-  padding:12px 11px 10px; border:1px solid var(--lc-line); border-radius:13px;
-  background: radial-gradient(ellipse at 48% 33%,color-mix(in srgb,var(--card-glow) 14%,transparent),transparent 75%),
-              linear-gradient(155deg,var(--lc-card-top),var(--lc-card-bottom));
-  box-shadow: inset 0 0 0 3px rgba(225,240,213,.035),0 8px 22px rgba(0,0,0,.16);
+  /* 全遊戲共用戰鬥手牌卡面；頁面只決定排列、大小及互動。 */
+  --card-glow: var(--lc-green);
+  --lc-card-inner-frame: inset 0 0 0 3px rgba(5,17,19,.7),inset 0 0 0 4px rgba(194,226,208,.22);
+  display:flex; flex-direction:column; align-items:stretch;
+  position:relative; isolation:isolate; gap:8px; width:100%; min-width:0; min-height:205px;
+  padding:11px 12px 12px; border:1px solid var(--lc-line); border-radius:11px 11px 6px 6px;
+  background:radial-gradient(ellipse at 48% 33%,color-mix(in srgb,var(--card-glow) 14%,transparent),transparent 75%),
+             linear-gradient(155deg,var(--lc-card-top),var(--lc-card-bottom));
+  box-shadow:var(--lc-card-inner-frame),0 7px 22px rgba(0,0,0,.53);
   color:var(--lc-light); font:inherit; text-align:left; cursor:default;
 }
 button.lc-card {cursor:pointer;transition:transform .18s,border-color .18s,box-shadow .18s;touch-action:manipulation}
 button.lc-card:hover {transform:translateY(-3px);border-color:var(--lc-green)}
 button.lc-card:focus-visible {outline:2px solid var(--lc-cream);outline-offset:3px}
-.lc-card.is-selected {border-color:var(--lc-gold);box-shadow:inset 0 0 0 1px var(--lc-gold),0 0 19px rgba(206,186,119,.20);transform:translateY(-4px)}
+.lc-card.is-selected {border-color:var(--lc-gold);box-shadow:var(--lc-card-inner-frame),0 0 0 1px var(--lc-gold),0 0 19px rgba(206,186,119,.20);transform:translateY(-4px)}
 .lc-card.is-selected::after {content:"✓";position:absolute;right:8px;bottom:8px;border-radius:50%;display:grid;place-items:center;width:18px;height:18px;background:var(--lc-gold);color:#152721;font-size:12px;font-weight:700}
 .lc-card.is-unpayable:not(.is-selected) {opacity:.63}
 .lc-card[data-type="attack"] {--card-glow:#ba826b}
@@ -22,12 +25,13 @@ button.lc-card:focus-visible {outline:2px solid var(--lc-cream);outline-offset:3
 .lc-card[data-type="special"] {--card-glow:#d1a8c9}
 .lc-card[data-type="magic"] {--card-glow:#8caad7}
 .lc-card-head,.lc-card-foot {display:flex;align-items:center;justify-content:space-between;gap:5px;white-space:nowrap}
+.lc-card-head {flex-direction:row-reverse}
 .lc-family {font-size:10px;letter-spacing:.13em;color:var(--lc-muted)}
 .lc-cost {display:inline-flex;gap:3px;align-items:center;justify-content:center;min-width:33px;height:26px;padding:0 5px;border:1px solid rgba(228,216,168,.35);border-radius:20px;background:rgba(9,22,19,.6);color:var(--lc-gold);font-size:11px;font-weight:700}
-.lc-card-symbol {display:flex;align-items:center;justify-content:center;flex:1;min-height:45px;color:var(--card-glow);font:normal 49px Georgia,"Noto Serif TC",serif;text-shadow:0 0 18px color-mix(in srgb,var(--card-glow) 33%,transparent)}
-.lc-card-name {display:block;color:var(--lc-light);font:600 14px/1.35 "Noto Serif TC","Songti TC",serif;letter-spacing:.05em;text-align:center}
-.lc-card-description {display:block;min-height:31px;color:var(--lc-muted);font-size:10px;line-height:1.55;text-align:center}
-.lc-card-foot {padding-top:7px;border-top:1px solid rgba(209,229,203,.10);color:var(--lc-muted);font-size:10px}
+.lc-card-symbol {display:flex;align-items:center;justify-content:center;flex:1;min-height:48px;margin:1px 0;border-top:1px solid rgba(210,238,218,.09);border-bottom:1px solid rgba(210,238,218,.09);background:radial-gradient(circle at center,color-mix(in srgb,var(--card-glow) 18%,transparent),transparent 68%);color:var(--card-glow);font:normal 41px Georgia,"Noto Serif TC",serif;text-shadow:0 0 18px color-mix(in srgb,var(--card-glow) 33%,transparent)}
+.lc-card-name {display:block;color:var(--lc-light);font:600 15px/1.35 "Noto Serif TC","Songti TC",serif;letter-spacing:.05em;text-align:center}
+.lc-card-description {display:block;min-height:31px;color:var(--lc-muted);font-size:11px;line-height:1.45;text-align:center}
+.lc-card-foot {padding-top:7px;border-top:1px solid rgba(209,229,203,.10);color:var(--lc-muted);font-size:9px}
 .lc-card-grid {display:grid;grid-template-columns:repeat(auto-fill,minmax(143px,1fr));gap:12px}
 .lc-deck-item {min-width:0}
 
@@ -85,10 +89,21 @@ button.lc-card:focus-visible {outline:2px solid var(--lc-cream);outline-offset:3
  .lc-health-line {margin-top:9px}
  .lc-health {margin-bottom:9px}
  .lc-card-grid {grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
- .lc-card {min-height:197px;padding:11px 9px 9px}
- .lc-card-description {font-size:10px}
+ .lc-card {min-height:197px}
  .lc-hand .lc-card {flex-basis:145px;min-height:193px}
  
  
  .lc-hand-slot .lc-card {width:136px;min-height:194px}
 }
+
+/* 戰鬥原有的手機卡面比例，現在也共用於選牌、圖鑑及所有彈窗。 */
+@media(max-width:680px) {
+  .lc-card {padding:8px 7px;gap:5px}
+  .lc-card-symbol {font-size:29px;min-height:39px}
+  .lc-card-name {font-size:12px}
+  .lc-card-description {font-size:9px;line-height:1.3}
+  .lc-family {font-size:9px}
+  .lc-cost {min-width:24px;height:23px;font-size:10px}
+  .lc-card-foot {padding-top:3px;font-size:8px}
+}
+@media(max-width:360px) {.lc-card-description {font-size:8px}}
