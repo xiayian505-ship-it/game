@@ -14,28 +14,7 @@
   };
   const openDetails = { choose: null, deck: null };
 
-  function treeCardDetail(card, mode, chosen) {
-    const isChosen = chosen.has(card.id);
-    const maximum = mode === "choose" ? 25 : 30;
-    const canAdd = isChosen || chosen.size < maximum;
-    const resource = Data.resource(card);
-    const costText = Data.effectOf(card) === "sacrifice" ? "耗盡當下雙資源" : resource === "none" ? "免費" : `${resource === "mana" ? "魔法點" : "行動點"} ${Data.cost(card)}`;
-    const levelText = Data.LEVEL_TYPES.includes(card.type) ? `Lv.${card.level}` : "固定效果";
-    const branches = mode === "deck" && card.level > 0 && Data.BRANCHES[card.type]
-      ? `<label class="lc-tree-branch">戰術分支 <select data-branch-id="${esc(card.id)}">${Data.BRANCHES[card.type].map(branch => `<option value="${esc(branch)}" ${card.branch === branch ? "selected" : ""}>${esc(branch)}</option>`).join("")}</select></label>`
-      : "";
-    return `<div id="lc-tree-detail-${esc(mode)}-${esc(card.id)}" class="lc-tree-detail">
-      <div class="lc-tree-detail-heading"><strong>${esc(Data.cardName(card))}</strong><span>${esc(Data.LABELS[card.type])}牌 · ${levelText}</span></div>
-      <p class="lc-tree-detail-cost">${esc(costText)}</p>
-      <p class="lc-tree-detail-effect">${esc(Data.describe(card))}</p>
-      ${branches}
-      <button type="button" class="${isChosen ? "lc-secondary" : "lc-primary"} lc-tree-pick" data-act="${mode === "choose" ? "choose" : "deck"}" data-id="${esc(card.id)}" ${canAdd ? "" : "disabled"}>${isChosen ? (mode === "choose" ? "取消選擇" : "移出這套牌組") : (mode === "choose" ? "選擇這張卡" : "加入這套牌組")}</button>
-      ${canAdd ? "" : `<p class="lc-tree-full">已選滿 ${maximum} 張，請先移除其他卡牌。</p>`}
-    </div>`;
-  }
-
-  // 對戰前與個人牌組編輯共用：依固定 cardId 合併「顯示」，選取仍逐張使用實體卡 ID。
-  // 初始 25 張挑選仍保持原本 Tree 操作，避免改動尚未討論的開局流程。
+  // 初始 25 張與對戰前 30 張共用卡牌陳列；原有上限與實體卡 ID 互不混用。
   function groupedDeckCards(cards) {
     const groups = new Map();
     for (const card of cards) {
@@ -45,78 +24,75 @@
     }
     return [...groups.values()];
   }
-  function deckGroupMarkup(cards, chosen) {
+  function deckGroupMarkup(cards, chosen, mode) {
     const sample = cards[0];
     const count = cards.filter(card => chosen.has(card.id)).length;
-    const full = count === cards.length || chosen.size >= 30;
+    const limit = mode === "choose" ? 25 : 30;
+    const full = count === cards.length || chosen.size >= limit;
     const key = `${sample.cardId}`;
-    const expanded = openDetails.deck === key;
+    const expanded = openDetails[mode] === key;
     const displayCard = cards.find(card => chosen.has(card.id)) || sample;
     return `<div class="lc-deck-stack ${count ? "has-picks" : ""}" data-stack="${esc(key)}">
       <div class="lc-deck-stack-face">
-        ${cardMarkup(displayCard, { action: "deck-plus", selected: count > 0, disabled: full })}
+        ${cardMarkup(displayCard, { action: `${mode}-plus`, selected: count > 0, disabled: full })}
         <span class="lc-deck-stack-count" aria-hidden="true">×${count}</span>
       </div>
       <div class="lc-deck-stack-controls">
-        <button type="button" class="lc-deck-minus" data-act="deck-minus" data-id="${esc(sample.id)}" aria-label="減少一張${esc(Data.cardName(sample))}" ${count ? "" : "disabled"}>−</button>
+        <button type="button" class="lc-deck-minus" data-act="${mode}-minus" data-id="${esc(sample.id)}" aria-label="減少一張${esc(Data.cardName(sample))}" ${count ? "" : "disabled"}>−</button>
         <span aria-label="已選 ${count} 張，持有 ${cards.length} 張">${count} / ${cards.length}</span>
       </div>
-      ${cards.length > 1 ? `<button type="button" class="lc-deck-variants-toggle" data-act="deck-variants" data-key="${esc(key)}" aria-controls="lc-deck-variants-${esc(sample.id)}" aria-expanded="${expanded}">${expanded ? "收起各張 ↑" : "查看各張 ↓"}</button>` : ""}
+      ${cards.length > 1 ? `<button type="button" class="lc-deck-variants-toggle" data-act="${mode}-variants" data-key="${esc(key)}" aria-controls="lc-deck-variants-${esc(mode)}-${esc(sample.id)}" aria-expanded="${expanded}">${expanded ? "收起各張 ↑" : "查看各張 ↓"}</button>` : ""}
     </div>`;
   }
   // 查看各張展開整組的每張實體卡；直接選取 ID，等級與分支只顯示既有牌面內容。
   // 展開區跨越分類的兩欄，避免各張卡再被擠進單一半欄。
-  function deckVariantsMarkup(cards, chosen) {
+  function deckVariantsMarkup(cards, chosen, mode) {
     const sample = cards[0];
-    return `<div class="lc-deck-variants" id="lc-deck-variants-${esc(sample.id)}">
+    return `<div class="lc-deck-variants" id="lc-deck-variants-${esc(mode)}-${esc(sample.id)}">
       <div class="lc-deck-variants-heading">${esc(Data.cardName(sample))} · ${cards.length} 張</div>
       <div class="lc-deck-variant-list">${cards.map((card, i) => {
         const selected = chosen.has(card.id);
-        const canPick = selected || chosen.size < 30;
+        const canPick = selected || chosen.size < (mode === "choose" ? 25 : 30);
         const level = Data.LEVEL_TYPES.includes(card.type) ? `Lv.${card.level}` : "固定效果";
         const action = selected ? "點擊移出" : "點擊加入";
         return `<div class="lc-deck-variant-card ${selected ? "is-picked" : ""}">
-          ${cardMarkup(card, { action: "deck", selected, disabled: !canPick, ariaLabel: `${Data.cardName(card)} 第 ${i + 1} 張 ${level}，${selected ? "已選，點擊移出" : canPick ? "未選，點擊加入" : "未選，出戰牌組已滿"}` })}
-          <span class="lc-deck-variant-caption">第 ${i + 1} 張 · ${selected ? "已選" : canPick ? action : "牌組已滿"}</span>
+          ${cardMarkup(card, { action: mode, selected, disabled: !canPick, ariaLabel: `${Data.cardName(card)} 第 ${i + 1} 張 ${level}，${selected ? "已選，點擊移出" : canPick ? "未選，點擊加入" : `未選，${mode === "choose" ? "初始選牌" : "出戰牌組"}已滿`}` })}
+          <span class="lc-deck-variant-caption">第 ${i + 1} 張 · ${selected ? "已選" : canPick ? action : "已選滿"}</span>
         </div>`;
       }).join("")}</div>
     </div>`;
   }
-  function deckCategoryCards(members, chosen) {
+  function deckCategoryCards(members, chosen, mode) {
     const groups = groupedDeckCards(members);
     const html = [];
     for (let i = 0; i < groups.length; i += 2) {
       const pair = groups.slice(i, i + 2);
-      html.push(...pair.map(cards => deckGroupMarkup(cards, chosen)));
-      const expanded = pair.find(cards => openDetails.deck === `${cards[0].cardId}` && cards.length > 1);
-      if (expanded) html.push(deckVariantsMarkup(expanded, chosen));
+      html.push(...pair.map(cards => deckGroupMarkup(cards, chosen, mode)));
+      const expanded = pair.find(cards => openDetails[mode] === `${cards[0].cardId}` && cards.length > 1);
+      if (expanded) html.push(deckVariantsMarkup(expanded, chosen, mode));
     }
     return html.join("");
   }
   function selectionTree(cards, mode, chosen) {
     const tree = treeStates[mode];
     if (!tree) return `<p class="lc-error">軍火庫 Tree Selection 尚未載入。請確認網路連線後重新整理，避免無法展開卡牌分類。</p>`;
-    const groups = mode === "choose" ? Data.TYPES.filter(type => cards.some(card => card.type === type)) : Data.TYPES;
-    return `<div class="lc-selection-tree" aria-label="依卡牌類型選牌">${groups.map(type => {
+    // 初選七大類中的攻擊牌已固定配發，展示但不能重複選進 25 張候選額度。
+    return `<div class="lc-selection-tree" aria-label="依卡牌類型選牌">${Data.TYPES.map(type => {
       const members = cards.filter(card => card.type === type);
+      const fixed = mode === "choose" && type === "attack";
       const expanded = tree.isExpanded(type);
       const selectedCount = members.filter(card => chosen.has(card.id)).length;
       const groupId = `lc-tree-${mode}-${type}`;
+      const body = fixed ? members.map(card => `<div class="lc-deck-stack lc-deck-stack--fixed">
+        <div class="lc-deck-stack-face">${cardMarkup(card)}</div>
+        <div class="lc-deck-fixed-caption">已配發</div>
+      </div>`).join("") : deckCategoryCards(members, chosen, mode);
       return `<section class="lc-tree-group ${expanded ? "is-expanded" : ""}">
         <button type="button" class="lc-tree-heading" data-act="tree-category" data-mode="${mode}" data-type="${type}" aria-expanded="${expanded}" aria-controls="${groupId}">
           <span class="lc-tree-heading-label"><span class="lc-tree-symbol" aria-hidden="true">${esc(Data.SYMBOLS[type])}</span>${esc(Data.LABELS[type])}牌</span>
-          <span class="lc-tree-heading-count">已選 ${selectedCount} / ${members.length}</span><span class="lc-tree-chevron" aria-hidden="true">${expanded ? "⌄" : "›"}</span>
+          <span class="lc-tree-heading-count">${fixed ? `已配發 ${members.length} 張` : `已選 ${selectedCount} / ${members.length}`}</span><span class="lc-tree-chevron" aria-hidden="true">${expanded ? "⌄" : "›"}</span>
         </button>
-        ${expanded ? `<div class="lc-tree-items ${mode === "deck" ? "lc-deck-two-columns" : ""}" id="${groupId}">${members.length ? (mode === "deck" ? deckCategoryCards(members, chosen) : members.map(card => {
-          const detailOpen = openDetails[mode] === card.id;
-          const selected = chosen.has(card.id);
-          return `<div class="lc-tree-item ${selected ? "is-picked" : ""}">
-            <button type="button" class="lc-tree-card-name" data-act="tree-detail" data-mode="${mode}" data-id="${esc(card.id)}" aria-expanded="${detailOpen}" aria-controls="lc-tree-detail-${mode}-${esc(card.id)}">
-              <span>${esc(Data.cardName(card))}${selected ? `<span class="lc-tree-selected" title="已選取" aria-label="已選取"> ✓</span>` : ""}</span><span class="lc-tree-more">${detailOpen ? "收起 ↑" : "詳細 ↓"}</span>
-            </button>
-            ${detailOpen ? treeCardDetail(card, mode, chosen) : ""}
-          </div>`;
-        }).join("")) : `<p class="lc-tree-empty">目前沒有此類卡牌。</p>`}</div>` : ""}
+        ${expanded ? `<div class="lc-tree-items lc-deck-two-columns" id="${groupId}">${members.length ? body : `<p class="lc-tree-empty">目前沒有此類卡牌。</p>`}</div>` : ""}
       </section>`;
     }).join("")}</div>`;
   }
@@ -161,8 +137,8 @@
     const cards = v.save.pool;
     return `${headline(v.save, "01 / THE FIRST DIVISION", "初始選牌", "攻擊牌 5 張直接配發；其餘六類共 40 張候選牌，請自選 25 張。沒選的 15 張歸 Boss。")}
       <div class="lc-starter-note">✦ 已保留你的 5 張專屬攻擊牌：${v.save.starter.map(c => esc(Data.cardName(c))).join("、")}</div>
-      <div class="lc-count-line"><strong>${v.chosenInitial.size} / 25</strong><span>點分類展開 → 點卡名詳細 → 選擇卡牌</span></div>
-      ${selectionTree(cards, "choose", v.chosenInitial)}
+      <div class="lc-count-line"><strong>${v.chosenInitial.size} / 25</strong><span>點卡牌增加 ×1，按 − 減少；「查看各張」可指定單張</span></div>
+      ${selectionTree([...v.save.starter, ...cards], "choose", v.chosenInitial)}
       <div class="lc-sticky-actions"><p>注意：選剩的卡牌會加入 Boss 原有 105 張牌庫。</p><button class="lc-primary" data-act="confirm-initial" ${v.chosenInitial.size !== 25 ? "disabled" : ""}>領取 5 張攻擊＋25 張自選，開始遊戲 →</button></div>`;
   }
   function deckView(v) {
@@ -709,13 +685,9 @@
         openDetails[mode] = null;
         render();
       },
-      "tree-detail": () => {
-        const mode = button.dataset.mode;
-        if (!treeStates[mode]) return;
-        openDetails[mode] = openDetails[mode] === id ? null : id;
-        render();
-      },
-      choose: () => G.pickInitial(id), "confirm-initial": G.confirmInitial,
+      choose: () => G.pickInitial(id), "choose-plus": () => G.addInitialCopy(id), "choose-minus": () => G.removeInitialCopy(id),
+      "choose-variants": () => { openDetails.choose = openDetails.choose === button.dataset.key ? null : button.dataset.key; render(); },
+      "confirm-initial": G.confirmInitial,
       deck: () => G.toggleDeck(id), "deck-plus": () => G.addDeckCopy(id), "deck-minus": () => G.removeDeckCopy(id),
       "deck-variants": () => { openDetails.deck = openDetails.deck === button.dataset.key ? null : button.dataset.key; render(); },
       "select-all": G.selectAllDeck,

@@ -56,6 +56,21 @@
     else return refresh("另外 25 張只能選 25 張，要換牌請先取消一張。 ");
     persist(); refresh();
   }
+  // 同種卡只在介面合併；初選仍記錄每張實體卡 ID。
+  function addInitialCopy(groupId) {
+    if (save.phase !== "choose") return;
+    const base = save.pool.find(card => card.id === groupId);
+    if (!base) return; // 5 張自動配發的攻擊牌不屬於候選池。
+    const next = save.pool.find(card => card.cardId === base.cardId && !chosenInitial.has(card.id));
+    if (next) pickInitial(next.id);
+  }
+  function removeInitialCopy(groupId) {
+    if (save.phase !== "choose") return;
+    const base = save.pool.find(card => card.id === groupId);
+    if (!base) return;
+    const last = save.pool.filter(card => card.cardId === base.cardId && chosenInitial.has(card.id)).at(-1);
+    if (last) pickInitial(last.id);
+  }
   function confirmInitial() {
     if (save.phase !== "choose" || chosenInitial.size !== 25) return refresh("請從選牌池選滿 25 張牌。 ");
     save.player = [...save.starter, ...save.pool.filter(c => chosenInitial.has(c.id))];
@@ -305,7 +320,7 @@
     return true;
   }
   function view() { return { save, battle: battle?.state() || null, selectedCard, targetPrompt, chosenInitial, chosenDeck, notice, hasLibrary: !!window.Deck?.create }; }
-  window.LinCardGame = Object.freeze({ view, pickInitial, confirmInitial, toggleDeck, addDeckCopy, removeDeckCopy, selectAllDeck, activateDeck, changeBranch, beginBattle, cardClick, playTarget, closeTarget, endTurn, startBossTurn, nextBossCard, finishBossTurn, openingExchange, freeDiscard, concede, retry, chooseReward, acceptReward, rejectReward, newGame, currentReward });
+  window.LinCardGame = Object.freeze({ view, pickInitial, addInitialCopy, removeInitialCopy, confirmInitial, toggleDeck, addDeckCopy, removeDeckCopy, selectAllDeck, activateDeck, changeBranch, beginBattle, cardClick, playTarget, closeTarget, endTurn, startBossTurn, nextBossCard, finishBossTurn, openingExchange, freeDiscard, concede, retry, chooseReward, acceptReward, rejectReward, newGame, currentReward });
   persist();
   window.addEventListener("DOMContentLoaded", () => window.LinCardUI?.render());
 })();

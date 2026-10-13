@@ -731,6 +731,9 @@ button:disabled {opacity:.45;cursor:not-allowed!important;transform:none!importa
 .lc-deck-variant-card .lc-card.is-selected {transform:none}
 .lc-deck-variant-caption {display:block;margin:7px 0 1px;font-size:11px;color:var(--lc-muted)}
 .lc-deck-variant-card.is-picked .lc-deck-variant-caption {color:var(--lc-gold)}
+/* 初選固定配發的 5 張攻擊牌：同一雙欄卡面，但不能點選或扣除。 */
+.lc-deck-stack--fixed .lc-card {cursor:default}
+.lc-deck-fixed-caption {margin:7px 0 0;color:var(--lc-muted);font-size:11px}
 /* 個人牌組編輯不改頁面其他結構，也套用同一套兩欄的牌面。 */
 @media(max-width:580px) {
   .lc-selection-tree .lc-tree-items.lc-deck-two-columns {gap:15px 9px;padding:6px 2px 14px}
