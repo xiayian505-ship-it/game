@@ -20,7 +20,8 @@
       const button = make("button", "story-entry");
       button.type = "button";
       button.disabled = !(item.published && item.unlocked);
-      const title = make("span", "story-entry-title", `${String(index).padStart(2, "0")} · ${item.title}`);
+      const label = item.id === "epilogue" ? `✧ · ${item.title}` : `${String(index).padStart(2, "0")} · ${item.title}`;
+      const title = make("span", "story-entry-title", label);
       const status = item.published ? (!item.unlocked ? "尚未通關解鎖" : item.read ? "已讀完 · 可重看" : item.seen ? "已略過 · 可重看" : "已解鎖 · 可閱讀") : "故事尚未寫入";
       button.append(title, make("span", "story-entry-status", status));
       button.addEventListener("click", () => story.openSection(item.id));

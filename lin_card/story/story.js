@@ -36,7 +36,9 @@
     } catch (err) { console.warn("無法讀取遊戲通關紀錄", err); }
     return 0;
   }
-  const unlocked = index => index === 0 || completedStages() >= index;
+  const unlocked = (chapterId, index) => chapterId === "prologue" ||
+    (chapterId === "epilogue" ? completedStages() >= 10 : completedStages() >= index);
+  const allChapters = () => manifest ? [...manifest.main, ...manifest.extras] : [];
   function fileUrl(file) {
     const url = new URL(String(file), DATA_BASE);
     if (url.origin !== DATA_BASE.origin || !url.pathname.startsWith(DATA_BASE.pathname)) throw new Error("故事資料路徑無效");
@@ -47,21 +49,22 @@
     if (!result.ok) throw new Error(`故事讀取失敗（HTTP ${result.status}）`);
     return result.json();
   }
-  // 故事章節使用固定的 chapter ID 及 Boss 資料表；未自訂故事標題時直接用最新 Boss 名稱。
+  // 主線關卡標題由 Boss 資料決定；「契約之後」為不參與戰鬥的獨立篇章。
   function chapterTitle(index, reader = false) {
     if (index === 0) return "序章｜契約之前";
+    if (index === 11) return "契約之後";
     const boss = window.LinCardData?.bossByStage(index);
     return boss ? `第${index}關${reader ? "" : "通關故事"}｜${boss.name}` : `第${index}關`;
   }
-  // 對使用者而言，只需填 JSON 的 events；內容還沒寫的章節自動標成「尚未寫入」。
+  // 對使用者而言，只需填 JSON 的 events；契約之後同樣依完成十關解鎖。
   function catalog() {
     if (!manifest) return [];
-    return manifest.main.map((ch, index) => {
+    return allChapters().map((ch, index) => {
       const section = ch.sections[0];
       const data = prepared.get(ch.id);
       return { id: ch.id, title: chapterTitle(index), sectionId: section.id,
         published: Array.isArray(data?.events) && data.events.length > 0,
-        unlocked: unlocked(index),
+        unlocked: unlocked(ch.id, index),
         read: progress.completedSections.includes(ch.id),
         seen: progress.seenSections.includes(ch.id) };
     });
@@ -72,8 +75,8 @@
     try {
       const items = await fetchJson(new URL("chapters.json", DATA_BASE));
       if (!Array.isArray(items.main) || items.main.length !== 11 || !Array.isArray(items.extras)) throw new Error("章節索引必須含序章及十段通關故事");
-      // 單一 manifest 管理路徑；各段獨立 JSON，不需改 JS 才能填故事。
-      const loaded = await Promise.all(items.main.map(async ch => {
+      // 單一 manifest 管理主章與額外篇章；各段獨立 JSON，不需改 JS 才能填故事。
+      const loaded = await Promise.all([...items.main, ...items.extras].map(async ch => {
         const section = ch.sections?.[0];
         if (!section) throw new Error(`故事缺少小節：${ch.id}`);
         const result = await fetchJson(fileUrl(section.file));
@@ -102,9 +105,10 @@
     emit();
   }
   async function openSection(chapterId, resume = false) {
-    const index = manifest?.main.findIndex(x => x.id === chapterId) ?? -1;
-    if (index < 0 || !unlocked(index)) return false;
-    const ch = manifest.main[index];
+    const entries = allChapters();
+    const index = entries.findIndex(x => x.id === chapterId);
+    if (index < 0 || !unlocked(chapterId, index)) return false;
+    const ch = entries[index];
     const data = prepared.get(ch.id);
     if (!data?.events?.length) return false;
     requestSerial++;
@@ -161,8 +165,8 @@
   }
   function resume() { if (progress.bookmark?.chapterId) openSection(progress.bookmark.chapterId, true); }
   function backToGame() {
-    const returnView = new URL(window.location.href).searchParams.get("return") === "game";
-    const url = `../index.html${returnView ? "?view=game" : ""}`;
+    const returnView = new URL(window.location.href).searchParams.get("return");
+    const url = `../index.html${returnView === "game" ? "?view=game" : returnView === "challenge" ? "?view=challenge" : ""}`;
     if (window.SlowlyNavigation?.go) window.SlowlyNavigation.go(url);
     else window.location.assign(url);
   }

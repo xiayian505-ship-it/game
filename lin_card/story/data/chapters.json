@@ -123,5 +123,17 @@
       ]
     }
   ],
-  "extras": []
+  "extras": [
+    {
+      "id": "epilogue",
+      "title": "契約之後",
+      "sections": [
+        {
+          "id": "epilogue",
+          "title": "契約之後",
+          "file": "epilogue/epilogue.json"
+        }
+      ]
+    }
+  ]
 }

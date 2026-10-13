@@ -120,23 +120,18 @@ button:disabled {opacity:.45;cursor:not-allowed!important;transform:none!importa
     "boss boss"
     "hand hand"
     "player controls"
-    "resources controls"
-    "status status";
+    "resources controls";
   gap:0 14px;
   position:relative;
   isolation:isolate;
-  border:1px solid rgba(167,214,191,.20);
-  border-radius:13px;
-  overflow:hidden;
+  border:0;
+  border-radius:0;
+  overflow:visible;
   padding:0 24px 17px;
-  background:
-    radial-gradient(ellipse 40% 23% at 50% 35%,rgba(56,114,99,.32),transparent),
-    linear-gradient(180deg,rgba(10,35,37,.60),rgba(3,15,18,.78) 72%,rgba(3,14,17,.95));
-  box-shadow:inset 0 0 80px rgba(0,0,0,.20),0 14px 40px rgba(0,0,0,.3);
+  background:transparent;
+  box-shadow:none;
 }
-.lc-battle-board::before {content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:
-  radial-gradient(ellipse 58% 8% at 50% 43%,rgba(194,231,211,.07),transparent 80%),
-  linear-gradient(90deg,rgba(1,11,13,.43),transparent 26%,transparent 75%,rgba(1,11,13,.48));}
+.lc-battle-board::before {content:none;}
 .lc-battle-turn {grid-area:turn;display:flex;align-items:center;justify-content:center;gap:15px;min-height:45px;padding:8px 0;border-bottom:1px solid rgba(180,220,200,.15);color:#d6e8df;letter-spacing:.13em;background:linear-gradient(90deg,transparent,rgba(30,66,55,.28),transparent)}
 .lc-battle-turn strong {font:italic 22px Georgia,serif;letter-spacing:.13em;font-weight:400}
 .lc-battle-turn small {font-size:10px;color:#b1cdbb;letter-spacing:.1em}
@@ -149,7 +144,7 @@ button:disabled {opacity:.45;cursor:not-allowed!important;transform:none!importa
 .lc-battle-boss .lc-health-line {margin:0;color:#dce9e2;font-size:11px}
 .lc-battle-boss .lc-health {height:8px;margin:5px 0 0;border:1px solid rgba(211,183,218,.38);background:rgba(3,14,19,.9);box-shadow:0 3px 12px rgba(0,0,0,.3)}
 .lc-battle-boss .lc-health>span {background:linear-gradient(90deg,#82516a,#c39bbf)}
-.lc-boss-report {min-height:25px;max-width:min(410px,93%);margin:8px 0 0;padding:4px 10px;color:#cedfd5;font-size:10px;line-height:1.5;letter-spacing:.03em;background:rgba(5,23,27,.48);border:1px solid rgba(187,223,204,.12)}
+.lc-boss-report {min-height:25px;max-width:min(410px,93%);margin:8px 0 0;padding:4px 10px;color:#cedfd5;font-size:10px;line-height:1.5;letter-spacing:.03em;background:transparent;border:0}
 /* 霧影以 CSS 繪製，不依賴外部圖檔。 */
 .lc-foe {position:relative;width:clamp(175px,23vw,248px);height:clamp(195px,26vw,265px);margin:0 auto;filter:drop-shadow(0 15px 18px rgba(0,0,0,.5));animation:lc-foe-float 5.6s ease-in-out infinite}
 .lc-foe-halo {position:absolute;inset:0 -30%;background:radial-gradient(ellipse at 50% 52%,rgba(154,175,187,.21),transparent 55%);filter:blur(5px)}
@@ -351,7 +346,7 @@ button:disabled {opacity:.45;cursor:not-allowed!important;transform:none!importa
 @media(max-width:680px){.lc-boss-card-count{font-size:10px;margin-top:5px}.lc-boss-card-count span{font-size:9px}.lc-boss-card-count strong{font-size:13px}}
 
 /* v0.6.3｜回合開始免費一換一：僅在可換牌時出現。 */
-.lc-opening-exchange {display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin:9px auto 2px;padding:9px 12px;max-width:560px;border:1px solid rgba(174,206,161,.31);border-radius:9px;background:rgba(22,65,52,.4);color:#d5e7cf;font-size:11px;line-height:1.6}
+.lc-opening-exchange {display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin:9px auto 2px;padding:9px 12px;max-width:560px;border:0;border-radius:0;background:transparent;color:#d5e7cf;font-size:11px;line-height:1.6}
 .lc-exchange-button {flex:none;min-height:34px;padding:6px 12px;font-size:11px;white-space:nowrap}
 .lc-exchange-button:disabled {opacity:.46;cursor:not-allowed}
 @media(max-width:580px) {.lc-opening-exchange{padding:8px;gap:7px;font-size:10px}.lc-exchange-button{min-height:36px;width:100%;font-size:11px}}
@@ -668,8 +663,9 @@ button:disabled {opacity:.45;cursor:not-allowed!important;transform:none!importa
 }
 #app.is-deck-prep .lc-tree-pick:hover:not(:disabled),
 #app.is-deck-prep .lc-tree-pick:focus-visible {color:#f4e4b6;background:rgba(57,91,68,.18);transform:none}
-#app.is-deck-prep .lc-deck-prep-actions {display:flex;justify-content:center;margin:27px 0 0}
-#app.is-deck-prep .lc-deck-prep-actions .lc-primary {
+#app.is-deck-prep .lc-deck-prep-actions {display:flex;justify-content:center;align-items:center;gap:clamp(12px,4vw,35px);margin:27px 0 0}
+#app.is-deck-prep .lc-deck-prep-actions .lc-primary,
+#app.is-deck-prep .lc-deck-prep-actions .lc-secondary {
   min-width:165px;
   min-height:52px;
   border:0;
@@ -681,7 +677,9 @@ button:disabled {opacity:.45;cursor:not-allowed!important;transform:none!importa
   letter-spacing:.15em;
 }
 #app.is-deck-prep .lc-deck-prep-actions .lc-primary:hover:not(:disabled),
-#app.is-deck-prep .lc-deck-prep-actions .lc-primary:focus-visible {
+#app.is-deck-prep .lc-deck-prep-actions .lc-primary:focus-visible,
+#app.is-deck-prep .lc-deck-prep-actions .lc-secondary:hover:not(:disabled),
+#app.is-deck-prep .lc-deck-prep-actions .lc-secondary:focus-visible {
   color:#f4e4b6;
   background:rgba(57,91,68,.18);
   transform:none;
@@ -744,4 +742,26 @@ button:disabled {opacity:.45;cursor:not-allowed!important;transform:none!importa
   .lc-deck-stack-face .lc-card-name {font-size:12px}
   .lc-deck-stack-count {right:5px;bottom:5px}
   .lc-deck-stack-controls {gap:8px}
+}
+
+/* 本批｜戰鬥畫面直接融入霧林背景，只有卡牌、血條與操作元件保留自身造型。 */
+#app.lc-game.is-battle {
+  min-height:0;
+  padding:0 0 30px;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+}
+#app.is-battle .lc-log {
+  margin:14px 0 0;
+  padding:11px 0 0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+}
+#app.is-battle .lc-log li {border-bottom:0;}
+@media(max-width:680px) {
+  #app.lc-game.is-battle {padding:0 0 22px}
 }

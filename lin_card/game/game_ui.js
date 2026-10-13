@@ -135,23 +135,21 @@
   }
   function chooseView(v) {
     const cards = v.save.pool;
-    return `${headline(v.save, "01 / THE FIRST DIVISION", "初始選牌", "攻擊牌 5 張直接配發；其餘六類共 40 張候選牌，請自選 25 張。沒選的 15 張歸 Boss。")}
-      <div class="lc-starter-note">✦ 已保留你的 5 張專屬攻擊牌：${v.save.starter.map(c => esc(Data.cardName(c))).join("、")}</div>
-      <div class="lc-count-line"><strong>${v.chosenInitial.size} / 25</strong><span>點卡牌增加 ×1，按 − 減少；「查看各張」可指定單張</span></div>
+    return `<div class="lc-deck-prep-count">已選 ${v.chosenInitial.size} / 25 張</div>
       ${selectionTree([...v.save.starter, ...cards], "choose", v.chosenInitial)}
-      <div class="lc-sticky-actions"><p>注意：選剩的卡牌會加入 Boss 原有 105 張牌庫。</p><button class="lc-primary" data-act="confirm-initial" ${v.chosenInitial.size !== 25 ? "disabled" : ""}>領取 5 張攻擊＋25 張自選，開始遊戲 →</button></div>`;
+      <div class="lc-deck-prep-actions"><button class="lc-secondary" type="button" data-act="retreat">息兵</button><button class="lc-primary" type="button" data-act="confirm-initial" ${v.chosenInitial.size !== 25 ? "disabled" : ""}>出戰</button></div>`;
   }
   function deckView(v) {
-    // 關卡名已在上方可返回的主標題顯示；準備頁只留選牌、精簡張數與出戰。
-    // Tree Selection 操作與存檔規則維持原樣，待選牌新方案確認後再調整。
+    // 初始選牌與接關選牌沿用同一無框版型；只更換張數上限與出戰行為。
     return `<div class="lc-deck-prep-count">已選 ${v.chosenDeck.size} / 30 張</div>
       ${selectionTree(v.save.player, "deck", v.chosenDeck)}
-      <div class="lc-deck-prep-actions"><button class="lc-primary" type="button" data-act="start" ${v.chosenDeck.size === 0 || !v.hasLibrary ? "disabled" : ""}>出戰</button></div>
+      <div class="lc-deck-prep-actions"><button class="lc-secondary" type="button" data-act="retreat">息兵</button><button class="lc-primary" type="button" data-act="start" ${v.chosenDeck.size === 0 || !v.hasLibrary ? "disabled" : ""}>出戰</button></div>
       ${v.hasLibrary ? "" : `<p class="lc-error">軍火庫 Deck 尚未載入。必須連上網路才能開戰；請確認 HTTPS 引用可用。</p>`}`;
   }
   // 首頁三道霧林路徑互斥聚焦：第一次點選，第二次確認進入。
   // 只是 UI 暫存狀態，不寫入存檔、不干涉遊戲或故事進度。
-  let screen = new URL(window.location.href).searchParams.get("view") === "game" ? "game" : "home";
+  const requestedView = new URL(window.location.href).searchParams.get("view");
+  let screen = requestedView === "game" ? "game" : requestedView === "challenge" ? "levels" : "home";
   let homeFocus = null;
   const homePaths = Object.freeze([
     { key: "profile", title: "關於旅人", symbol: Data.SYMBOLS.shield, subtitle: "回望你的收藏與足跡" },
@@ -189,8 +187,8 @@
   });
   const sectionFocus = { profile: null, levels: null, trials: null };
   let profileSection = null;
-  let levelsSection = null;
-  let trialSection = null;
+  let levelsSection = requestedView === "challenge" ? "trials" : null;
+  let trialSection = requestedView === "challenge" ? "challenge" : null;
 
   function scrollToTop() { window.scrollTo?.({ top: 0, behavior: "instant" }); }
   function openScreen(dest) {
@@ -240,7 +238,7 @@
     if (area === "profile") {
       if (profileSection === "editor") profileSection = "decks";
       else profileSection = null;
-    } else if (area === "prologue") {
+    } else if (area === "prologue" || area === "epilogue") {
       trialSection = "challenge";
     } else if (area === "levels") {
       if (trialSection) trialSection = null;
@@ -367,7 +365,9 @@
         const label = cleared ? "✓ 已通關" : current ? "開始挑戰 →" : "尚未解鎖";
         return `<button type="button" class="lc-chapter-choice ${cleared ? "is-cleared" : current ? "is-current" : "is-locked"}" data-act="enter-stage" ${current ? "" : "disabled"}>
           <span>CHAPTER ${String(number).padStart(2, "0")}</span><strong>${esc(name)}</strong><small>${label}</small></button>`;
-      }).join("")}</div>
+      }).join("")}
+      <button type="button" class="lc-chapter-choice lc-chapter-epilogue ${finished ? "is-cleared" : "is-locked"}" data-act="open-epilogue" ${finished ? "" : "disabled"}>
+        <span>AFTER THE PACT</span><strong>契約之後</strong><small>${finished ? "閱讀篇章 →" : "尚未解鎖"}</small></button></div>
       ${finished ? `<div class="lc-actions-center"><button class="lc-primary" data-act="enter-stage">查看通關紀錄 →</button></div>` : ""}`;
   }
   function bossArchiveView() {
@@ -401,12 +401,11 @@
     const b = v.battle;
     const hand = b.player.hand;
     const bossAction = b.log.find(text => text.startsWith("Boss") || text.includes("Boss 牌庫")) || "迷霧正等待你的下一步。";
-    return `${headline(v.save, `03 / BATTLE · ROUND ${b.round}`, `第 ${v.save.stage} 關｜${Data.CHAPTERS[v.save.stage - 1]}`, "霧影在上，手牌在下。點擊卡牌選取，再點一次出牌；魔法牌消耗魔法點。")} 
-      <div class="lc-battle-board" aria-label="霧林之契戰鬥舞台">
-        <div class="lc-battle-turn"><strong>ROUND ${String(b.round).padStart(2, "0")}</strong><span>✦</span><small>YOUR TURN · 玩家回合</small><div class="lc-battle-settings"><button class="lc-battle-sound" type="button" data-act="toggle-battle-sound" aria-pressed="${window.MistBattleFX?.enabled !== false}">${window.MistBattleFX?.enabled !== false ? "♫ 音效開" : "♪ 音效關"}</button><button class="lc-battle-sound lc-battle-vibration" type="button" data-act="toggle-battle-vibration" aria-pressed="${window.MistBattleHaptics?.enabled === true}" ${window.MistBattleHaptics?.supported ? "" : "disabled"}>${!window.MistBattleHaptics?.supported ? "震動不支援" : window.MistBattleHaptics?.enabled ? "▰ 震動開" : "▱ 震動關"}</button></div></div>
+    // 關卡名稱只在外部主標題顯示；戰場內只保留必要的狀態與操作。
+    return `<div class="lc-battle-board" aria-label="霧林之契戰鬥舞台">
+        <div class="lc-battle-turn"><strong>ROUND ${String(b.round).padStart(2, "0")}</strong><span>✦</span><small>玩家回合</small><div class="lc-battle-settings"><button class="lc-battle-sound" type="button" data-act="toggle-battle-sound" aria-pressed="${window.MistBattleFX?.enabled !== false}">${window.MistBattleFX?.enabled !== false ? "♫ 音效開" : "♪ 音效關"}</button><button class="lc-battle-sound lc-battle-vibration" type="button" data-act="toggle-battle-vibration" aria-pressed="${window.MistBattleHaptics?.enabled === true}" ${window.MistBattleHaptics?.supported ? "" : "disabled"}>${!window.MistBattleHaptics?.supported ? "震動不支援" : window.MistBattleHaptics?.enabled ? "▰ 震動開" : "▱ 震動關"}</button></div></div>
         <section class="lc-battle-boss" aria-label="Boss 狀態">
           ${bossFigure()}
-          <div class="lc-boss-name">${esc(Data.CHAPTERS[v.save.stage - 1])}</div>
           <div class="lc-boss-tags"><span>❖ 護盾 ${b.boss.shield}</span><span>♧ 防禦 ${b.boss.guard}</span><span>✧ 行動 ${b.boss.energy}</span><span>✺ 魔法 ${b.boss.mana}</span>${b.boss.buff ? `<span>✦ 共鳴 +${b.boss.buff}</span>` : ""}${b.boss.pierceNext ? `<span>⌁ 穿盾待發</span>` : ""}</div>
           ${healthMeter(b.boss, true)}
           <p class="lc-boss-card-count" aria-label="Boss 剩餘牌數">剩餘可用 <strong>${b.boss.drawPile.length + b.boss.hand.length}</strong> 張 <span>｜抽牌 ${b.boss.drawPile.length} · 手牌 ${b.boss.hand.length} · 棄牌 ${b.boss.discardPile.length}</span></p>
@@ -414,9 +413,8 @@
         </section>
         <section class="lc-battle-hand-zone" aria-label="玩家手牌">
           <div class="lc-hand-title">YOUR HAND <span>·</span> 手中之牌</div>
-          <p class="lc-selection-hint">${v.selectedCard === null ? "點一下選牌，再點同一張出牌" : `已選取「${esc(Data.cardName(hand[v.selectedCard]))}」 · 再點一次出牌`}</p>
           ${b.openingExchangeAvailable && b.player.drawPile.length > 0
-            ? `<div class="lc-opening-exchange"><span>回合開始：可以免費棄 1 張、抽 1 張（限一次；出牌或整理後失效）</span><button type="button" class="lc-secondary lc-exchange-button" data-act="opening-exchange" ${v.selectedCard === null ? "disabled" : ""}>換掉選中手牌 ↻</button></div>`
+            ? `<div class="lc-opening-exchange"><button type="button" class="lc-secondary lc-exchange-button" data-act="opening-exchange" ${v.selectedCard === null ? "disabled" : ""}>換掉選中手牌 ↻</button></div>`
             : ""}
           <div class="lc-battle-hand">${fanHandMarkup(hand, v.selectedCard, b.player.energy, b.player.mana, b.player.buff, b.boss.shield)}</div>
         </section>
@@ -435,7 +433,6 @@
           <span>抽牌 ${b.player.drawPile.length} · 棄牌 ${b.player.discardPile.length}</span>
           <button class="lc-quiet lc-battle-discard" data-act="discard" ${v.selectedCard === null || b.freeDiscardUsed ? "disabled" : ""} title="本回合可免費整理一張">整理選中手牌</button>
         </div>
-        <p class="lc-battle-status">牌庫不會自動洗回 · 行動點與魔法點只在新的一場戰鬥開始時重置</p>
       </div>
       <details class="lc-log"><summary>戰鬥紀錄 <span>最近 ${Math.min(12, b.log.length)} 則</span></summary><ol>${b.log.slice(0, 12).map(x => `<li>${esc(x)}</li>`).join("")}</ol></details>
       ${v.targetPrompt ? targetView(v.targetPrompt) : ""}`;
@@ -444,11 +441,8 @@
     const cards = prompt.type === "discard" && prompt.piles
       ? prompt.piles.map(pile => `<section class="lc-discard-source"><h4>${esc(pile.label)} <span>${pile.cards.length} 張</span></h4><div class="lc-dialog-cards">${pile.cards.length ? pile.cards.map(c => cardMarkup(c, { action: "target" })).join("") : `<p class="lc-tree-empty">目前沒有棄牌</p>`}</div></section>`).join("")
       : `<div class="lc-dialog-cards">${prompt.cards.map(c => cardMarkup(c, { action: "target" })).join("")}</div>`;
-    const note = prompt.type === "discard"
-      ? "可以從任一方的棄牌堆取回一張，放進自己的手牌；只影響本場戰鬥，不改變永久收藏。"
-      : "手牌交換只影響本場戰鬥，不會改變永久收藏歸屬。";
     return `<div class="lc-overlay" role="dialog" aria-modal="true" aria-label="卡牌目標"><div class="lc-dialog"><div class="lc-dialog-head"><h3>${esc(prompt.label)}</h3><button class="lc-close" type="button" data-act="close-target">✕</button></div>
-    ${cards}<p class="lc-dialog-note">${note}</p></div></div>`;
+    ${cards}</div></div>`;
   }
   // 收藏達 80 張時，點「留於掌心」才展開舊卡替換清單。
   // 僅保存 UI 展開狀態，不影響任何永久資料。
@@ -495,10 +489,12 @@
     const view = screen === "home" ? homeView : screen === "levels" ? levelsView : screen === "profile" ? profileView : phaseView;
     const isGame = screen === "game";
     const isRewardAllocation = isGame && v.save.phase === "reward" && !!v.save.pendingReward?.mode;
-    const isDeckPrep = isGame && v.save.phase === "deck";
+    const isDeckPrep = isGame && (v.save.phase === "choose" || v.save.phase === "deck");
+    const isBattle = isGame && v.save.phase === "battle";
     // 準備頁不顯示一般流程通知；真正的開戰／存檔錯誤仍應讓玩家看見。
     const deckError = /^(開戰失敗|存檔寫入失敗|軍火庫 Deck 尚未載入)/.test(v.notice || "");
-    document.getElementById("status-message").hidden = !isGame || isRewardAllocation || (isDeckPrep && !deckError);
+    const battleError = /^(存檔寫入失敗|開戰失敗|行動點|選擇已失效|只有回合|本回合)/.test(v.notice || "");
+    document.getElementById("status-message").hidden = !isGame || isRewardAllocation || (isDeckPrep && !deckError) || (isBattle && !battleError);
     const intro = document.querySelector(".lc-intro");
     intro?.classList.toggle("is-compact", screen !== "home");
     intro?.classList.toggle("is-home-art", screen === "home");
@@ -524,6 +520,7 @@
     root.classList.toggle("is-stage-panel", isGame);
     root.classList.toggle("is-reward-allocation", isRewardAllocation);
     root.classList.toggle("is-deck-prep", isDeckPrep);
+    root.classList.toggle("is-battle", isBattle);
     root.innerHTML = view(v);
   }
   function flightGeometry(source, card) {
@@ -628,7 +625,7 @@
     const started = G.startBossTurn();
     if (!started) { bossAnimating = false; return; }
     const roundTag = document.querySelector(".lc-battle-turn small");
-    if (roundTag) roundTag.textContent = "BOSS TURN · 對手回合";
+    if (roundTag) roundTag.textContent = "對手回合";
     const limit = G.view().battle?.stage <= 3 ? 1 : G.view().battle?.stage <= 7 ? 2 : 3;
     let count = 0;
     try {
@@ -674,6 +671,12 @@
       "back-section": () => backSection(button.dataset.area),
       "enter-stage": () => open("game"),
       "open-prologue": () => { trialSection = "prologue"; render(); scrollToTop(); },
+      "open-epilogue": () => {
+        if (G.view().save.completed < 10) return;
+        const url = "./story/index.html?entry=epilogue&return=challenge";
+        if (window.SlowlyNavigation?.go) window.SlowlyNavigation.go(url);
+        else window.location.assign(url);
+      },
       "back-prologue": () => { trialSection = "challenge"; render(); scrollToTop(); },
       "restart-journey": () => { if (G.newGame()) { openDetails.choose = null; openDetails.deck = null; open("game"); } },
       "activate-preset": () => G.activateDeck(slot),
@@ -688,6 +691,7 @@
       choose: () => G.pickInitial(id), "choose-plus": () => G.addInitialCopy(id), "choose-minus": () => G.removeInitialCopy(id),
       "choose-variants": () => { openDetails.choose = openDetails.choose === button.dataset.key ? null : button.dataset.key; render(); },
       "confirm-initial": G.confirmInitial,
+      retreat: backToChallenge,
       deck: () => G.toggleDeck(id), "deck-plus": () => G.addDeckCopy(id), "deck-minus": () => G.removeDeckCopy(id),
       "deck-variants": () => { openDetails.deck = openDetails.deck === button.dataset.key ? null : button.dataset.key; render(); },
       "select-all": G.selectAllDeck,
