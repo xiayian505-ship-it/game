@@ -154,7 +154,7 @@
   const homePaths = Object.freeze([
     { key: "profile", title: "關於旅人", symbol: Data.SYMBOLS.shield, subtitle: "回望你的收藏與足跡" },
     { key: "levels", title: "開始試煉", symbol: Data.SYMBOLS.action, subtitle: "循著霧光，迎向下一場試煉" },
-    { key: "story", title: "旅程回顧", symbol: Data.SYMBOLS.special, subtitle: "重拾林中遺落的篇章" }
+    { key: "story", title: "旅程回顧", symbol: Data.SYMBOLS.special, subtitle: "重拾遺落篇章" }
   ]);
   function homeView() {
     return `<nav class="lc-home-paths ${homeFocus ? "has-focus" : ""}" aria-label="旅人的選擇">
@@ -172,17 +172,17 @@
   // 這些只是目前開啟的 UI 層級；不寫入存檔、不變更關卡進度。
   const sectionPaths = Object.freeze({
     profile: [
-      { key: "collection", symbol: "✦", title: "永久收藏", subtitle: "留在掌心的，皆有來處。" },
-      { key: "decks", symbol: "❈", title: "個人牌組", subtitle: "以手中之牌，編織自己的戰術。" },
-      { key: "catalog", symbol: "♧", title: "霧林圖鑑", subtitle: "每一張牌，都藏著未竟的可能。" }
+      { key: "collection", symbol: "✦", title: "永久收藏", subtitle: "留於掌心，皆有來處" },
+      { key: "decks", symbol: "❈", title: "個人牌組", subtitle: "以手中之牌，編織戰術" },
+      { key: "catalog", symbol: "♧", title: "霧林圖鑑", subtitle: "微弱之光，藏著未竟可能" }
     ],
     levels: [
-      { key: "marks", symbol: "◈", title: "試煉刻痕", subtitle: "踏過的每一重霧，都留有印記。" },
-      { key: "trials", symbol: "✥", title: "十重試煉", subtitle: "霧幕之後，下一道命運正等著你。" }
+      { key: "marks", symbol: "◈", title: "試煉刻痕", subtitle: "重重迷霧，皆有印記" },
+      { key: "trials", symbol: "✥", title: "十重試煉", subtitle: "霧幕之後，揭曉命運" }
     ],
     trials: [
-      { key: "challenge", symbol: "⚔", title: "試煉挑戰", subtitle: "十重霧障，終有一途通往真相。" },
-      { key: "boss", symbol: "♜", title: "霧影牌鑑", subtitle: "知曉對手的底牌，未必能改寫命運。" }
+      { key: "challenge", symbol: "⚔", title: "試煉挑戰", subtitle: "踏入迷霧，前往真相" },
+      { key: "boss", symbol: "♜", title: "霧影牌鑑", subtitle: "即使知曉底牌，也未必能翻轉命運" }
     ]
   });
   const sectionFocus = { profile: null, levels: null, trials: null };
