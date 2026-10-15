@@ -1,229 +1,57 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760"
-  viewBox="0 0 1200 760" role="img" aria-labelledby="crystalTitle crystalDescription">
-  <title id="crystalTitle">慢慢遊戲｜琉璃幻彩</title>
-  <desc id="crystalDescription">慢慢遊戲，水晶鏡面晶體切面、冰藍紫羅蘭炫彩折射；弧形文字下方有低不透明度三角形晶片。透明背景。</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760" role="img" aria-label="慢慢 陰陽相生">
+  <title>慢慢｜陰陽相生橫式藝術字</title>
+  <desc>黑白互生、鏡像構圖與太極旋流的平衡字面；透明背景，黑白互生，字位帶有鏡像構圖與太極旋流。</desc>
   <defs>
-      
-      <text id="crystalGlyph0" x="0" y="0" text-anchor="middle" dominant-baseline="central"
-        font-family='&quot;Noto Serif CJK TC&quot;, &quot;Source Han Serif TC&quot;, &quot;Songti TC&quot;, &quot;PMingLiU&quot;, serif' font-size="100" font-weight="800">慢</text>
-      <clipPath id="crystalClip0"><use href="#crystalGlyph0"/></clipPath>
-
-      <text id="crystalGlyph1" x="0" y="0" text-anchor="middle" dominant-baseline="central"
-        font-family='&quot;Noto Serif CJK TC&quot;, &quot;Source Han Serif TC&quot;, &quot;Songti TC&quot;, &quot;PMingLiU&quot;, serif' font-size="100" font-weight="800">慢</text>
-      <clipPath id="crystalClip1"><use href="#crystalGlyph1"/></clipPath>
-
-      <text id="crystalGlyph2" x="0" y="0" text-anchor="middle" dominant-baseline="central"
-        font-family='&quot;Noto Serif CJK TC&quot;, &quot;Source Han Serif TC&quot;, &quot;Songti TC&quot;, &quot;PMingLiU&quot;, serif' font-size="100" font-weight="800">遊</text>
-      <clipPath id="crystalClip2"><use href="#crystalGlyph2"/></clipPath>
-
-      <text id="crystalGlyph3" x="0" y="0" text-anchor="middle" dominant-baseline="central"
-        font-family='&quot;Noto Serif CJK TC&quot;, &quot;Source Han Serif TC&quot;, &quot;Songti TC&quot;, &quot;PMingLiU&quot;, serif' font-size="100" font-weight="800">戲</text>
-      <clipPath id="crystalClip3"><use href="#crystalGlyph3"/></clipPath>
-      <linearGradient id="crystalBody" x1="0.08" y1="0.05" x2="0.95" y2="1">
-        <stop offset="0" stop-color="#f4ffff"/>
-        <stop offset=".13" stop-color="#b4eeff"/>
-        <stop offset=".27" stop-color="#86b5ec"/>
-        <stop offset=".40" stop-color="#dbb7f7"/>
-        <stop offset=".51" stop-color="#f7ffff"/>
-        <stop offset=".62" stop-color="#70cbdf"/>
-        <stop offset=".75" stop-color="#a4a4e7"/>
-        <stop offset=".88" stop-color="#d9c4f9"/>
-        <stop offset="1" stop-color="#5a81b8"/>
-      </linearGradient>
-      <linearGradient id="crystalEdge" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stop-color="#f8ffff" stop-opacity=".92"/>
-        <stop offset=".26" stop-color="#76bfe1" stop-opacity=".65"/>
-        <stop offset=".52" stop-color="#e9e5ff" stop-opacity=".88"/>
-        <stop offset=".75" stop-color="#818ac9" stop-opacity=".73"/>
-        <stop offset="1" stop-color="#f6ffff" stop-opacity=".92"/>
-      </linearGradient>
-      <linearGradient id="crystalFaceCool" x1="0" y1="0" x2=".9" y2="1">
-        <stop offset="0" stop-color="#faffff" stop-opacity=".75"/>
-        <stop offset=".48" stop-color="#8ceafa" stop-opacity=".26"/>
-        <stop offset="1" stop-color="#406fc3" stop-opacity=".48"/>
-      </linearGradient>
-      <linearGradient id="crystalFaceViolet" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stop-color="#faf5ff" stop-opacity=".78"/>
-        <stop offset=".36" stop-color="#be9ce9" stop-opacity=".45"/>
-        <stop offset="1" stop-color="#5b70c8" stop-opacity=".28"/>
-      </linearGradient>
-      <linearGradient id="crystalFaceMirror" x1="0" y1="0" x2="1" y2=".95">
-        <stop offset="0" stop-color="#faffff" stop-opacity=".85"/>
-        <stop offset=".31" stop-color="#ffffff" stop-opacity=".12"/>
-        <stop offset=".51" stop-color="#ecfcff" stop-opacity=".64"/>
-        <stop offset=".72" stop-color="#94d9fc" stop-opacity=".08"/>
-        <stop offset="1" stop-color="#ffffff" stop-opacity=".6"/>
-      </linearGradient>
-      <linearGradient id="crystalIllumination" x1="0" y1="0" x2="1" y2=".85">
-        <stop offset="0" stop-color="#ffffff" stop-opacity=".64"/>
-        <stop offset=".27" stop-color="#b7f9ff" stop-opacity="0"/>
-        <stop offset=".54" stop-color="#ffffff" stop-opacity=".73"/>
-        <stop offset=".70" stop-color="#a8aafc" stop-opacity="0"/>
-        <stop offset="1" stop-color="#ffffff" stop-opacity=".23"/>
-      </linearGradient>
-      <radialGradient id="crystalGlare" cx="31%" cy="23%" r="81%">
-        <stop offset="0" stop-color="#ffffff" stop-opacity=".88"/>
-        <stop offset=".17" stop-color="#e6ffff" stop-opacity=".42"/>
-        <stop offset=".42" stop-color="#c0ddfa" stop-opacity=".09"/>
-        <stop offset="1" stop-color="#b6aaff" stop-opacity="0"/>
-      </radialGradient>
-      <radialGradient id="crystalPrism" cx="80%" cy="84%" r="73%">
-        <stop offset="0" stop-color="#bc89e9" stop-opacity=".52"/>
-        <stop offset=".36" stop-color="#8cbaff" stop-opacity=".17"/>
-        <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
-      </radialGradient>
-    </defs>
-  <g aria-hidden="true"><polygon points="0 -37.42 38.61 26.73 -31.48 22.57"
-          transform="translate(90.58 286.85) rotate(-13)"
-          fill="#a9effa" opacity="0.24"/>
-<polygon points="0 -45.93 47.39 32.81 -38.64 27.7"
-          transform="translate(301.18 537.95) rotate(18)"
-          fill="#adc3fa" opacity="0.31"/>
-<polygon points="0 -39.12 40.37 27.95 -32.91 23.6"
-          transform="translate(203.98 235.55) rotate(36)"
-          fill="#c8abf9" opacity="0.22"/>
-<polygon points="0 -37.42 38.61 26.73 -31.48 22.57"
-          transform="translate(354.6 196.05) rotate(-4)"
-          fill="#c8abf9" opacity="0.31"/>
-<polygon points="0 -45.93 47.39 32.81 -38.64 27.7"
-          transform="translate(565.2 447.15) rotate(27)"
-          fill="#84dce7" opacity="0.22"/>
-<polygon points="0 -34.02 35.1 24.3 -28.62 20.52"
-          transform="translate(446.4 509.25) rotate(-6)"
-          fill="#cbb4f4" opacity="0.24"/>
-<polygon points="0 -37.42 38.61 26.73 -31.48 22.57"
-          transform="translate(623.62 179.85) rotate(5)"
-          fill="#97b5fc" opacity="0.22"/>
-<polygon points="0 -45.93 47.39 32.81 -38.64 27.7"
-          transform="translate(834.22 430.95) rotate(36)"
-          fill="#cbb4f4" opacity="0.36"/>
-<polygon points="0 -39.12 40.37 27.95 -32.91 23.6"
-          transform="translate(737.02 128.55) rotate(54)"
-          fill="#a9effa" opacity="0.24"/>
-<polygon points="0 -37.42 38.61 26.73 -31.48 22.57"
-          transform="translate(868.58 303.05) rotate(14)"
-          fill="#a9effa" opacity="0.36"/>
-<polygon points="0 -45.93 47.39 32.81 -38.64 27.7"
-          transform="translate(1079.18 554.15) rotate(45)"
-          fill="#adc3fa" opacity="0.24"/>
-<polygon points="0 -34.02 35.1 24.3 -28.62 20.52"
-          transform="translate(960.38 616.25) rotate(12)"
-          fill="#84dce7" opacity="0.22"/>
-<polygon points="0 -30.24 32.4 23.22 -29.16 21.6"
-          transform="translate(46.3 442.1) rotate(-36)" fill="#c8abf9" opacity=".25"/>
-<polygon points="0 -30.24 32.4 23.22 -29.16 21.6"
-          transform="translate(1153.7 390.8) rotate(18)" fill="#84dce7" opacity=".25"/></g>
-  <g transform="translate(211 434) rotate(-12) scale(2.7)">
-      <use href="#crystalGlyph0" fill="#547cab" opacity=".17" transform="translate(1.2 1.9)"/>
-      <use href="#crystalGlyph0" fill="url(#crystalBody)" stroke="url(#crystalEdge)" stroke-width="1.05" stroke-linejoin="round" paint-order="stroke fill"/>
-      <g clip-path="url(#crystalClip0)">
-      <rect x="-70" y="-70" width="140" height="140" fill="url(#crystalGlare)"/>
-      <polygon points="-58,-58 0,-65 5,-13 -45,8" fill="url(#crystalFaceCool)" opacity=".71"/>
-      <polygon points="0,-65 62,-54 42,-14 5,-13" fill="#eefeff" opacity=".38"/>
-      <polygon points="62,-54 67,17 19,11 42,-14" fill="url(#crystalFaceViolet)" opacity=".78"/>
-      <polygon points="-58,-58 -45,8 -65,54 -21,42" fill="#5b94db" opacity=".23"/>
-      <polygon points="-45,8 5,-13 19,11 -21,42" fill="url(#crystalFaceMirror)" opacity=".8"/>
-      <polygon points="5,-13 42,-14 19,11" fill="#ffffff" opacity=".4"/>
-      <polygon points="19,11 67,17 62,62 -10,66" fill="#79c7ee" opacity=".31"/>
-      <polygon points="-21,42 19,11 -10,66 -64,61" fill="#c69bf0" opacity=".24"/>
-      <polygon points="-45,8 -21,42 -64,61 -65,54" fill="#eefeff" opacity=".36"/>
-      <polygon points="-16,-65 10,-63 -13,70 -36,70" fill="url(#crystalIllumination)" opacity=".57"/>
-      <polygon points="35,-65 45,-65 -5,70 -17,70" fill="#f9ffff" opacity=".14"/>
-      <rect x="-70" y="-70" width="140" height="140" fill="url(#crystalPrism)"/>
-      <g fill="none" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M-58 -58 L5 -13 L19 11 L-21 42 L-64 61" stroke="#f9ffff" stroke-opacity=".46" stroke-width=".72"/>
-        <path d="M0 -65 L5 -13 L42 -14 L62 -54" stroke="#f3f7ff" stroke-opacity=".46" stroke-width=".72"/>
-        <path d="M19 11 L67 17 M19 11 L-10 66" stroke="#486db4" stroke-opacity=".29" stroke-width=".88"/>
-        <path d="M-60 -35 Q-4 -54 51 -47" stroke="#ffffff" stroke-opacity=".62" stroke-width="1.7"/>
-        <path d="M-46 31 Q-8 12 24 23" stroke="#ffffff" stroke-opacity=".34" stroke-width=".9"/>
+    <linearGradient id="faceBase" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f9f7f2"/>
+      <stop offset="48%" stop-color="#b7bcc4"/>
+      <stop offset="100%" stop-color="#11161c"/>
+    </linearGradient>
+    <linearGradient id="strokeGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="52%" stop-color="#666f78"/>
+      <stop offset="100%" stop-color="#1b2128"/>
+    </linearGradient>
+    <linearGradient id="sheenGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity=".8"/>
+      <stop offset="52%" stop-color="#f7fbff" stop-opacity=".22"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="blurBig" x="-28%" y="-28%" width="156%" height="156%"><feGaussianBlur stdDeviation="5.2"/></filter>
+    <filter id="shadowBlur" x="-28%" y="-28%" width="156%" height="156%"><feGaussianBlur stdDeviation="8.2"/></filter>
+    <text id="glyph-0" x="0" y="0" text-anchor="middle" dominant-baseline="central" font-family='&quot;Noto Serif CJK TC&quot;, &quot;Source Han Serif TC&quot;, &quot;Songti TC&quot;, &quot;PMingLiU&quot;, serif' font-size="250" font-weight="840">慢</text><text id="glyph-1" x="0" y="0" text-anchor="middle" dominant-baseline="central" font-family='&quot;Noto Serif CJK TC&quot;, &quot;Source Han Serif TC&quot;, &quot;Songti TC&quot;, &quot;PMingLiU&quot;, serif' font-size="250" font-weight="840">慢</text>
+    <clipPath id="lettersClip"><use href="#glyph-0" transform="translate(386 392) rotate(-2) scale(1.34 1.34)"/><use href="#glyph-1" transform="translate(814 392) rotate(2) scale(-1.34 1.34)"/></clipPath>
+  </defs>
+  
+      <g id="outer-ribbons" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M 155.68 367.65 C 305.68 147.68, 438 243.68, 586 361.65 S 990.32 609.62, 1050.32 407.65" stroke="#3c4751" stroke-width="8" opacity=".2" filter="url(#blurBig)"></path>
+        <path d="M 155.68 367.65 C 305.68 147.68, 438 243.68, 586 361.65 S 990.32 609.62, 1050.32 407.65" stroke="#1a2027" stroke-width="3" opacity=".92"></path>
+        <path d="M 173.68 455.65 C 343.68 579.62, 548 407.65, 650 441.65 S 956.32 201.68, 1030.32 321.68" stroke="#d8dce2" stroke-width="8" opacity=".2" filter="url(#blurBig)"></path>
+        <path d="M 173.68 455.65 C 343.68 579.62, 548 407.65, 650 441.65 S 956.32 201.68, 1030.32 321.68" stroke="#f6f6f1" stroke-width="3" opacity=".95"></path>
       </g>
-      <ellipse cx="-21" cy="-28" rx="29" ry="17" fill="url(#crystalGlare)" opacity=".82"/>
-    </g>
-      <use href="#crystalGlyph0" fill="none" stroke="#fcffff" stroke-opacity=".61" stroke-width=".34" stroke-linejoin="round"/>
-    </g>
-<g transform="translate(468 327) rotate(-4) scale(2.7)">
-      <use href="#crystalGlyph1" fill="#547cab" opacity=".17" transform="translate(1.2 1.9)"/>
-      <use href="#crystalGlyph1" fill="url(#crystalBody)" stroke="url(#crystalEdge)" stroke-width="1.05" stroke-linejoin="round" paint-order="stroke fill"/>
-      <g clip-path="url(#crystalClip1)">
-      <rect x="-70" y="-70" width="140" height="140" fill="url(#crystalGlare)"/>
-      <polygon points="-58,-58 0,-65 15,-13 -45,8" fill="url(#crystalFaceCool)" opacity=".71"/>
-      <polygon points="0,-65 62,-54 42,-14 15,-13" fill="#eefeff" opacity=".38"/>
-      <polygon points="62,-54 67,17 19,11 42,-14" fill="url(#crystalFaceViolet)" opacity=".78"/>
-      <polygon points="-58,-58 -45,8 -65,54 -21,42" fill="#5b94db" opacity=".23"/>
-      <polygon points="-45,8 15,-13 19,11 -21,42" fill="url(#crystalFaceMirror)" opacity=".8"/>
-      <polygon points="15,-13 42,-14 19,11" fill="#ffffff" opacity=".4"/>
-      <polygon points="19,11 67,17 62,62 -10,66" fill="#79c7ee" opacity=".31"/>
-      <polygon points="-21,42 19,11 -10,66 -64,61" fill="#c69bf0" opacity=".24"/>
-      <polygon points="-45,8 -21,42 -64,61 -65,54" fill="#eefeff" opacity=".36"/>
-      <polygon points="-16,-65 10,-63 -13,70 -36,70" fill="url(#crystalIllumination)" opacity=".57"/>
-      <polygon points="35,-65 45,-65 -5,70 -17,70" fill="#f9ffff" opacity=".14"/>
-      <rect x="-70" y="-70" width="140" height="140" fill="url(#crystalPrism)"/>
-      <g fill="none" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M-58 -58 L15 -13 L19 11 L-21 42 L-64 61" stroke="#f9ffff" stroke-opacity=".46" stroke-width=".72"/>
-        <path d="M0 -65 L15 -13 L42 -14 L62 -54" stroke="#f3f7ff" stroke-opacity=".46" stroke-width=".72"/>
-        <path d="M19 11 L67 17 M19 11 L-10 66" stroke="#486db4" stroke-opacity=".29" stroke-width=".88"/>
-        <path d="M-60 -35 Q-4 -54 51 -47" stroke="#ffffff" stroke-opacity=".62" stroke-width="1.7"/>
-        <path d="M-46 31 Q-8 12 24 23" stroke="#ffffff" stroke-opacity=".34" stroke-width=".9"/>
+  <g id="shadow" transform="translate(9 10)" fill="#0d1116" opacity=".22" filter="url(#shadowBlur)"><use href="#glyph-0" transform="translate(386 392) rotate(-2) scale(1.34 1.34)"/><use href="#glyph-1" transform="translate(814 392) rotate(2) scale(-1.34 1.34)"/></g>
+  <g id="back-glow" transform="translate(-3 -5)" fill="#c8d0d8" opacity=".18" filter="url(#blurBig)"><use href="#glyph-0" transform="translate(386 392) rotate(-2) scale(1.34 1.34)"/><use href="#glyph-1" transform="translate(814 392) rotate(2) scale(-1.34 1.34)"/></g>
+  <g id="face" fill="url(#faceBase)" stroke="url(#strokeGrad)" stroke-width="5.8" stroke-linejoin="round" paint-order="stroke fill"><use href="#glyph-0" transform="translate(386 392) rotate(-2) scale(1.34 1.34)"/><use href="#glyph-1" transform="translate(814 392) rotate(2) scale(-1.34 1.34)"/></g>
+  
+    <g id="inner-flow" clip-path="url(#lettersClip)">
+      <rect x="0" y="0" width="100%" height="100%" fill="url(#faceBase)" opacity="1"/>
+      <g opacity=".96"> 
+        <path d="M 105.68 151.68 C 450 241.68, 470 349.65, 245.68 595.62 L 105.68 675.62 Z" fill="#10151b" opacity=".9"></path>
+        <path d="M 1094.32 615.62 C 758 527.62, 726 413.65, 956.32 183.68 L 1094.32 91.68 Z" fill="#f5f4ef" opacity=".92"></path>
       </g>
-      <ellipse cx="-21" cy="-28" rx="29" ry="17" fill="url(#crystalGlare)" opacity=".82"/>
+      <path d="M 239.68 425.65 C 550 487.62, 514 399.65, 588 303.68 C 636 341.68, 626 391.65, 239.68 425.65 Z" fill="#2f363d" opacity=".42"></path>
+      <path d="M 960.32 345.65 C 650 283.68, 688 373.65, 610 461.62 C 566 429.62, 580 367.65, 960.32 345.65 Z" fill="#ffffff" opacity=".56"></path>
+      <path d="M 197.68 275.65 C 500 249.65, 682 299.65, 1004.32 265.65" fill="none" stroke="#f1f0eb" stroke-width="6" opacity=".18" stroke-linecap="round"/><path d="M 197.68 311.65 C 500 285.65, 682 335.65, 1004.32 301.65" fill="none" stroke="#303841" stroke-width="4" opacity=".16" stroke-linecap="round"/><path d="M 197.68 347.65 C 500 321.65, 682 371.65, 1004.32 337.65" fill="none" stroke="#f1f0eb" stroke-width="6" opacity=".18" stroke-linecap="round"/><path d="M 197.68 383.65 C 500 357.65, 682 407.65, 1004.32 373.65" fill="none" stroke="#303841" stroke-width="4" opacity=".16" stroke-linecap="round"/><path d="M 197.68 419.65 C 500 393.65, 682 443.65, 1004.32 409.65" fill="none" stroke="#f1f0eb" stroke-width="6" opacity=".18" stroke-linecap="round"/><path d="M 197.68 455.65 C 500 429.65, 682 479.65, 1004.32 445.65" fill="none" stroke="#303841" stroke-width="4" opacity=".16" stroke-linecap="round"/><path d="M 197.68 491.65 C 500 465.65, 682 515.65, 1004.32 481.65" fill="none" stroke="#f1f0eb" stroke-width="6" opacity=".18" stroke-linecap="round"/>
+      <circle cx="495.19" cy="344.14" r="33.69" fill="#ffffff" opacity=".94"></circle>
+      <circle cx="719.78" cy="420.12" r="33.69" fill="#10151a" opacity=".94"></circle>
+      <rect x="0" y="0" width="100%" height="100%" fill="url(#sheenGrad)" opacity=".34"></rect>
     </g>
-      <use href="#crystalGlyph1" fill="none" stroke="#fcffff" stroke-opacity=".61" stroke-width=".34" stroke-linejoin="round"/>
-    </g>
-<g transform="translate(730 327) rotate(4) scale(2.7)">
-      <use href="#crystalGlyph2" fill="#547cab" opacity=".17" transform="translate(1.2 1.9)"/>
-      <use href="#crystalGlyph2" fill="url(#crystalBody)" stroke="url(#crystalEdge)" stroke-width="1.05" stroke-linejoin="round" paint-order="stroke fill"/>
-      <g clip-path="url(#crystalClip2)">
-      <rect x="-70" y="-70" width="140" height="140" fill="url(#crystalGlare)"/>
-      <polygon points="-58,-58 0,-65 5,-13 -45,8" fill="url(#crystalFaceCool)" opacity=".71"/>
-      <polygon points="0,-65 62,-54 42,-14 5,-13" fill="#eefeff" opacity=".38"/>
-      <polygon points="62,-54 67,17 19,11 42,-14" fill="url(#crystalFaceViolet)" opacity=".78"/>
-      <polygon points="-58,-58 -45,8 -65,54 -21,42" fill="#5b94db" opacity=".23"/>
-      <polygon points="-45,8 5,-13 19,11 -21,42" fill="url(#crystalFaceMirror)" opacity=".8"/>
-      <polygon points="5,-13 42,-14 19,11" fill="#ffffff" opacity=".4"/>
-      <polygon points="19,11 67,17 62,62 -10,66" fill="#79c7ee" opacity=".31"/>
-      <polygon points="-21,42 19,11 -10,66 -64,61" fill="#c69bf0" opacity=".24"/>
-      <polygon points="-45,8 -21,42 -64,61 -65,54" fill="#eefeff" opacity=".36"/>
-      <polygon points="-16,-65 10,-63 -13,70 -36,70" fill="url(#crystalIllumination)" opacity=".57"/>
-      <polygon points="35,-65 45,-65 -5,70 -17,70" fill="#f9ffff" opacity=".14"/>
-      <rect x="-70" y="-70" width="140" height="140" fill="url(#crystalPrism)"/>
-      <g fill="none" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M-58 -58 L5 -13 L19 11 L-21 42 L-64 61" stroke="#f9ffff" stroke-opacity=".46" stroke-width=".72"/>
-        <path d="M0 -65 L5 -13 L42 -14 L62 -54" stroke="#f3f7ff" stroke-opacity=".46" stroke-width=".72"/>
-        <path d="M19 11 L67 17 M19 11 L-10 66" stroke="#486db4" stroke-opacity=".29" stroke-width=".88"/>
-        <path d="M-60 -35 Q-4 -54 51 -47" stroke="#ffffff" stroke-opacity=".62" stroke-width="1.7"/>
-        <path d="M-46 31 Q-8 12 24 23" stroke="#ffffff" stroke-opacity=".34" stroke-width=".9"/>
+  <g id="inner-stroke" fill="none" stroke="#e5e8eb" stroke-width="1.35" opacity=".5"><use href="#glyph-0" transform="translate(386 392) rotate(-2) scale(1.34 1.34)"/><use href="#glyph-1" transform="translate(814 392) rotate(2) scale(-1.34 1.34)"/></g>
+  
+      <g id="inner-trails" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M 231.68 295.65 C 490 375.65, 614 395.65, 968.32 475.65" stroke="#232a31" stroke-width="2.2" opacity=".48" stroke-dasharray="8 12"></path>
+        <path d="M 241.68 471.65 C 582 401.65, 710 367.65, 960.32 291.65" stroke="#f7f7f3" stroke-width="2.2" opacity=".56" stroke-dasharray="8 12"></path>
       </g>
-      <ellipse cx="-21" cy="-28" rx="29" ry="17" fill="url(#crystalGlare)" opacity=".82"/>
-    </g>
-      <use href="#crystalGlyph2" fill="none" stroke="#fcffff" stroke-opacity=".61" stroke-width=".34" stroke-linejoin="round"/>
-    </g>
-<g transform="translate(989 434) rotate(12) scale(2.7)">
-      <use href="#crystalGlyph3" fill="#547cab" opacity=".17" transform="translate(1.2 1.9)"/>
-      <use href="#crystalGlyph3" fill="url(#crystalBody)" stroke="url(#crystalEdge)" stroke-width="1.05" stroke-linejoin="round" paint-order="stroke fill"/>
-      <g clip-path="url(#crystalClip3)">
-      <rect x="-70" y="-70" width="140" height="140" fill="url(#crystalGlare)"/>
-      <polygon points="-58,-58 0,-65 15,-13 -45,8" fill="url(#crystalFaceCool)" opacity=".71"/>
-      <polygon points="0,-65 62,-54 42,-14 15,-13" fill="#eefeff" opacity=".38"/>
-      <polygon points="62,-54 67,17 19,11 42,-14" fill="url(#crystalFaceViolet)" opacity=".78"/>
-      <polygon points="-58,-58 -45,8 -65,54 -21,42" fill="#5b94db" opacity=".23"/>
-      <polygon points="-45,8 15,-13 19,11 -21,42" fill="url(#crystalFaceMirror)" opacity=".8"/>
-      <polygon points="15,-13 42,-14 19,11" fill="#ffffff" opacity=".4"/>
-      <polygon points="19,11 67,17 62,62 -10,66" fill="#79c7ee" opacity=".31"/>
-      <polygon points="-21,42 19,11 -10,66 -64,61" fill="#c69bf0" opacity=".24"/>
-      <polygon points="-45,8 -21,42 -64,61 -65,54" fill="#eefeff" opacity=".36"/>
-      <polygon points="-16,-65 10,-63 -13,70 -36,70" fill="url(#crystalIllumination)" opacity=".57"/>
-      <polygon points="35,-65 45,-65 -5,70 -17,70" fill="#f9ffff" opacity=".14"/>
-      <rect x="-70" y="-70" width="140" height="140" fill="url(#crystalPrism)"/>
-      <g fill="none" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M-58 -58 L15 -13 L19 11 L-21 42 L-64 61" stroke="#f9ffff" stroke-opacity=".46" stroke-width=".72"/>
-        <path d="M0 -65 L15 -13 L42 -14 L62 -54" stroke="#f3f7ff" stroke-opacity=".46" stroke-width=".72"/>
-        <path d="M19 11 L67 17 M19 11 L-10 66" stroke="#486db4" stroke-opacity=".29" stroke-width=".88"/>
-        <path d="M-60 -35 Q-4 -54 51 -47" stroke="#ffffff" stroke-opacity=".62" stroke-width="1.7"/>
-        <path d="M-46 31 Q-8 12 24 23" stroke="#ffffff" stroke-opacity=".34" stroke-width=".9"/>
-      </g>
-      <ellipse cx="-21" cy="-28" rx="29" ry="17" fill="url(#crystalGlare)" opacity=".82"/>
-    </g>
-      <use href="#crystalGlyph3" fill="none" stroke="#fcffff" stroke-opacity=".61" stroke-width=".34" stroke-linejoin="round"/>
-    </g>
+  <g id="outer-dots"><circle cx="205.68" cy="325.65" r="11" fill="#10151a" opacity=".82"></circle><circle cx="994.32" cy="441.65" r="11" fill="#ffffff" opacity=".82"></circle><circle cx="600" cy="213.68" r="7" fill="#ffffff" opacity=".82"></circle></g>
 </svg>
