@@ -1,5 +1,11 @@
 {
   "id": "epilogue",
   "title": "契約之後",
-  "events": []
+  "events": [
+    {
+      "id": "epilogue_title",
+      "type": "text",
+      "text": "契約之後"
+    }
+  ]
 }

@@ -1,5 +1,11 @@
 {
   "id": "06_01",
-  "title": "",
-  "events": []
+  "title": "第六章",
+  "events": [
+    {
+      "id": "06_01_title",
+      "type": "text",
+      "text": "第六章"
+    }
+  ]
 }

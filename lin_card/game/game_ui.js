@@ -160,7 +160,7 @@
     return `<nav class="lc-home-paths ${homeFocus ? "has-focus" : ""}" aria-label="旅人的選擇">
       ${homePaths.map(path => {
         const selected = homeFocus === path.key;
-        return `<button type="button" class="lc-home-path ${selected ? "is-focused" : ""}" data-act="focus-home" data-dest="${path.key}" aria-label="${path.title}${selected ? "，再次點擊" + (path.key === "story" ? "；旅程回顧尚未開放" : "進入") : "，點擊選取"}" aria-pressed="${selected}">
+        return `<button type="button" class="lc-home-path ${selected ? "is-focused" : ""}" data-act="focus-home" data-dest="${path.key}" aria-label="${path.title}${selected ? "，再次點擊" + "進入" : "，點擊選取"}" aria-pressed="${selected}">
           <span class="lc-home-path-glow" aria-hidden="true"></span>
           <span class="lc-home-path-symbol" aria-hidden="true">${path.symbol}</span>
           <span class="lc-home-path-description" aria-hidden="${!selected}"><strong>${path.title}</strong><small>${path.subtitle}</small></span>
@@ -204,8 +204,13 @@
   function focusHome(dest) {
     if (screen !== "home" || !homePaths.some(path => path.key === dest)) return;
     if (homeFocus !== dest) { homeFocus = dest; render(); return; }
-    // 「旅程回顧」目前僅顯示選取效果，未正式開放。
-    if (dest !== "story") openScreen(dest);
+    if (dest === "story") {
+      const url = "./story/index.html";
+      if (window.SlowlyNavigation?.go) window.SlowlyNavigation.go(url);
+      else window.location.assign(url);
+      return;
+    }
+    openScreen(dest);
   }
   function sectionMenu(area) {
     const entries = sectionPaths[area];

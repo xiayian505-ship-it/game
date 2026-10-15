@@ -1,5 +1,11 @@
 {
   "id": "prologue",
   "title": "序章｜契約之前",
-  "events": []
+  "events": [
+    {
+      "id": "prologue_title",
+      "type": "text",
+      "text": "序章\n契約之前"
+    }
+  ]
 }

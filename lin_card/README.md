@@ -1,179 +1,171 @@
-# 霧林之契 v1.0.0
-
-> 本次 v1.0.0 累積調整：對戰前七大類卡牌改為各類展開後兩欄排列；同名卡只顯示一張，點牌逐張加入、按減號逐張移出，仍按每張實體卡 ID 儲存，總上限 30 張。不同等級與戰術分支可用「查看各張」調整；初始 25 張選牌也套用雙欄與「查看各張」；5 張攻擊牌固定配發，剩下 40 張候選牌自選 25 張。試煉挑戰新增第 0 章「契約之前」，可二次確認後完整清除本作的收藏、Boss 牌庫、個人牌組、關卡與故事紀錄並重新開始。
-
-本版本重新整理「關於旅人」及「開始試煉」的導航：入口先聚焦再點入，使用上方圖示／標題返回主畫面；內部子頁可以返回上一層。遊戲原有的十關、故事、三套牌組、初選資料、存檔、戰鬥仍維持。
-
-- 關於旅人：永久收藏／個人牌組（含 Tree 選牌）／霧林圖鑑（讀取七大類所有卡牌定義）。
-- 開始試煉：試煉刻痕（原存檔進度）／十重試煉 → 試煉挑戰（原十關選擇）／霧影牌鑑（開局 Boss 105 張＋初選候選 40 張）。
-- 所有共用軍火庫仍僅以 HTTPS 絕對 URL 引用；圖鑑生成不更改存檔或 Boss 實際牌庫。
-
-### 目前版本：v0.8.6
-
-- 主選單中文標語使用本專案內 `assets/motto.svg`，為透明向量 SVG（已描成字形路徑，不必依賴使用者裝置字型）。不需要另傳圖床；上傳整個 `lin_card/` 到 GitHub Pages 即可。
-- 戰鬥有獨立「音效／震動」開關，設定各自保存在本機；不支援 Vibration API 的裝置可照常戰鬥。
-- 標語外觀／尺寸由 `site.css` 控制；震動模式由 `game/battle_haptics.js` 控制，不更動戰鬥判定。
-
-# 霧林之契｜Mistforest Pact v0.8.6
+# 霧林之契｜Mistforest Pact
 
 > 昔日所棄，終將與你為敵。
 
-《慢慢好玩遊戲區》獨立前端策略卡牌小遊戲，前身為《林間卡牌》(`lin_card`)。**v0.8.6 將「旅人的選擇」改成三道互斥的霧林路徑，保留原有十關、牌組、故事骨架、四選一獎勵、Boss 連續出牌、戰鬥聲光與手機震動。**
+**目前版本：v1.0.0（故事標題測試版）**  
+《慢慢好玩遊戲區》的純前端十關策略卡牌遊戲。前身為《林間卡牌》（專案內仍保留 `lin_card`、`LinCard*`、`lc-*` 等既有識別名稱，避免因改名牽動運作中的程式）。
 
-## 進入遊戲
+這份版本的**故事播放器已接通，正式故事尚未創作**。序章、第一至第十章與「契約之後」共 12 篇 JSON，目前每篇只放一個顯示章節標題的 `text` 事件，用來測試故事畫面、閱讀與跳轉流程；這些文字不是正式劇情。
 
-將 ZIP 中的 `lin_card/` 目錄上傳到網站（也可以自行更名成 `mistforest_pact/`），再開啟裡面的 `index.html`。先顯示霧林開場，點擊中央 **「霧林之契」**，才進入新的 **「旅人的選擇」**：左「關於旅人」進個人資料、中「開始試煉」進原本的關卡選擇、右「旅程回顧」暫不導頁。先點圖示聚焦，再點同一個圖示進入；可切換選取焦點。之後照舊初始選牌、使用三套牌組與挑戰十關。
+版本沿革與歷史調整請看 [`CHANGELOG.md`](CHANGELOG.md)；本 README 以**目前實際程式行為**為準，不再把舊版狀態當作現況。
 
-- 開場背景由宿主自製 **SVG 森林、Canvas 細雨和螢火蟲、CSS 霧氣**組成，不使用 AI 或第三方背景圖片。
-- **風聲／雨聲使用 Web Audio 合成**，不用外部音效檔。手機瀏覽器限制自動播放，請先按 **「♫ 開啟風雨聲」** 才能聽；可再按一次關閉。進入遊戲後，開場環境音會淡出停止。
-- 遵守系統的「減少動態效果」設定，並限制 Canvas 像素比例和粒子數量。
-- 頂部不再有「返回慢慢遊戲」與「重新開始」按鈕；舊小標移除、英文 **The Forest Keeps What You Leave Behind** 保留。
-- 主畫面頁尾保留不可點擊的純文字 **慢 慢 | Stillness by Slowly**，上方另有透明 SVG 中文標語及金色分隔線；上方霧林 Logo 下保留英文標語。
-- 「遊戲說明」不放在公開介面；前一版文字移至 `docs/game_guide_draft.md`，等待你決定新位置。
-- 「旅人的選擇」已使用無外框三區互斥聚焦介面；劇情回顧暫不開放，原故事播放器仍保留在 `story/`。
+## 部署與進入遊戲
 
-## 專案檔案
+1. 將 ZIP 內完整的 `lin_card/` 資料夾部署到支援 HTTPS 的靜態網站（例如 GitHub Pages）。可自行更名資料夾，但須保留**內部相對目錄結構**。
+2. 開啟該目錄下的 `index.html`。點擊霧林中央的「霧林之契」進入「旅人的選擇」。
+3. 主選單的三個入口採**第一次點擊聚焦、第二次點擊進入**；可再點選其他入口切換焦點：
+   - **關於旅人**：永久收藏、個人牌組（三套）、霧林圖鑑。
+   - **開始試煉**：試煉刻痕、十重試煉；後者包含試煉挑戰與霧影牌鑑。
+   - **旅程回顧**：已連至 `story/index.html`，可查看、閱讀已解鎖的故事。
 
-```text
-mistforest_pact/
-├─ index.html                 靜態頁面與 HTTPS 軍火庫引用
-├─ site.css                   遊戲頁面外殼、標題、文字 Logo
-├─ opening/
-│  ├─ forest.svg              自繪森林景深
-│  ├─ opening.css             開場視覺與轉場
-│  ├─ opening.js              雨絲、螢火蟲、進場互動
-│  └─ ambience.js             風聲／雨聲音效合成
-├─ game/
-│  ├─ cards.js                卡牌資料與七大類效果
-│  ├─ battle_rules.js         戰鬥結算
-│  ├─ save.js                 新版永久進度儲存
-│  ├─ game.js                 十關、收藏、獎勵、牌組流程
-│  ├─ game.css                卡片等功能本體樣式
-│  ├─ boss_card_animation.js  Boss 單張翻牌／飛牌播放
-│  ├─ boss_card_animation.css
-│  ├─ battle_fx.js            戰鬥聲音與閃光觸發（宿主編排）
-│  ├─ battle_fx.css           戰鬥特效的最小宿主樣式
-│  ├─ game_ui.js              牌組／戰鬥等介面
-│  └─ game_ui.css             遊戲畫面排版樣式
-├─ story/
-│  ├─ index.html            獨立視覺小說頁（目前未公開入口）
-│  ├─ story.css             閱讀器功能樣式
-│  ├─ story.js              章節資料／書籤／解鎖
-│  ├─ story_style.css       故事外觀
-│  ├─ story_style.js        故事頁 UI
-│  ├─ story_bridge.js       遊戲／故事跳轉橋接
-│  ├─ story_config.js       自動故事開關（目前 false）
-│  └─ data/                 chapters.json + 11 篇各自 JSON
-├─ docs/game_guide_draft.md  暫存的遊戲說明
-├─ CHANGELOG.md
-└─ README.md
-```
+開場視覺使用本地 SVG 森林、Canvas 雨絲／螢火蟲、CSS 霧氣；開場風雨聲由 Web Audio 合成，需玩家自行啟用。開場與主選單的標題圖取自 `img.stillnessbyslowly.com`，中文標語使用本地 `assets/motto.svg`。頁尾維持「慢 慢 | Stillness by Slowly」。
 
-原程式的 `LinCard*` 全域 API、`lc-*` CSS class 目前保留以免改壞戰鬥功能；**公開顯示名稱及資料夾已更名**。將整個資料夾保持這個相對目錄結構部署到 GitHub Pages 即可。
+**重要：** 網頁依賴線上「慢慢軍火庫」的 HTTPS JavaScript／CSS；且故事以 `fetch` 讀取 JSON。請在 HTTP(S) 網站測試，**不要直接用 `file://` 開檔判斷功能是否正常**。離線或軍火庫未載入時，遊戲可能無法正常啟動戰鬥。
 
-## 慢慢軍火庫
+## 畫面與遊戲流程
 
-以 **HTTPS 絕對網址**載入，不複製共用核心：
+### 導覽
 
-- `https://lib.stillnessbyslowly.com/state/tree_selection.js`（選牌分類單一展開）
-- `https://lib.stillnessbyslowly.com/game/card/deck.js`（牌庫、手牌、棄牌堆）
-- `https://lib.stillnessbyslowly.com/effects/background/pine_forest.js`（進場後背景）
-- `https://lib.stillnessbyslowly.com/effects/background/fog.js`（進場後背景）
-- `https://lib.stillnessbyslowly.com/ui/responsive.css`（共用版面）
-- `https://lib.stillnessbyslowly.com/effects/celebration/flash_shake.js` + `.css`（輕量閃光與晃動）
-- `https://lib.stillnessbyslowly.com/effects/celebration/shockwave.js` + `.css`（能量震波）
-- `https://lib.stillnessbyslowly.com/audio/context/audio_context.js`（音訊環境）
-- `https://lib.stillnessbyslowly.com/audio/source/noise.js`（噪音音源）
-- `https://lib.stillnessbyslowly.com/audio/tone/harmonic_chime.js`（和聲）
+- **關於旅人**：永久收藏為玩家所有實體卡；個人牌組可儲存、切換三套出戰配置；霧林圖鑑顯示七大類卡種定義，不改動存檔。
+- **開始試煉**：試煉刻痕顯示通關進度；「十重試煉 → 試煉挑戰」進入關卡。
+- **第 0 章「契約之前」**：是遊戲內的「重新啟程」入口，經確認後清除本作的永久收藏、Boss 牌庫、個人牌組、關卡和故事紀錄，重新從初始選牌開始；**不是故事序章的閱讀按鈕**。
+- **霧影牌鑑**：展示開局 Boss 基礎牌庫（105 張）及初始候選牌（40 張）的卡種與數量；不是隨通關變化的即時 Boss 牌庫。
+- **第十關通關**：有獨立通關畫面，提供「息兵」及「契約之後」入口。終章須完成十關才可閱讀。
 
-沒有網路時無法載入軍火庫 Tree / Deck，**正式遊玩請用可連線的 HTTPS 網站**。
+### 卡牌與選牌
 
-## 進度與遊戲規則
+| 類別 | 卡種數量 |
+| --- | ---: |
+| 攻擊 | 5 |
+| 防禦 | 5 |
+| 護盾 | 5 |
+| 生命 | 5 |
+| 行動 | 2 |
+| 特殊 | 11 |
+| 魔法 | 9 |
+| **合計** | **42** |
 
-- **v0.8.1 測試存檔已重置到新 key `mistforest_pact_save_v2`、schema version 4**，舊 v0.8.0 的 `mistforest_pact_save_v1` 不再讀取也不刪除；新版本從第一關重新選牌。故事進度一併使用 `mistforest_pact_story_progress_v2`。
-- 玩家初始固定 5 張攻擊牌，再從 40 張選 25 張；剩餘 15 張交給 Boss，Boss 初始 120 張。
-- 七大類卡牌；玩家永久收藏上限 80、出戰上限 30、可自行儲存 3 套出戰牌組。
-- 每關勝利固定攻擊牌 +1、下一場起始行動點 +1；另外四選一領取新卡或可升等卡牌升級。
-- 行動／魔法雙資源、裂盾／穿盾、萬木共鳴、同命之契、枯木逢春從雙方棄牌堆取牌、每回合起手換牌皆保留。
-- 舊版（v0.3–v0.8.0）不進行存檔遷移。原本的 HP 傷害、防禦、護盾、魔法與勝負計算不重做；v0.8.1 只新增兩種魔法效果及 Boss 一回合最多 1／2／3 張的出牌次數規則。
+- 初始自動配發 **5 張攻擊牌**；另從 **40 張候選牌挑 25 張**。未選的 15 張加入 Boss 原有 105 張牌，故 Boss 開局為 **120 張**。
+- 玩家**永久收藏上限 80 張**，每次**出戰最多 30 張**；可配置三套個人牌組，戰鬥前選擇使用哪套。
+- 初始選牌及出戰選牌採**七類展開、雙欄排列**。同卡種依固定 `cardId` 合併顯示；點卡加入、按減號移出，可透過「查看各張」選取特定實體卡。存檔仍按每張實體卡的 `id` 記錄。
+- **戰術分支調整介面已刻意移除**，不是漏接功能。既有卡牌資料的 `branch` 欄位、分支定義及 `game.js` 的 `changeBranch()` 暫時保留，以免不必要地影響戰鬥與既有資料；目前「查看各張」只負責檢視／選取實體牌，**不能在畫面中調整分支**。未經討論不應自行恢復分支選單或刪除底層程式。
+- 各卡種固定 `cardId`，每張實體牌另有唯一 `id`，Boss 也有固定 `bossId`。改中文顯示名稱不應更動 ID；效果以 `cardId` 對應。
 
-## 測試
+### 戰鬥與成長
 
-- 全部本地 JavaScript 語法檢查。
-- 靜態資源路徑驗證、SVG 與 ZIP 完整性檢查。
-- Chromium 模擬 390px 手機：開場 → 旅人的選擇 → 關卡 → 初始 40 選 25 → 戰鬥、重載新存檔通過。
-- 測試環境不能連向 `lib.stillnessbyslowly.com`，瀏覽器互動測試改以**相同介面 API 的測試替身**提供 Tree / Deck；正式專案仍只使用上述 HTTPS 引用，未將測試替身打包。請上線後驗收實機畫面及聲音。
+- 玩家使用**行動點、魔法點**兩種資源；出牌、護盾、防禦、攻擊、魔法、棄牌堆取牌、換牌與其他效果仍以 `game/battle_rules.js` 的實際判定為準。
+- 玩家基礎起始行動點為 **5**；每通過一關，**下一場起始行動點 +1**，且固定得到 **1 張攻擊牌**。
+- Boss 每回合最多出牌：**第 1～3 關 1 張、第 4～7 關 2 張、第 8～10 關 3 張**。僅在有可合法使用的牌及足夠資源時出牌，不保證出滿上限。
+- Boss 出牌**逐張結算、逐張播放**；戰鬥判定在 `battle_rules.js`，飛牌在 `boss_card_animation.js`，聲光與震動另由獨立模組處理。
+- 勝利後另有**四選一**獎勵：額外新卡 1 張／本場出戰可升等牌全體 +1 級／額外新卡 4 張／永久收藏可升等牌全體 +1 級；可升等牌最高 **Lv.5**。固定攻擊牌仍照常獲得。
+- 每張新卡可選「留於掌心」或「歸於霧影」。收藏滿 80 張時，需要選一張舊卡替換，舊卡會交給 Boss；主動放棄的新卡也會交給 Boss。
+- 戰敗可在同關重試；永久收藏、Boss 牌庫與既有通關進度不會因戰敗直接清空。戰鬥音效與手機震動有獨立開關；不支援震動的裝置不影響戰鬥。
 
+## 故事引擎｜目前為標題測試內容
 
+### 已接通的入口與流程
 
-## v0.8.1｜魔法、Boss 成長與戰鬥聲光（目前版本）
+- 主選單**「旅程回顧」**已接故事目錄；同樣需要先聚焦、再點一次進入。
+- `story/story_config.js` 目前為 **`autoStory: true`**。首次準備進入第 1 關戰鬥時，若尚未閱讀或略過序章，會先導向序章；完成每關並**處理完戰後獎勵**後，若尚未閱讀或略過該關故事，會導向對應章節。
+- 從故事頁**讀完或略過**後，可透過「返回遊戲」回到遊戲；自動導向故事不會替玩家開戰，也不會替玩家通關。返回後可繼續原流程。
+- 故事目錄的**序章直接解鎖**；第 1～10 章分別隨對應通關紀錄解鎖；**「契約之後」須完成十關**。讀完／略過只記錄閱讀狀態，**不改變遊戲關卡進度**。
+- 已解鎖的篇章可重讀。閱讀器保留下一句、點擊對話框推進、略過、閱讀書籤及 `choice` 分支事件等既有能力。
 
-- 新增**魔法牌**「行動封印」（魔法點 4、將對方現有行動點歸零）與「行動復甦」（魔法點 4，自己行動點只補足至本場的預設起始值；超過預設值不扣點）。目前名稱與費用供測試，之後可再調整。兩種牌都可從初始候選牌或獎勵獲得，Boss 基礎牌庫也納入兩種牌；初始 40、Boss 基礎 105、最後 120 的總量不變。
-- Boss 每回合出牌上限：第 **1～3** 關 1 張、第 **4～7** 關 2 張、第 **8～10** 關 3 張。每次從目前合法手牌隨機選一張；如果資源不夠、沒有合法卡牌或有人倒下，就停止，不保證出滿上限；不額外補充行動點。
-- Boss 翻牌改為**逐張結算、逐張播放**，每張顯示真實牌面與 1/3 等演出計數。命中後更新 HP、護盾、能量、Boss 報告，播完才繼續下一張；動畫不負責傷害判定。
-- 出牌附帶輕量青綠光閃、斬擊光線、戰場微晃、護盾／魔法震波以及 Web Audio 即時合成音效。`SlowlyFlashShake`、`SlowlyShockwave`、`SlowlyAudioContext`、`SlowlyAudioNoise`、`SlowlyHarmonicChime` **皆由軍火庫 HTTPS 絕對網址直接載入**；遊戲只負責音效組合及判定何時播放，**沒有複製軍火庫原始碼**。
-- 戰鬥區有獨立「♫ 音效開／關」按鈕；音效只能在玩家操作後播放，不需要外部音檔。開場風雨聲仍是獨立開關。支援系統「減少動態效果」，不進行連續高強度白光頻閃。
-- **測試存檔重新起算**：使用新 `mistforest_pact_save_v2`，故事用 `mistforest_pact_story_progress_v2`；不碰也不遷移 v0.8.0 已通關的舊紀錄。
-- 保留 v0.8.0 的故事骨架（自動播放仍關閉）、四選一獎勵、固定通關攻擊牌＋下一場行動點＋1、三套牌組及所有原有關卡 UI。
+### 目前 12 篇 JSON
 
-**測試限制：** 已完成本地 JavaScript 語法、Node 規則測試，以及 Chromium 390px 手機尺寸的內嵌頁面操作與 Boss 連播三張測試。因執行環境限制，本機 HTTP 頁面與實際連外軍火庫未能透過瀏覽器整合測試；內嵌頁面使用暫時的 Deck／Tree／聲光模組測試替身，這些替身**完全不包含在正式 ZIP**。部署後請實機確認外部軍火庫載入、音效和手機動畫表現。
+| 篇章 | 檔案 | 目前唯一的文字事件 |
+| --- | --- | --- |
+| 序章 | `story/data/prologue/prologue.json` | `序章`、換行、`契約之前` |
+| 第一～十章 | `story/data/chapter_01/01_01.json` 至 `chapter_10/10_01.json` | 各章顯示「第一章」～「第十章」 |
+| 契約之後 | `story/data/epilogue/epilogue.json` | `契約之後` |
 
-## v0.7.1｜雙標題圖床外連
-- 開場：`霧林之契002.png`（深色森林華麗版），點圖可進場。
-- 旅人的選擇：`霧林之契001.png`（青綠幽光版），只在主選單顯示。
-- 圖片使用使用者提供的 `https://img.stillnessbyslowly.com/` 絕對路徑，ZIP 不含 PNG。
-- 圖片未能載入時，兩個位置均退回中文文字標題。
-- 原有開場雨霧、風雨音效、主選單英文副標，以及遊戲戰鬥/存檔全部保留。
+**這 12 篇只是用於觀察播放器畫面，尚無正式旁白、對話或劇情。** 每個 JSON 使用 `id`、`title`、`events`，目前的 `events` 僅一個 `type: "text"` 事件；日後正式寫故事時，可直接在對應 JSON 中編輯事件，不需要把故事文字寫入主遊戲 JS。
 
-
-## v0.7.2｜標題統一
-- 開場與「旅人的選擇」目前都使用 `霧林之契001.png`（青綠幽光／透明背景），由慢慢圖床提供。
-- v0.7.1 的 002 華麗版暫不顯示，其他功能不變。
-
-## v0.8.0｜故事骨架、四種通關獎勵、Boss 自動出牌
-
-### 故事（先備妥，不提前開放）
-- `story/data/chapters.json` 列出**序章（第一關前）+ 第一至十關通關故事**，共 11 篇。
-- `story/data/prologue/prologue.json` 和 `story/data/chapter_01/01_01.json` … `chapter_10/10_01.json` 均已存在，`events: []` 表示**還沒有正式故事**，不是遊戲錯誤或假台詞。
-- 故事採 `id/title/events` 資料結構：支援 `scene`、`narration`、`dialogue`、`text`、`choice`（選項 `goto` 事件 ID），亦保留 `challenge` 事件提示。故事頁上的手機點擊對話框可往下讀，支援分支、跳過、重讀、書籤與獨立進度。
-- **只需在對應 JSON 的 `events` 內填入內容**，播放器就能辨識該篇已寫入，不需要改 JS 文字。故事不會因為閱讀／跳過而增加遊戲關卡進度；第一至十關的故事僅由目前 `mistforest_pact_save_v2.completed` 解鎖。
-- 尚未設計故事入口，所以 `story/story_config.js` 裡 `autoStory: false`；因此**現在不會出現故事按鈕，也不會強迫玩家看空故事**。以後內容準備妥當並完成介面時，設定 `autoStory: true` 才會啟動「開第一關前序章、每關獎勵領完後播放通關故事」的橋接。閱讀完或略過都可返回遊戲，並不替玩家通關。
-- 可在 GitHub Pages 部署後直接以 `/story/index.html` 檢查故事頁；正式入口尚未放進「旅人的選擇」。`file://` 方式無法正常 fetch JSON，請使用 HTTP(S)。
-- v0.8.1 儲存：遊戲 key `mistforest_pact_save_v2`，故事獨立 key `mistforest_pact_story_progress_v2`。重新開始遊戲會清除故事進度。跳轉沿用 HTTPS `https://lib.stillnessbyslowly.com/state/navigation/navigation.js`。
-
-範例：編輯 `data/prologue/prologue.json` 中 `events` 陣列（例子只寫在 README，不填進正式故事 JSON）：
+例如第一章目前的事件結構：
 
 ```json
-"events": [
-  { "id": "p_001", "type": "scene", "title": "霧林入口", "scene": "mist" },
-  { "id": "p_002", "type": "narration", "text": "在這裡寫你的故事。", "scene": "mist" },
-  { "id": "p_003", "type": "dialogue", "speaker": "旅人", "text": "這裡是哪裡？", "scene": "mist" },
-  { "id": "p_004", "type": "choice", "prompt": "往哪裡走？", "options": [{"text":"往前", "goto":"p_005"}] },
-  { "id": "p_005", "type": "narration", "text": "霧氣向兩旁散去。" }
-]
+{
+  "id": "01_01",
+  "title": "第一章",
+  "events": [
+    { "id": "01_01_title", "type": "text", "text": "第一章" }
+  ]
+}
 ```
 
-### 戰後獎勵
-- 四選一：`card1` 新卡 1 張／`deck_up` 本場出戰可升等卡 +1 級／`card4` 新卡 4 張／`collection_up` 所有永久收藏可升等卡 +1 級。
-- **固定獎勵完全保留**：獲勝固定攻擊牌 1 張、下一場起始行動點 +1；因此領牌方案合計為 2 或 5 張待處理。仍維持收藏 80 上限、替換／放棄卡歸 Boss 的規則，升等上限 Lv.5。
-- 四種獎勵均可直接領取；無額外驗證或開關。逐張決定卡牌歸屬時，以「留於掌心／歸於霧影」操作；80 張收藏滿額才開啟舊卡替換選擇。
-- v0.7.2 已在領獎中的存檔繼續處理原有 queue，不回溯重發獎勵。舊獎勵名稱僅作存檔兼容。
+章節索引在 `story/data/chapters.json`。**目錄**的第 1～10 關顯示名稱依 `game/cards.js` 的 Boss 資料自動組成；**閱讀器**則以各篇 JSON 的 `title` 為標題。兩者不一定完全相同，屬於現有設計。
 
-### Boss 自動翻牌
-- 玩家結束回合後，若 Boss 實際成功使用了卡牌，從 Boss 身前翻出**真正使用的那張卡**，沿用相同 `.lc-card` 模板、七大類色彩、等級及文字；停留供閱讀，再飛向玩家或 Boss 自己。
-- Boss 沒有合法牌時只顯示原戰鬥文字，不會假裝出牌；原有文字戰報仍保留。動畫期間會暫停操作並延後 UI 重繪，戰鬥判定本身仍同步照原規則執行。對「減少動態效果」用戶保留短暫卡片顯示，不播放飛行。
-- 動畫與排版單獨在 `boss_card_animation.js/.css`，並未將特效複製到軍火庫。
+故事引擎支援 `scene`、`narration`、`dialogue`、`text`、`choice` 等事件；`challenge` 保留為戰鬥提示，不直接執行主遊戲戰鬥。故事外觀由 `story/story_style.css`／`.js` 控制，事件與存取由 `story/story.js` 處理，主遊戲的橋接由 `story/story_bridge.js` 處理。
 
-### 驗證註記
-- 已通過全部 JavaScript `node --check`、11 篇 JSON 格式檢查、程式層級模擬：Boss 實際出牌、120 張 Boss 起始牌、四類獎勵及下一關、80 張替換與 Boss 捐牌、故事打贏才解鎖／分支／跳過。
-- 執行環境的 Chromium 對本地網頁禁止導航，**未能完成本機手機畫面實測**；上傳 GitHub Pages 後請用手機確認卡片動畫與故事頁顯示。
+## 存檔與重置
 
+目前以瀏覽器 `localStorage` 儲存，**沒有伺服器帳號同步**。
 
-## 卡牌與 Boss 固定識別碼（測試版規則）
+| 用途 | Key／版本 | 說明 |
+| --- | --- | --- |
+| 遊戲永久進度 | `mistforest_pact_save_v3` | 存檔物件 `version: 5`；包含卡牌收藏、Boss 牌庫、三套牌組、關卡與待處理獎勵等 |
+| 故事閱讀紀錄 | `mistforest_pact_story_progress_v3` | 已閱讀、已略過及書籤 |
 
-- `game/cards.js` 的 `CARD_CATALOG` 是卡牌**唯一正式名稱表**，每個 `cardId` 永久固定。改名只改 `name`，不要改 ID。
-- 每張收藏中的實體牌會有不同 `id`，但同一牌種具有相同 `cardId`；等級與分支存在實體牌中。
-- 行動／特殊／魔法牌效果由 `ACTIONS`、`SPECIALS`、`MAGICS` 用 `cardId` 關聯；不可再用顯示名稱比對。
-- 同名選牌使用 `cardId` 合併，與文字是否一樣無關；呈現名稱統一使用 `LinCardData.cardName(card)`。
-- `BOSSES` 用固定 `bossId` 與 `name`，關卡順序仍由 `stage` 決定。故事播放器也會由 `BOSSES` 自動產生預設章節標題；未來若自行填寫故事 JSON 的 `title`，則以該章獨立標題優先。
-- 此次採全新 `mistforest_pact_save_v3`／故事進度 v3，舊測試存檔直接不讀取、不遷移。
+- 舊版測試存檔不自動遷移到 v3；舊版 key 不等於現行進度。
+- **進行中的戰鬥不跨重新整理恢復**：重新整理後回到可配置牌組狀態；永久資料仍保留。戰後尚未處理完的獎勵則由永久進度管理。
+- 第 0 章「重新啟程」會在確認後清除本作現行遊戲與故事進度，重新建立開局；**不清除其他網站的資料**。這個操作不可復原。
+
+## 專案結構
+
+```text
+lin_card/
+├─ index.html                  遊戲入口；本地模組與軍火庫引用
+├─ site.css                    整體頁面視覺
+├─ assets/
+│  └─ motto.svg                「昔日所棄，終將與你為敵」向量標語
+├─ opening/
+│  ├─ forest.svg               霧林背景
+│  ├─ opening.css              開場外觀
+│  ├─ opening.js               進場、雨絲與螢火蟲
+│  └─ ambience.js              風雨聲
+├─ game/
+│  ├─ cards.js                 卡種、固定 ID 與資料
+│  ├─ save.js                  永久存檔
+│  ├─ game.js                  關卡、牌組、成長與獎勵流程
+│  ├─ battle_rules.js          戰鬥規則
+│  ├─ game.css                 卡面功能樣式
+│  ├─ game_ui.js               遊戲畫面及互動
+│  ├─ game_ui.css              遊戲 UI 樣式
+│  ├─ boss_card_animation.js   Boss 逐張出牌動畫
+│  ├─ boss_card_animation.css
+│  ├─ battle_fx.js             聲光編排
+│  ├─ battle_fx.css
+│  └─ battle_haptics.js        手機震動
+├─ story/
+│  ├─ index.html               獨立故事頁
+│  ├─ story.js                 章節、書籤、解鎖與事件
+│  ├─ story.css                故事功能樣式
+│  ├─ story_style.js           故事介面
+│  ├─ story_style.css          故事外觀
+│  ├─ story_bridge.js          主遊戲與故事跳轉
+│  ├─ story_config.js          故事自動觸發開關
+│  └─ data/                    chapters.json＋12 篇故事 JSON
+├─ docs/
+│  └─ game_guide_draft.md     尚未公開的遊戲說明草稿
+├─ CHANGELOG.md                歷史調整紀錄
+└─ README.md                   本文件
+```
+
+## 慢慢軍火庫與維護原則
+
+共用零件**只以 `https://lib.stillnessbyslowly.com/` 下的 HTTPS 絕對 URL 引用，不把零件複製進本專案**。目前引用包括：
+
+- `state/tree_selection.js`、`game/card/deck.js`：分類選牌及牌庫等共用機制。
+- `state/navigation/navigation.js`：故事／遊戲跳轉。
+- `effects/background/pine_forest.js`、`effects/background/fog.js`：場景背景。
+- `ui/responsive.css`：共用響應式樣式。
+- `effects/celebration/flash_shake.js`、`.css`、`shockwave.js`、`.css`：聲光畫面效果。
+- `audio/context/audio_context.js`、`audio/source/noise.js`、`audio/tone/harmonic_chime.js`：音訊基礎。
+
+原則上**宿主控制顏色、字體、尺寸、布局與遊戲演出；軍火庫只提供可複用機制**。不要以複製原始碼或建立 `vendor/`、`lib/` 副本的方式替換軍火庫引用。
+
+若要調整遊戲：`game/battle_rules.js` 負責規則；`game/game.js` 負責永久遊戲狀態；`game/game_ui.js` 負責介面；`story/` 與遊戲戰鬥分離。**目前可用的模組不要在未討論前自行重構或優化**。
+
+## 驗收提醒
+
+目前的故事資料是測試用標題，驗收重點在於**能否正常進入故事頁、讀到標題、完成／略過、返回遊戲，以及按通關進度解鎖**。另請在實際 HTTPS 網站與手機瀏覽器確認外部軍火庫載入、聲音／震動、Boss 動畫，以及重新整理後的存檔行為。本 README 不代表上述操作都已完成瀏覽器實機驗收。

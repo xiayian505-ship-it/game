@@ -1,5 +1,11 @@
 {
   "id": "01_01",
-  "title": "",
-  "events": []
+  "title": "第一章",
+  "events": [
+    {
+      "id": "01_01_title",
+      "type": "text",
+      "text": "第一章"
+    }
+  ]
 }

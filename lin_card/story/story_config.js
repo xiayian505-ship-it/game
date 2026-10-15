@@ -1,5 +1,5 @@
-/** v0.8｜介面尚未定案；自動故事入口暫時關閉，但播放器／資料檔已完整預留。 */
+/** v0.8｜介面尚未定案；故事入口已接通；玩家可在進關前及領獎後閱讀對應篇章。 */
 (() => {
   "use strict";
-  window.MistStoryConfig = Object.freeze({ autoStory: false });
+  window.MistStoryConfig = Object.freeze({ autoStory: true });
 })();
