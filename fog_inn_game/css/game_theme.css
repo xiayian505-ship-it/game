@@ -1,0 +1,210 @@
+/* =====================================================================
+   game_theme.css
+   《霧渡客棧》專屬外觀。函式庫的特效 CSS 由 index.html 另外載入，這裡只負責遊戲版面。
+   ===================================================================== */
+
+:root {
+  --color-night: #0d0a18;
+  --color-ink: #1a1430;
+  --color-gold: #f5d68a;
+  --color-jade: #7fe0c0;
+  --color-danger: #ff6b6b;
+  --color-text: #efe9ff;
+  --card-width: 112px;
+  --card-height: 158px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--color-night);
+  color: var(--color-text);
+  font-family: "Noto Serif TC", "PingFang TC", "Microsoft JhengHei", serif;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  border: 1px solid rgba(245, 214, 138, 0.4);
+  background: rgba(40, 30, 70, 0.75);
+  border-radius: 10px;
+  padding: 8px 16px;
+  transition: transform 0.15s, background 0.15s;
+}
+button:hover { background: rgba(80, 60, 130, 0.85); transform: translateY(-2px); }
+
+#gameRoot {
+  position: relative;
+  width: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 50% 0%, #2d1f55 0%, var(--color-night) 70%);
+}
+
+/* ---------- 背景氣氛 ---------- */
+#atmosphere, #atmosphere .sbs-stars, #fogCanvas { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+#fogCanvas { width: 100%; height: 100%; }
+
+/* ---------- 狀態列 ---------- */
+#hud {
+  position: absolute; top: 0; left: 0; right: 0; z-index: 5;
+  display: flex; gap: 12px; align-items: center; justify-content: space-between;
+  padding: 10px 14px; background: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent);
+}
+#hud button { padding: 4px 12px; }
+[data-screen="titleScreen"] #hud, [data-screen="endScreen"] #hud { display: none; }
+
+/* ---------- 畫面容器 ---------- */
+.screen {
+  position: absolute; inset: 0; z-index: 1;
+  display: none; flex-direction: column; align-items: center;
+  padding: 56px 16px 16px; gap: 12px; overflow-y: auto;
+}
+.screen.is-active { display: flex; animation: screen-fade-in 0.5s ease; }
+@keyframes screen-fade-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+h1, h2, h3 { margin: 0; letter-spacing: 0.15em; }
+#titleScreen, #endScreen { justify-content: center; text-align: center; }
+#gameTitle, #endTitle { font-size: clamp(48px, 12vw, 96px); color: var(--color-gold); --sbs-breathe-color: #ffcf66; }
+.subtitle { letter-spacing: 0.4em; opacity: 0.8; margin: 0; }
+.intro { max-width: 520px; line-height: 1.9; opacity: 0.9; }
+
+.primary-button {
+  font-size: 18px; padding: 12px 34px; letter-spacing: 0.2em;
+  background: linear-gradient(135deg, #5b3aa8, #a8478f); border-color: var(--color-gold);
+}
+.button-row { display: flex; gap: 12px; }
+
+/* ---------- 逃脫房間 ---------- */
+.room-scene {
+  position: relative; width: min(100%, 820px); height: 46dvh; min-height: 260px;
+  border: 2px solid rgba(245, 214, 138, 0.35); border-radius: 16px; overflow: hidden;
+  box-shadow: 0 0 40px rgba(120, 80, 220, 0.35) inset;
+  transition: background 0.6s;
+}
+.room--lobby      { background: linear-gradient(180deg, #3a2548 0%, #1b1230 60%, #4a2f2a 60%, #2a1a18 100%); }
+.room--guest_room { background: linear-gradient(180deg, #1f3140 0%, #14202c 60%, #3b2c20 60%, #241a12 100%); }
+.room--back_yard  { background: linear-gradient(180deg, #14281f 0%, #0c1a14 60%, #1f2a1a 60%, #121a0e 100%); }
+
+#hotspotLayer { position: absolute; inset: 0; }
+.hotspot {
+  position: absolute; transform: translate(-50%, -50%);
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  background: none; border: none; padding: 4px;
+}
+.hotspot:hover { transform: translate(-50%, -54%); background: none; }
+.hotspot-icon { font-size: 46px; filter: drop-shadow(0 0 12px #ffd77a); animation: hotspot-pulse 2.2s ease-in-out infinite; }
+.hotspot-label { font-size: 13px; background: rgba(0,0,0,0.55); padding: 1px 8px; border-radius: 8px; }
+.hotspot.is-done .hotspot-icon { animation: none; filter: grayscale(1) opacity(0.45); }
+@keyframes hotspot-pulse { 50% { transform: scale(1.14); filter: drop-shadow(0 0 22px #ffe9a8); } }
+
+.story-text {
+  width: min(100%, 820px); min-height: 72px; margin: 0; padding: 12px 16px; line-height: 1.8;
+  background: rgba(20, 14, 40, 0.8); border-left: 4px solid var(--color-gold); border-radius: 8px;
+}
+.story-text.is-fresh { animation: screen-fade-in 0.5s ease; }
+
+#roomTabs { display: flex; gap: 10px; }
+.room-tab.is-current { background: #6a45c8; border-color: var(--color-gold); }
+
+/* ---------- 卡牌戰鬥 ---------- */
+#battleScreen { justify-content: space-between; }
+#battleScreen > * { position: relative; z-index: 1; }
+#rainCanvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; opacity: 0.55; }
+
+#enemyRow { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+.enemy-card {
+  width: 128px; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 10px; background: rgba(50, 20, 40, 0.8); border-color: rgba(255, 120, 120, 0.5);
+}
+.enemy-icon { font-size: 54px; }
+.enemy-card.is-defeated { opacity: 0.2; filter: grayscale(1); pointer-events: none; }
+.enemy-card.is-attacking { animation: enemy-lunge 0.42s ease; }
+.enemy-card.is-targetable { cursor: crosshair; }
+.enemy-intent { color: var(--color-danger); font-weight: bold; }
+@keyframes enemy-lunge { 40% { transform: translateY(26px) scale(1.15); } }
+
+.stat-bar { display: block; width: 100%; height: 8px; background: rgba(0,0,0,0.5); border-radius: 4px; overflow: hidden; }
+.stat-bar > i { display: block; height: 100%; background: linear-gradient(90deg, #e04b4b, #ff9a6a); transition: width 0.4s; }
+.player-bar { width: 140px; } .player-bar > i { background: linear-gradient(90deg, #35c98f, #8ff0c8); }
+
+#battleHint { margin: 0; opacity: 0.85; }
+#battleStatus { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; justify-content: center; font-size: 17px; }
+
+#handFan { width: min(100%, 720px); min-height: calc(var(--card-height) + 50px); padding-top: 30px; }
+.battle-card {
+  position: relative; width: var(--card-width); height: var(--card-height);
+  display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 8px 8px;
+  background: linear-gradient(160deg, #3b2a6e, #1a1233); border: 2px solid var(--color-gold);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.6);
+}
+.battle-card:hover { background: linear-gradient(160deg, #5a3fa0, #2a1c52); transform: none; }
+.battle-card.is-unaffordable { filter: grayscale(0.85) brightness(0.65); }
+.card-cost {
+  position: absolute; top: -10px; left: -10px; width: 28px; height: 28px; border-radius: 50%;
+  background: #4a7bff; display: grid; place-items: center; font-weight: bold; box-shadow: 0 0 10px #4a7bff;
+}
+.card-icon { font-size: 40px; }
+.card-name { font-weight: bold; color: var(--color-gold); letter-spacing: 0.1em; }
+.card-text { font-size: 12px; line-height: 1.4; opacity: 0.9; }
+
+.floating-number {
+  position: absolute; z-index: 20; transform: translateX(-50%); pointer-events: none;
+  font-size: 28px; font-weight: bold; text-shadow: 0 0 10px #000; animation: float-up 1.1s ease-out forwards;
+}
+.floating-number.is-damage { color: var(--color-danger); }
+.floating-number.is-heal   { color: var(--color-jade); }
+.floating-number.is-status { color: #9fc4ff; }
+@keyframes float-up { to { transform: translate(-50%, -70px); opacity: 0; } }
+
+/* ---------- 推理 ---------- */
+#deductionQuestions { display: flex; flex-direction: column; gap: 14px; width: min(100%, 560px); }
+.question-group { display: flex; flex-direction: column; gap: 8px; }
+.option-button { text-align: left; }
+.option-button.is-selected { background: #6a45c8; }
+#deductionResult { min-height: 24px; color: var(--color-danger); text-align: center; }
+
+/* ---------- 面板、線索簿、密碼鎖 ---------- */
+.panel {
+  position: absolute; inset: 0; z-index: 10; display: grid; place-items: center;
+  background: rgba(5, 3, 12, 0.8); backdrop-filter: blur(4px);
+}
+.panel[hidden] { display: none; }
+.panel-box {
+  width: min(92%, 520px); max-height: 82dvh; overflow-y: auto; padding: 20px;
+  background: var(--color-ink); border: 2px solid var(--color-gold); border-radius: 16px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.clue-card {
+  --sl-spot-x: 50%; --sl-spot-y: 50%;
+  padding: 12px; border-radius: 10px; border: 1px solid rgba(245,214,138,0.4);
+  background: radial-gradient(circle at var(--sl-spot-x) var(--sl-spot-y), rgba(255,235,170,0.22), rgba(40,30,70,0.9) 60%);
+  transition: transform 0.15s;
+}
+.clue-card h3 { color: var(--color-gold); margin-bottom: 6px; }
+.clue-card p { margin: 0; line-height: 1.7; font-size: 14px; }
+.empty-note { opacity: 0.7; text-align: center; }
+
+#keypadDisplay { font-size: 36px; text-align: center; letter-spacing: 0.3em; color: var(--color-jade); font-family: monospace; }
+#keypadButtons { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.keypad-box .button-row { justify-content: center; }
+
+/* ---------- 提示訊息 ---------- */
+#toast {
+  position: absolute; left: 50%; bottom: 90px; z-index: 30; transform: translateX(-50%);
+  padding: 10px 22px; border-radius: 999px; background: rgba(0,0,0,0.85);
+  border: 1px solid var(--color-gold); color: var(--color-gold);
+}
+
+/* ---------- 手機版 ---------- */
+@media (max-width: 600px) {
+  :root { --card-width: 86px; --card-height: 128px; }
+  .card-icon { font-size: 30px; }
+  .card-text { font-size: 10px; }
+  .enemy-card { width: 100px; }
+  .enemy-icon { font-size: 40px; }
+  .hotspot-icon { font-size: 36px; }
+}

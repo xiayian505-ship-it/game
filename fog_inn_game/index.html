@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>霧渡客棧｜策略卡牌 × 推理逃脫</title>
+
+  <!-- 慢慢的倉庫函式庫（直接呼叫線上版本，不複製原始碼） -->
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/celebration/confetti_burst.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/celebration/shockwave.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/celebration/flash_shake.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/celebration/star_explosion.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/celebration/classic_fireworks.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/celebration/victory_beam.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/celebration/click_burst.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/celebration/jackpot_pop.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/background/starfield.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/3d/tilt_spotlight.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/light/electric_border.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/light/breathing_glow.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/effects/stage/portal_wipe.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/ui/toast.css">
+  <link rel="stylesheet" href="https://lib.stillnessbyslowly.com/ui/layout/hand_fan_layout.css">
+
+  <!-- 本遊戲樣式 -->
+  <link rel="stylesheet" href="css/game_theme.css">
+</head>
+<body>
+  <main id="gameRoot" data-screen="titleScreen">
+
+    <!-- 背景氣氛層：星空 + 濃霧 -->
+    <div id="atmosphere" aria-hidden="true">
+      <div class="sbs-stars" data-color="#f5d68a"><canvas></canvas></div>
+      <canvas id="fogCanvas"></canvas>
+    </div>
+
+    <!-- 上方狀態列 -->
+    <header id="hud">
+      <span id="lanternDisplay" title="引路燈（生命）">🏮🏮🏮🏮🏮</span>
+      <span id="clueDisplay">🔍 0 / 6</span>
+      <button id="openNotebookButton" type="button">線索簿</button>
+      <button id="soundToggleButton" type="button" aria-label="音效開關">🔊</button>
+    </header>
+
+    <!-- 標題畫面 -->
+    <section id="titleScreen" class="screen is-active">
+      <h1 id="gameTitle" class="sbs-breathe">霧渡客棧</h1>
+      <p class="subtitle">策略卡牌 × 推理逃脫</p>
+      <p class="intro">濃霧之夜，掌櫃死於茶桌，客人一個個失蹤。<br>蒐集線索、以符咒對決鬼影，說出真相，天亮前逃出客棧。</p>
+      <button id="startGameButton" class="primary-button slowly-electric-border with-glow is-active" type="button">踏入客棧</button>
+    </section>
+
+    <!-- 逃脫房間畫面 -->
+    <section id="roomScreen" class="screen">
+      <h2 id="roomName">大廳</h2>
+      <div id="roomScene" class="room-scene room--lobby">
+        <div id="hotspotLayer"></div>
+      </div>
+      <p id="storyText" class="story-text"></p>
+      <nav id="roomTabs"></nav>
+    </section>
+
+    <!-- 卡牌戰鬥畫面 -->
+    <section id="battleScreen" class="screen">
+      <canvas id="rainCanvas" aria-hidden="true"></canvas>
+      <h2 id="battleTitle"></h2>
+      <div id="enemyRow"></div>
+      <p id="battleHint">點選手牌出牌</p>
+      <div id="battleStatus">
+        <span id="roundText"></span>
+        <span id="playerHealthText"></span>
+        <span class="stat-bar player-bar"><i id="playerHealthBar"></i></span>
+        <span id="playerBlockText"></span>
+        <span id="spiritText"></span>
+      </div>
+      <div id="handFan" aria-label="手牌"></div>
+      <button id="endTurnButton" class="primary-button" type="button">結束回合</button>
+    </section>
+
+    <!-- 推理畫面 -->
+    <section id="deductionScreen" class="screen">
+      <h2>推理指認</h2>
+      <div id="deductionQuestions"></div>
+      <p id="deductionResult"></p>
+      <div class="button-row">
+        <button id="backToRoomButton" type="button">回去看看</button>
+        <button id="submitDeductionButton" class="primary-button" type="button">指認真相</button>
+      </div>
+    </section>
+
+    <!-- 結局畫面 -->
+    <section id="endScreen" class="screen">
+      <h1 id="endTitle"></h1>
+      <p id="endBody" class="intro"></p>
+      <button id="restartButton" class="primary-button" type="button">再玩一次</button>
+    </section>
+
+    <!-- 線索簿面板 -->
+    <div id="cluePanel" class="panel" hidden>
+      <div class="panel-box">
+        <h2>線索簿</h2>
+        <div id="clueList"></div>
+        <button id="clueCloseButton" type="button">關閉</button>
+      </div>
+    </div>
+
+    <!-- 密碼鎖面板 -->
+    <div id="keypadPanel" class="panel" hidden>
+      <div class="panel-box keypad-box">
+        <h2>四位數密碼鎖</h2>
+        <div id="keypadDisplay">- - - -</div>
+        <div id="keypadButtons"></div>
+        <div class="button-row">
+          <button id="keypadClearButton" type="button">清除</button>
+          <button id="keypadCloseButton" type="button">離開</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast" role="status"></div>
+  </main>
+
+  <!-- 慢慢的倉庫函式庫 -->
+  <script src="https://lib.stillnessbyslowly.com/game/card/deck.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/game/card/strategy/card_instance_identity.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/game/card/strategy/card_resource_pool.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/game/card/strategy/card_turn_order.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/game/card/strategy/card_effect_registry.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/game/card/strategy/card_target_selection.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/ui/layout/hand_fan_layout.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/ui/toast.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/audio/context/audio_context.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/audio/tone/harmonic_chime.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/effects/celebration/confetti_burst.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/effects/celebration/shockwave.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/effects/celebration/flash_shake.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/effects/celebration/star_explosion.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/effects/celebration/classic_fireworks.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/effects/celebration/victory_beam.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/effects/celebration/click_burst.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/effects/celebration/jackpot_pop.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/effects/background/starfield.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/effects/background/fog.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/effects/background/rain.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/effects/3d/tilt_spotlight.js"></script>
+  <script src="https://lib.stillnessbyslowly.com/effects/stage/portal_wipe.js"></script>
+
+  <!-- 本遊戲程式（順序不能換：資料 → 狀態 → 特效 → 戰鬥 → 房間 → 推理 → 入口） -->
+  <script src="js/game_data.js"></script>
+  <script src="js/game_state.js"></script>
+  <script src="js/feedback_effects.js"></script>
+  <script src="js/card_battle_engine.js"></script>
+  <script src="js/card_battle_view.js"></script>
+  <script src="js/escape_room.js"></script>
+  <script src="js/deduction_board.js"></script>
+  <script src="js/game_main.js"></script>
+</body>
+</html>
